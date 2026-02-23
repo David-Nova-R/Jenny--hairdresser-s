@@ -87,7 +87,7 @@ namespace Hairdressers_backend.Data
                     Id = 1,
                     UserId = 1,
                     ServiceId = 1,
-                    AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0),
+                    AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Confirmed
                 },
                 new Appointment
@@ -95,7 +95,7 @@ namespace Hairdressers_backend.Data
                     Id = 2,
                     UserId = 2,
                     ServiceId = 3,
-                    AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0),
+                    AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Pending
                 },
                 new Appointment
@@ -103,7 +103,7 @@ namespace Hairdressers_backend.Data
                     Id = 3,
                     UserId = 3,
                     ServiceId = 4,
-                    AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0),
+                    AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Pending
                 }
             };

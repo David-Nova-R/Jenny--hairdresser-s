@@ -2,15 +2,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Hairdressers_backend.Data;
-using System.Text;
-using System;
-using Models.Data;
 using Supabase;
+using Models.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -53,11 +49,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseLazyLoadingProxies();
 });
 
-// JWT via Supabase (pas de clé maison, on utilise le JWT secret de Supabase)
-var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"]
-    ?? throw new InvalidOperationException("Supabase JWT secret not found.");
-
-SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret));
+// JWT via Supabase JWKS (ES256)
+var jwtIssuer = builder.Configuration["Supabase:JwtIssuer"]
+    ?? throw new InvalidOperationException("Supabase JwtIssuer not found.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -67,15 +61,22 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.RequireHttpsMetadata = false; // Mettre true en production
+    options.RequireHttpsMetadata = false; // true en production
     options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Supabase:Url"],
+        ValidIssuer = jwtIssuer,
         ValidateAudience = true,
-        ValidAudience = "authenticated", // Audience par défaut de Supabase
+        ValidAudience = "authenticated",
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = signingKey
+        IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+        {
+            var client = new HttpClient();
+            var jwksUrl = $"{jwtIssuer}/.well-known/jwks.json";
+            var jwks = client.GetStringAsync(jwksUrl).Result;
+            var jsonWebKeySet = new JsonWebKeySet(jwks);
+            return jsonWebKeySet.GetSigningKeys();
+        }
     };
 });
 
@@ -114,7 +115,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
-app.UseAuthentication(); // ← important, manquait dans ton exemple !
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

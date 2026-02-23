@@ -25,7 +25,7 @@ namespace Models.Models
         public int ServiceId { get; set; }
 
         // Navigation
-        public User User { get; set; } = null!;
-        public Service Service { get; set; } = null!;
+        public virtual User User { get; set; } = null!;
+        public virtual Service Service { get; set; } = null!;
     }
 }
