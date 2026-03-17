@@ -8,42 +8,21 @@ namespace Hairdressers_backend.Data
         {
             return new Service[]
             {
-                new Service
-                {
-                    Id = 1,
-                    Name = "Coupe homme",
-                    Description = "Coupe classique pour homme",
-                    Price = 25.00m,
-                    DurationMinutes = 30,
-                    PhotoUrl = null
-                },
-                new Service
-                {
-                    Id = 2,
-                    Name = "Coupe femme",
-                    Description = "Coupe et brushing pour femme",
-                    Price = 45.00m,
-                    DurationMinutes = 60,
-                    PhotoUrl = null
-                },
-                new Service
-                {
-                    Id = 3,
-                    Name = "Coloration",
-                    Description = "Coloration complète",
-                    Price = 80.00m,
-                    DurationMinutes = 120,
-                    PhotoUrl = null
-                },
-                new Service
-                {
-                    Id = 4,
-                    Name = "Barbe",
-                    Description = "Taille et soin de la barbe",
-                    Price = 15.00m,
-                    DurationMinutes = 20,
-                    PhotoUrl = null
-                }
+                new Service { Id = 1, Name = "Tinte permanente", PriceMin = 35, PriceMax = 90, DurationMinutes = 60, DurationMaxMinutes = 120 },
+                new Service { Id = 2, Name = "Tinte demipermanente", PriceMin = 35, PriceMax = 50, DurationMinutes = 60, DurationMaxMinutes = 120 },
+                new Service { Id = 3, Name = "Baño de color", PriceMin = 35, PriceMax = null, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 4, Name = "Técnicas de mechas y efectos de luz", PriceMin = 140, PriceMax = 230, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 5, Name = "Balayage", PriceMin = 150, PriceMax = 250, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 6, Name = "Baby Lights", PriceMin = 150, PriceMax = 250, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 7, Name = "Ombré", PriceMin = 150, PriceMax = 230, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 8, Name = "Californianas", PriceMin = 100, PriceMax = 200, DurationMinutes = 240, DurationMaxMinutes = 360 },
+                new Service { Id = 9, Name = "Cortes dama", PriceMin = 20, PriceMax = null, DurationMinutes = 60, DurationMaxMinutes = null },
+                new Service { Id = 10, Name = "Permanente hombres", PriceMin = 100, PriceMax = null, DurationMinutes = 180, DurationMaxMinutes = null },
+                new Service { Id = 11, Name = "Keratina", PriceMin = 140, PriceMax = 250, DurationMinutes = 300, DurationMaxMinutes = 420 },
+                new Service { Id = 12, Name = "Aminoácido", PriceMin = 150, PriceMax = 300, DurationMinutes = 240, DurationMaxMinutes = 420 },
+                new Service { Id = 13, Name = "Terapia capilar", PriceMin = 120, PriceMax = 200, DurationMinutes = 180, DurationMaxMinutes = 240 },
+                new Service { Id = 14, Name = "Cepillados", PriceMin = 30, PriceMax = 50, DurationMinutes = 60, DurationMaxMinutes = 120 },
+                new Service { Id = 15, Name = "Peinados", PriceMin = 35, PriceMax = 70, DurationMinutes = 60, DurationMaxMinutes = 180 },
             };
         }
 
