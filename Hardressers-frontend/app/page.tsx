@@ -1,5 +1,12 @@
 'use client';
 
+import { Scissors, Palette, Sparkles, Heart, Calendar, Phone, MapPin, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ImageWithFallback } from './ImageWithFallBack';
+import AppointmentModal from './_components/AppointmentModal';
+import ServiceSelectModal, { Service } from './_components/ServiceSelectModal';
+import { fakeFetchServices, fakeFetchAvailableSlots, FakeSlotResponse } from './_components/fakeApi';
+
 const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
@@ -7,14 +14,17 @@ const scrollToSection = (id: string) => {
   }
 };
 
-
-import { Scissors, Palette, Sparkles, Heart, Calendar, Phone, MapPin, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { ImageWithFallback } from './ImageWithFallBack';
-import CalendarComponent from './Calendar/CalendarComponent';
-
 export default function App() {
   const [scrolled, setScrolled] = useState(false);
+
+  // Booking modal state
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [bookingServices, setBookingServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [slots, setSlots] = useState<FakeSlotResponse[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,7 +34,63 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const services = [
+  // Open service modal and fetch services
+  const handleBookClick = async () => {
+    setShowServiceModal(true);
+    setSelectedService(null);
+    setShowCalendarModal(false);
+    setBookingServices([]);
+    setSlots([]);
+    setServicesLoading(true);
+    try {
+      const data = await fakeFetchServices();
+      setBookingServices(data);
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  // After service selection, fetch available slots
+  const handleServiceSelect = async (service: Service) => {
+    setSelectedService(service);
+    setShowServiceModal(false);
+    setShowCalendarModal(true);
+    setSlots([]);
+    setSlotsLoading(true);
+    try {
+      const now = new Date();
+      const slotData = await fakeFetchAvailableSlots(
+        service.id,
+        now.getFullYear(),
+        now.getMonth() + 1,
+        service.durationMinutes
+      );
+      setSlots(slotData);
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  // Close modals
+  const handleCloseServiceModal = () => {
+    setShowServiceModal(false);
+    setSelectedService(null);
+    setBookingServices([]);
+  };
+
+  const handleCloseCalendarModal = () => {
+    setShowCalendarModal(false);
+    // Optionally keep selectedService to go back to service selection
+  };
+
+  const handleBackToService = () => {
+    // Go back to service selection
+    setShowCalendarModal(false);
+    setShowServiceModal(true);
+  };
+
+  // UI services for the display cards
+  const uiServices = [
     {
       icon: Scissors,
       title: 'Haircuts',
@@ -141,7 +207,10 @@ export default function App() {
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto font-light">
             Personalized attention in an intimate home studio setting
           </p>
-          <button className="bg-[#D4AF37] text-black px-12 py-4 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-lg shadow-[#D4AF37]/20 text-lg tracking-wide">
+          <button
+            className="bg-[#D4AF37] text-black px-12 py-4 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-lg shadow-[#D4AF37]/20 text-lg tracking-wide"
+            onClick={handleBookClick}
+          >
             Book Appointment
           </button>
         </div>
@@ -157,7 +226,7 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => (
+            {uiServices.map((service, index) => (
               <div
                 key={index}
                 className="bg-gradient-to-b from-[#0a0a0a] to-black border border-[#D4AF37]/20 rounded-2xl p-8 hover:border-[#D4AF37]/50 transition-all duration-300 group hover:shadow-xl hover:shadow-[#D4AF37]/10"
@@ -261,13 +330,31 @@ export default function App() {
             Schedule your private appointment and experience personalized luxury
           </p>
 
-          <button className="bg-[#D4AF37] text-black px-16 py-5 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-2xl shadow-[#D4AF37]/30 text-lg inline-flex items-center gap-3 group">
+          <button className="bg-[#D4AF37] text-black px-16 py-5 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-2xl shadow-[#D4AF37]/30 text-lg inline-flex items-center gap-3 group" onClick={handleBookClick}>
             <Calendar className="w-5 h-5 group-hover:scale-110 transition-transform" />
             Book an Appointment
           </button>
-          <div className="mt-12">
-            <CalendarComponent />
-          </div>
+
+          {/* Service selection modal */}
+          {showServiceModal && (
+            <ServiceSelectModal
+              services={bookingServices}
+              onSelect={handleServiceSelect}
+              onClose={handleCloseServiceModal}
+            />
+          )}
+
+          {/* Calendar modal (AppointmentModal) */}
+          {showCalendarModal && selectedService && (
+            <AppointmentModal
+              show={showCalendarModal}
+              onClose={handleCloseCalendarModal}
+              onBackToService={handleBackToService}
+              slots={slots}
+              selectedService={selectedService}
+              slotsLoading={slotsLoading}
+            />
+          )}
         </div>
       </section>
 
