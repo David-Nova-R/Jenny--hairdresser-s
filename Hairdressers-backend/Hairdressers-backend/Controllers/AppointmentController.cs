@@ -9,7 +9,7 @@ using Supabase;
 
 namespace Hairdressers_backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AppointmentController : ControllerBase
     {
@@ -36,7 +36,7 @@ namespace Hairdressers_backend.Controllers
             if (user == null)
                 return NotFound();
 
-            var service = await _context.Services
+            var service = await _context.HairStyles
                 .FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
             if (service == null)
                 return BadRequest("Service inexistant.");
@@ -46,7 +46,7 @@ namespace Hairdressers_backend.Controllers
                 UserId = user.Id,
                 ServiceId = service.Id,
                 User = user,
-                Service = service,
+                HairStyle = service,
                 AppointmentDate = dto.AppointmentDate,
                 Status = AppointmentStatus.Pending
             };
@@ -67,7 +67,7 @@ namespace Hairdressers_backend.Controllers
         [HttpGet]
         public async Task<ActionResult<List<AvailableDayWithSlotsDTO>>> GetAvailableMonth([FromBody] AvailableMonthDTO dto)
         {
-            var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
+            var service = await _context.HairStyles.FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
             if (service == null)
                 return BadRequest("Service inexistant.");
 
@@ -118,10 +118,10 @@ namespace Hairdressers_backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Models.Models.Service>>> GetServices()
+        public async Task<ActionResult<IEnumerable<HairStyle>>> GetServices()
         {
-            List<Service> services = await _context.Services.ToListAsync();
-            return Ok(services);
+            var hairStyles = await _context.HairStyles.Select(h => new HairStyleDTO(h)).ToListAsync();
+            return Ok(hairStyles);
         }
     }
 }
