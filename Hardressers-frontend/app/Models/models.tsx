@@ -8,13 +8,13 @@ class BookedAppointment{
 
     dateStart : Date;
     dateEnd : Date;
-    constructor(public service : Service){
-        this.dateStart = service.dateStart;
-        this.dateEnd = new Date(service.dateStart.getTime() + service.durationInMinutes * 60000);
+    constructor(public HairStyle : HairStyle){
+        this.dateStart = HairStyle.dateStart;
+        this.dateEnd = new Date(HairStyle.dateStart.getTime() + HairStyle.durationInMinutes * 60000);
     }
 }
 
-class Service{
+class HairStyle{
 
     constructor(public name : string, public dateStart : Date, public durationInMinutes : number, public Description : string){}
 }

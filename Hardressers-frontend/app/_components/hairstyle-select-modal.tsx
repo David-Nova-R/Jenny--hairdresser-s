@@ -1,29 +1,13 @@
 import React, { useState } from 'react';
+import { HairStyleSelectModalProps } from '../_models/models';
 
-export interface Service {
-  id: number;
-  name: string;
-  description?: string;
-  priceMin: number;
-  priceMax?: number;
-  durationMinutes: number;
-  durationMaxMinutes?: number;
-  photoUrl?: string;
-}
-
-interface ServiceSelectModalProps {
-  services: Service[];
-  onSelect: (service: Service) => void;
-  onClose: () => void;
-}
-
-const ServiceSelectModal: React.FC<ServiceSelectModalProps> = ({ services, onSelect, onClose }) => {
+const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({ HairStyles, onSelect, onClose }) => {
   const [selected, setSelected] = useState<number | null>(null);
 
   const handleNext = () => {
     if (selected !== null) {
-      const service = services.find(s => s.id === selected);
-      if (service) onSelect(service);
+      const HairStyle = HairStyles.find(s => s.id === selected);
+      if (HairStyle) onSelect(HairStyle);
     }
   };
 
@@ -41,24 +25,24 @@ const ServiceSelectModal: React.FC<ServiceSelectModalProps> = ({ services, onSel
 
         {/* Header */}
         <div className="p-8 pb-4 pt-12 flex-shrink-0">
-          <h3 className="text-2xl mb-4 font-semibold">Choisissez un service</h3>
+          <h3 className="text-2xl mb-4 font-semibold">Choisissez un HairStyle</h3>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-8 pb-4">
           <ul className="space-y-4">
-            {services.map(service => (
-              <li key={service.id}>
+            {HairStyles.map(HairStyle => (
+              <li key={HairStyle.id}>
                 <button
-                  className={`w-full text-left border rounded-lg px-4 py-3 transition-all duration-200 ${selected === service.id ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black'}`}
-                  onClick={() => setSelected(service.id)}
+                  className={`w-full text-left border rounded-lg px-4 py-3 transition-all duration-200 ${selected === HairStyle.id ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black'}`}
+                  onClick={() => setSelected(HairStyle.id)}
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-bold text-lg">{service.name}</span>
-                    {service.description && <span className="text-gray-600 text-sm">{service.description}</span>}
+                    <span className="font-bold text-lg">{HairStyle.name}</span>
+                    {HairStyle.description && <span className="text-gray-600 text-sm">{HairStyle.description}</span>}
                     <span className="text-gray-600 text-sm">
-                      {service.priceMin}€
-                      {service.priceMax ? ` - ${service.priceMax}€` : ''} | {service.durationMinutes} min{service.durationMaxMinutes ? ` - ${service.durationMaxMinutes} min` : ''}
+                      {HairStyle.priceMin}€
+                      {HairStyle.priceMax ? ` - ${HairStyle.priceMax}€` : ''} | {HairStyle.durationMinutes} min{HairStyle.durationMaxMinutes ? ` - ${HairStyle.durationMaxMinutes} min` : ''}
                     </span>
                   </div>
                 </button>
@@ -82,4 +66,4 @@ const ServiceSelectModal: React.FC<ServiceSelectModalProps> = ({ services, onSel
   );
 };
 
-export default ServiceSelectModal;
+export default HairStyleSelectModal;

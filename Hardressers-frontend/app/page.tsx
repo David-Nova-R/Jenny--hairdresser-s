@@ -3,9 +3,13 @@
 import { Scissors, Palette, Sparkles, Heart, Calendar, Phone, MapPin, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ImageWithFallback } from './ImageWithFallBack';
-import AppointmentModal from './_components/AppointmentModal';
-import ServiceSelectModal, { Service } from './_components/ServiceSelectModal';
-import { fakeFetchServices, fakeFetchAvailableSlots, FakeSlotResponse } from './_components/fakeApi';
+import AppointmentModal from './_components/appointment-modal';
+import { AvailableDay, HairStyle } from './_models/models';
+import { FetchAvailableSlots, FetchHairStyles } from './_api/appointment-api';
+import HairStyleSelectModal from './_components/hairstyle-select-modal';
+import { useAuth } from './_hooks/auth-context';
+import LoginModal from './_components/LoginModal';
+import RegisterModal from './_components/RegisterModal';
 
 const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
@@ -15,16 +19,21 @@ const scrollToSection = (id: string) => {
 };
 
 export default function App() {
+  const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
 
   // Booking modal state
-  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [showHairStyleModal, setShowHairStyleModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [bookingServices, setBookingServices] = useState<Service[]>([]);
-  const [servicesLoading, setServicesLoading] = useState(false);
-  const [slots, setSlots] = useState<FakeSlotResponse[]>([]);
+  const [selectedHairStyle, setSelectedHairStyle] = useState<HairStyle | null>(null);
+  const [bookingHairStyles, setBookingHairStyles] = useState<HairStyle[]>([]);
+  const [HairStylesLoading, setHairStylesLoading] = useState(false);
+  const [slots, setSlots] = useState<AvailableDay[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+
+  // Authentication modals state
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,36 +43,52 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Open service modal and fetch services
+  // Auto proceed to calendar after successful login
+  useEffect(() => {
+    if (user && showLoginModal && selectedHairStyle) {
+      handleLoginSuccess();
+    }
+  }, [user, showLoginModal, selectedHairStyle]);
+
+  // Open HairStyle modal and fetch HairStyles
   const handleBookClick = async () => {
-    setShowServiceModal(true);
-    setSelectedService(null);
+    setShowHairStyleModal(true);
+    setSelectedHairStyle(null);
     setShowCalendarModal(false);
-    setBookingServices([]);
+    setBookingHairStyles([]);
     setSlots([]);
-    setServicesLoading(true);
+    setHairStylesLoading(true);
     try {
-      const data = await fakeFetchServices();
-      setBookingServices(data);
+      const data = await FetchHairStyles();
+      setBookingHairStyles(data);
     } finally {
-      setServicesLoading(false);
+      setHairStylesLoading(false);
     }
   };
 
-  // After service selection, fetch available slots
-  const handleServiceSelect = async (service: Service) => {
-    setSelectedService(service);
-    setShowServiceModal(false);
+  // After HairStyle selection, fetch available slots
+  const handleHairStyleSelect = async (HairStyle: HairStyle) => {
+    // Check if user is authenticated
+    if (!user) {
+      // Save the selected hairstyle for later
+      setSelectedHairStyle(HairStyle);
+      setShowHairStyleModal(false);
+      setShowLoginModal(true);
+      return;
+    }
+
+    setSelectedHairStyle(HairStyle);
+    setShowHairStyleModal(false);
     setShowCalendarModal(true);
     setSlots([]);
     setSlotsLoading(true);
     try {
       const now = new Date();
-      const slotData = await fakeFetchAvailableSlots(
-        service.id,
+      setSlotsLoading(true);
+      const slotData = await FetchAvailableSlots(
+        HairStyle.id,
         now.getFullYear(),
         now.getMonth() + 1,
-        service.durationMinutes
       );
       setSlots(slotData);
     } finally {
@@ -72,25 +97,47 @@ export default function App() {
   };
 
   // Close modals
-  const handleCloseServiceModal = () => {
-    setShowServiceModal(false);
-    setSelectedService(null);
-    setBookingServices([]);
+  const handleCloseHairStyleModal = () => {
+    setShowHairStyleModal(false);
+    setSelectedHairStyle(null);
+    setBookingHairStyles([]);
   };
 
   const handleCloseCalendarModal = () => {
     setShowCalendarModal(false);
-    // Optionally keep selectedService to go back to service selection
+    // Optionally keep selectedHairStyle to go back to HairStyle selection
   };
 
-  const handleBackToService = () => {
-    // Go back to service selection
+  const handleBackToHairStyle = () => {
+    // Go back to HairStyle selection
     setShowCalendarModal(false);
-    setShowServiceModal(true);
+    setShowHairStyleModal(true);
   };
 
-  // UI services for the display cards
-  const uiServices = [
+  // Handle successful login - proceed with appointment booking
+  const handleLoginSuccess = async () => {
+    setShowLoginModal(false);
+    if (selectedHairStyle) {
+      // Show calendar modal with the selected hairstyle
+      setShowCalendarModal(true);
+      setSlots([]);
+      setSlotsLoading(true);
+      try {
+        const now = new Date();
+        const slotData = await FetchAvailableSlots(
+          selectedHairStyle.id,
+          now.getFullYear(),
+          now.getMonth() + 1,
+        );
+        setSlots(slotData);
+      } finally {
+        setSlotsLoading(false);
+      }
+    }
+  };
+
+  // UI HairStyles for the display cards
+  const uiHairStyles = [
     {
       icon: Scissors,
       title: 'Haircuts',
@@ -100,7 +147,7 @@ export default function App() {
     {
       icon: Palette,
       title: 'Coloring',
-      description: 'Expert color services including highlights, balayage, and full color.',
+      description: 'Expert color HairStyles including highlights, balayage, and full color.',
       price: 'From $150'
     },
     {
@@ -152,10 +199,10 @@ export default function App() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <button
-              onClick={() => scrollToSection('services')}
+              onClick={() => scrollToSection('HairStyles')}
               className="text-gray-300 hover:text-[#D4AF37] transition-colors duration-300 tracking-wide"
             >
-              Services
+              HairStyles
             </button>
             <button
               onClick={() => scrollToSection('gallery')}
@@ -175,12 +222,35 @@ export default function App() {
             >
               Contact
             </button>
-            <button
-              onClick={() => scrollToSection('booking')}
-              className="bg-[#D4AF37] text-black px-6 py-2 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-lg shadow-[#D4AF37]/20"
-            >
-              Book Now
-            </button>
+            
+            {/* Auth and Booking Buttons - Grouped Together */}
+            <div className="flex items-center gap-3 ml-auto">
+              {user ? (
+                <div className="flex items-center gap-3 border-x border-[#D4AF37]/20 px-3">
+                  <span className="text-gray-300 text-sm">{user.email}</span>
+                  <button
+                    onClick={() => logout()}
+                    className="bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 transition-all duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-[#D4AF37] text-black px-6 py-2 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-lg shadow-[#D4AF37]/20"
+                >
+                  Login
+                </button>
+              )}
+              
+              <button
+                onClick={() => scrollToSection('booking')}
+                className="bg-[#D4AF37] text-black px-6 py-2 rounded-full hover:bg-[#F4D03F] transition-all duration-300 shadow-lg shadow-[#D4AF37]/20"
+              >
+                Book Now
+              </button>
+            </div>
           </nav>
         </div>
       </header>
@@ -216,29 +286,29 @@ export default function App() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-24 px-6 bg-black">
+      {/* HairStyles Section */}
+      <section id="HairStyles" className="py-24 px-6 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <span className="text-[#D4AF37] text-sm tracking-[0.3em] uppercase">My Services</span>
+            <span className="text-[#D4AF37] text-sm tracking-[0.3em] uppercase">My HairStyles</span>
             <h2 className="text-5xl md:text-6xl mt-4 mb-6 font-light">Premium Treatments</h2>
             <div className="w-24 h-[1px] bg-[#D4AF37] mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {uiServices.map((service, index) => (
+            {uiHairStyles.map((HairStyle, index) => (
               <div
                 key={index}
                 className="bg-gradient-to-b from-[#0a0a0a] to-black border border-[#D4AF37]/20 rounded-2xl p-8 hover:border-[#D4AF37]/50 transition-all duration-300 group hover:shadow-xl hover:shadow-[#D4AF37]/10"
               >
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-black border border-[#D4AF37] flex items-center justify-center group-hover:bg-[#D4AF37] transition-all duration-300">
-                    <service.icon className="w-7 h-7 text-[#D4AF37] group-hover:text-black transition-colors duration-300" />
+                    <HairStyle.icon className="w-7 h-7 text-[#D4AF37] group-hover:text-black transition-colors duration-300" />
                   </div>
                 </div>
-                <h3 className="text-2xl mb-3 font-normal">{service.title}</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">{service.description}</p>
-                <p className="text-[#D4AF37] text-lg">{service.price}</p>
+                <h3 className="text-2xl mb-3 font-normal">{HairStyle.title}</h3>
+                <p className="text-gray-400 mb-6 leading-relaxed">{HairStyle.description}</p>
+                <p className="text-[#D4AF37] text-lg">{HairStyle.price}</p>
               </div>
             ))}
           </div>
@@ -335,26 +405,54 @@ export default function App() {
             Book an Appointment
           </button>
 
-          {/* Service selection modal */}
-          {showServiceModal && (
-            <ServiceSelectModal
-              services={bookingServices}
-              onSelect={handleServiceSelect}
-              onClose={handleCloseServiceModal}
+          {/* HairStyle selection modal */}
+          {showHairStyleModal && (
+            <HairStyleSelectModal
+              HairStyles={bookingHairStyles}
+              onSelect={handleHairStyleSelect}
+              onClose={handleCloseHairStyleModal}
             />
           )}
 
           {/* Calendar modal (AppointmentModal) */}
-          {showCalendarModal && selectedService && (
+          {showCalendarModal && selectedHairStyle && (
             <AppointmentModal
               show={showCalendarModal}
               onClose={handleCloseCalendarModal}
-              onBackToService={handleBackToService}
+              onBackToHairStyle={handleBackToHairStyle}
               slots={slots}
-              selectedService={selectedService}
+              selectedHairStyle={selectedHairStyle}
               slotsLoading={slotsLoading}
             />
           )}
+
+          {/* Login Modal */}
+          <LoginModal
+            show={showLoginModal}
+            onClose={() => {
+              setShowLoginModal(false);
+              setShowHairStyleModal(true);
+              setSelectedHairStyle(null);
+            }}
+            onSwitchToRegister={() => {
+              setShowLoginModal(false);
+              setShowRegisterModal(true);
+            }}
+          />
+
+          {/* Register Modal */}
+          <RegisterModal
+            show={showRegisterModal}
+            onClose={() => {
+              setShowRegisterModal(false);
+              setShowHairStyleModal(true);
+              setSelectedHairStyle(null);
+            }}
+            onSwitchToLogin={() => {
+              setShowRegisterModal(false);
+              setShowLoginModal(true);
+            }}
+          />
         </div>
       </section>
 

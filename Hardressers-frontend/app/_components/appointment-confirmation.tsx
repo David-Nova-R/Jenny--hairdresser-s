@@ -1,14 +1,14 @@
 import React from 'react';
-import { Service } from './ServiceSelectModal';
+import { HairStyle } from '../_models/models';
 
 interface AppointmentConfirmationProps {
-  service: Service;
+  HairStyle: HairStyle;
   selectedDate: Date;
   selectedTime: string;
 }
 
 const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
-  service,
+  HairStyle,
   selectedDate,
   selectedTime,
 }) => {
@@ -19,18 +19,18 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   const weekdayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
   const formattedDate = `${weekdayNames[selectedDate.getDay()]} ${selectedDate.getDate()} ${monthNames[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
-  const durationLabel = service.durationMaxMinutes
-    ? `${service.durationMinutes} - ${service.durationMaxMinutes} min`
-    : `${service.durationMinutes} min`;
-  const priceLabel = service.priceMax
-    ? `€${service.priceMin} - €${service.priceMax}`
-    : `€${service.priceMin}`;
+  const durationLabel = HairStyle.durationMaxMinutes
+    ? `${HairStyle.durationMinutes} - ${HairStyle.durationMaxMinutes} min`
+    : `${HairStyle.durationMinutes} min`;
+  const priceLabel = HairStyle.priceMax
+    ? `€${HairStyle.priceMin} - €${HairStyle.priceMax}`
+    : `€${HairStyle.priceMin}`;
 
   return (
     <div className="space-y-4">
       <div className="pb-4 border-b border-gray-200">
-        <p className="text-sm text-gray-600 mb-1">Service</p>
-        <p className="text-2xl font-semibold text-[#D4AF37]">{service.name}</p>
+        <p className="text-sm text-gray-600 mb-1">HairStyle</p>
+        <p className="text-2xl font-semibold text-[#D4AF37]">{HairStyle.name}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

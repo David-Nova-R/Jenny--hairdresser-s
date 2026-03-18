@@ -1,29 +1,14 @@
 import React, { useState } from 'react';
-import { Service } from './ServiceSelectModal';
-import AppointmentConfirmation from './AppointmentConfirmation';
-
-export type FakeSlotResponse = {
-  Day: string; // ISO date string
-  AvailableSlots: string[];
-};
-
-interface AppointmentModalProps {
-  show: boolean;
-  onClose: () => void;
-  onBackToService?: () => void;
-  onDaySelect?: (day: number) => void;
-  slots?: FakeSlotResponse[];
-  selectedService?: Service | null;
-  slotsLoading?: boolean;
-}
+import AppointmentConfirmation from './appointment-confirmation';
+import { AppointmentModalProps } from '../_models/models';
 
 const AppointmentModal: React.FC<AppointmentModalProps> = ({ 
   show, 
   onClose,
-  onBackToService,
+  onBackToHairStyle,
   onDaySelect, 
   slots = [], 
-  selectedService,
+  selectedHairStyle,
   slotsLoading = false 
 }) => {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -43,8 +28,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   // Helper: Check if a day has available slots
   const getDaySlotsIfAvailable = (checkDate: Date) => {
     const dateStr = checkDate.toISOString().split('T')[0];
-    const slotData = slots.find(s => s.Day.startsWith(dateStr));
-    return slotData?.AvailableSlots || [];
+    const slotData = slots.find(s => s.day.startsWith(dateStr));
+    return slotData?.availableSlots || [];
   };
 
   const isAvailableDay = (checkDate: Date) => {
@@ -124,10 +109,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div className="flex-1 overflow-y-auto p-8 pt-12">
           {step === 'calendar' ? (
             <>
-              {selectedService && (
+              {selectedHairStyle && (
                 <div className="mb-6 pb-4 border-b border-gray-200">
-                  <p className="text-sm text-gray-600">Service selected:</p>
-                  <p className="text-xl font-semibold">{selectedService.name}</p>
+                  <p className="text-sm text-gray-600">HairStyle selected:</p>
+                  <p className="text-xl font-semibold">{selectedHairStyle.name}</p>
                 </div>
               )}
               {slotsLoading && (
@@ -231,9 +216,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </>
           ) : (
             <>
-              {selectedService && selectedDay && selectedTime && (
+              {selectedHairStyle && selectedDay && selectedTime && (
                 <AppointmentConfirmation
-                  service={selectedService}
+                  HairStyle={selectedHairStyle}
                   selectedDate={selectedDay}
                   selectedTime={selectedTime}
                 />
@@ -249,7 +234,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <>
                 <button
                   className="flex-1 px-6 py-2 rounded-full bg-gray-200 text-black hover:bg-gray-300 transition-all duration-200 font-semibold"
-                  onClick={() => onBackToService ? onBackToService() : onClose()}
+                  onClick={() => onBackToHairStyle ? onBackToHairStyle() : onClose()}
                 >
                   Back
                 </button>

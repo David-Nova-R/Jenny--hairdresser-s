@@ -64,14 +64,14 @@ namespace Hairdressers_backend.Controllers
             });
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<ActionResult<List<AvailableDayWithSlotsDTO>>> GetAvailableMonth([FromBody] AvailableMonthDTO dto)
         {
             var service = await _context.HairStyles.FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
             if (service == null)
                 return BadRequest("Service inexistant.");
 
-            var firstDay = new DateTime(dto.Year, dto.Month, 1);
+            var firstDay = new DateTime(dto.Year, dto.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var lastDay = firstDay.AddMonths(1).AddDays(-1);
 
             var result = new List<AvailableDayWithSlotsDTO>();
@@ -89,14 +89,14 @@ namespace Hairdressers_backend.Controllers
 
                 for (int hour = 8; hour < 16; hour++)
                 {
-                    for (int minute = 0; minute < 60; minute += dto.AppointmentDurationInMinutes)
+                    for (int minute = 0; minute < 60; minute += service.DurationMinutes)
                     {
-                        var slotStart = date.Date.AddHours(hour).AddMinutes(minute);
-                        var slotEnd = slotStart.AddMinutes(dto.AppointmentDurationInMinutes);
+                        var slotStart = DateTime.SpecifyKind(date.Date.AddHours(hour).AddMinutes(minute),DateTimeKind.Utc);
+                        var slotEnd = slotStart.AddMinutes(service.DurationMinutes);
 
                         bool isTaken = appointments.Any(a =>
                             a.AppointmentDate < slotEnd &&
-                            a.AppointmentDate.AddMinutes(dto.AppointmentDurationInMinutes) > slotStart
+                            a.AppointmentDate.AddMinutes(service.DurationMinutes) > slotStart
                         );
 
                         if (!isTaken)
@@ -118,7 +118,7 @@ namespace Hairdressers_backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HairStyle>>> GetServices()
+        public async Task<ActionResult<IEnumerable<HairStyle>>> GetHairStyles()
         {
             var hairStyles = await _context.HairStyles.Select(h => new HairStyleDTO(h)).ToListAsync();
             return Ok(hairStyles);
