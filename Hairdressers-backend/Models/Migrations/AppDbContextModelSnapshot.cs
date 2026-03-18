@@ -80,7 +80,7 @@ namespace Models.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Models.Models.Service", b =>
+            modelBuilder.Entity("Models.Models.HairStyle", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -90,6 +90,9 @@ namespace Models.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<int?>("DurationMaxMinutes")
+                        .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("integer");
@@ -101,45 +104,146 @@ namespace Models.Migrations
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("PriceMax")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PriceMin")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services");
+                    b.ToTable("HairStyles");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            Description = "Coupe classique pour homme",
-                            DurationMinutes = 30,
-                            Name = "Coupe homme",
-                            Price = 25.00m
+                            DurationMaxMinutes = 120,
+                            DurationMinutes = 60,
+                            Name = "Tinte permanente",
+                            PriceMax = 90m,
+                            PriceMin = 35m
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Coupe et brushing pour femme",
+                            DurationMaxMinutes = 120,
                             DurationMinutes = 60,
-                            Name = "Coupe femme",
-                            Price = 45.00m
+                            Name = "Tinte demipermanente",
+                            PriceMax = 50m,
+                            PriceMin = 35m
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Coloration complète",
-                            DurationMinutes = 120,
-                            Name = "Coloration",
-                            Price = 80.00m
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Baño de color",
+                            PriceMin = 35m
                         },
                         new
                         {
                             Id = 4,
-                            Description = "Taille et soin de la barbe",
-                            DurationMinutes = 20,
-                            Name = "Barbe",
-                            Price = 15.00m
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Técnicas de mechas y efectos de luz",
+                            PriceMax = 230m,
+                            PriceMin = 140m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Balayage",
+                            PriceMax = 250m,
+                            PriceMin = 150m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Baby Lights",
+                            PriceMax = 250m,
+                            PriceMin = 150m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Ombré",
+                            PriceMax = 230m,
+                            PriceMin = 150m
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DurationMaxMinutes = 360,
+                            DurationMinutes = 240,
+                            Name = "Californianas",
+                            PriceMax = 200m,
+                            PriceMin = 100m
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DurationMinutes = 60,
+                            Name = "Cortes dama",
+                            PriceMin = 20m
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DurationMinutes = 180,
+                            Name = "Permanente hombres",
+                            PriceMin = 100m
+                        },
+                        new
+                        {
+                            Id = 11,
+                            DurationMaxMinutes = 420,
+                            DurationMinutes = 300,
+                            Name = "Keratina",
+                            PriceMax = 250m,
+                            PriceMin = 140m
+                        },
+                        new
+                        {
+                            Id = 12,
+                            DurationMaxMinutes = 420,
+                            DurationMinutes = 240,
+                            Name = "Aminoácido",
+                            PriceMax = 300m,
+                            PriceMin = 150m
+                        },
+                        new
+                        {
+                            Id = 13,
+                            DurationMaxMinutes = 240,
+                            DurationMinutes = 180,
+                            Name = "Terapia capilar",
+                            PriceMax = 200m,
+                            PriceMin = 120m
+                        },
+                        new
+                        {
+                            Id = 14,
+                            DurationMaxMinutes = 120,
+                            DurationMinutes = 60,
+                            Name = "Cepillados",
+                            PriceMax = 50m,
+                            PriceMin = 30m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DurationMaxMinutes = 180,
+                            DurationMinutes = 60,
+                            Name = "Peinados",
+                            PriceMax = 70m,
+                            PriceMin = 35m
                         });
                 });
 
@@ -204,7 +308,7 @@ namespace Models.Migrations
 
             modelBuilder.Entity("Models.Models.Appointment", b =>
                 {
-                    b.HasOne("Models.Models.Service", "Service")
+                    b.HasOne("Models.Models.HairStyle", "HairStyle")
                         .WithMany("Appointments")
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -216,12 +320,12 @@ namespace Models.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Service");
+                    b.Navigation("HairStyle");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Models.Models.Service", b =>
+            modelBuilder.Entity("Models.Models.HairStyle", b =>
                 {
                     b.Navigation("Appointments");
                 });

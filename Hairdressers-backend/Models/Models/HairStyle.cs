@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Models.Models
 {
-    public class Service
+    public class HairStyle
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
