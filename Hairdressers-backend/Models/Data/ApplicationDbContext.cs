@@ -16,7 +16,7 @@ namespace Models.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Service> Services { get; set; }
+        public DbSet<HairStyle> HairStyles { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -30,10 +30,10 @@ namespace Models.Data
             builder.Entity<Appointment>().HasOne(a => a.User).WithMany(u => u.Appointments) .HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Restrict);
 
             // Appointment -> Service
-            builder.Entity<Appointment>().HasOne(a => a.Service).WithMany(s => s.Appointments).HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Restrict);
 
             // Seeds
-            builder.Entity<Service>().HasData(Seed.SeedServices());
+            builder.Entity<HairStyle>().HasData(Seed.SeedServices());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
         }

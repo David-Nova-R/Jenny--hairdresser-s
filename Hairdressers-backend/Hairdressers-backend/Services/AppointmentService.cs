@@ -1,6 +1,8 @@
-﻿namespace Hairdressers_backend.Services
+﻿using Hairdressers_backend.Interfaces;
+
+namespace Hairdressers_backend.Services
 {
-    public class AppointmentService
+    public class AppointmentService : IAppointmentService
     {
     }
 }

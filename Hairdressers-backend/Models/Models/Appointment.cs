@@ -26,6 +26,6 @@ namespace Models.Models
 
         // Navigation
         public virtual User User { get; set; } = null!;
-        public virtual Service Service { get; set; } = null!;
+        public virtual HairStyle HairStyle { get; set; } = null!;
     }
 }

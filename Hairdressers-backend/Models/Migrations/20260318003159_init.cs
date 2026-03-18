@@ -9,26 +9,28 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Services",
+                name: "HairStyles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    PriceMin = table.Column<decimal>(type: "numeric", nullable: false),
+                    PriceMax = table.Column<decimal>(type: "numeric", nullable: true),
                     DurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    DurationMaxMinutes = table.Column<int>(type: "integer", nullable: true),
                     PhotoUrl = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Services", x => x.Id);
+                    table.PrimaryKey("PK_HairStyles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,9 +64,9 @@ namespace Models.Migrations
                 {
                     table.PrimaryKey("PK_Appointments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Appointments_Services_ServiceId",
+                        name: "FK_Appointments_HairStyles_ServiceId",
                         column: x => x.ServiceId,
-                        principalTable: "Services",
+                        principalTable: "HairStyles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -76,14 +78,25 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Services",
-                columns: new[] { "Id", "Description", "DurationMinutes", "Name", "PhotoUrl", "Price" },
+                table: "HairStyles",
+                columns: new[] { "Id", "Description", "DurationMaxMinutes", "DurationMinutes", "Name", "PhotoUrl", "PriceMax", "PriceMin" },
                 values: new object[,]
                 {
-                    { 1, "Coupe classique pour homme", 30, "Coupe homme", null, 25.00m },
-                    { 2, "Coupe et brushing pour femme", 60, "Coupe femme", null, 45.00m },
-                    { 3, "Coloration complète", 120, "Coloration", null, 80.00m },
-                    { 4, "Taille et soin de la barbe", 20, "Barbe", null, 15.00m }
+                    { 1, null, 120, 60, "Tinte permanente", null, 90m, 35m },
+                    { 2, null, 120, 60, "Tinte demipermanente", null, 50m, 35m },
+                    { 3, null, 360, 240, "Baño de color", null, null, 35m },
+                    { 4, null, 360, 240, "Técnicas de mechas y efectos de luz", null, 230m, 140m },
+                    { 5, null, 360, 240, "Balayage", null, 250m, 150m },
+                    { 6, null, 360, 240, "Baby Lights", null, 250m, 150m },
+                    { 7, null, 360, 240, "Ombré", null, 230m, 150m },
+                    { 8, null, 360, 240, "Californianas", null, 200m, 100m },
+                    { 9, null, null, 60, "Cortes dama", null, null, 20m },
+                    { 10, null, null, 180, "Permanente hombres", null, null, 100m },
+                    { 11, null, 420, 300, "Keratina", null, 250m, 140m },
+                    { 12, null, 420, 240, "Aminoácido", null, 300m, 150m },
+                    { 13, null, 240, 180, "Terapia capilar", null, 200m, 120m },
+                    { 14, null, 120, 60, "Cepillados", null, 50m, 30m },
+                    { 15, null, 180, 60, "Peinados", null, 70m, 35m }
                 });
 
             migrationBuilder.InsertData(
@@ -130,7 +143,7 @@ namespace Models.Migrations
                 name: "Appointments");
 
             migrationBuilder.DropTable(
-                name: "Services");
+                name: "HairStyles");
 
             migrationBuilder.DropTable(
                 name: "Users");
