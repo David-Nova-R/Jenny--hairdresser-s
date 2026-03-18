@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using Models.Models;
 using Supabase;
+using System.Security.Claims;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -23,11 +24,12 @@ namespace Hairdressers_backend.Controllers
             _supabase = supabase;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> PostAppointment([FromBody] AppointmentDTO dto)
         {
 
-            var supabaseUserId = User.FindFirst("sub")?.Value;
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (supabaseUserId == null)
                 return Unauthorized();
 
@@ -71,44 +73,49 @@ namespace Hairdressers_backend.Controllers
             if (service == null)
                 return BadRequest("Service inexistant.");
 
-            var firstDay = new DateTime(dto.Year, dto.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var lastDay = firstDay.AddMonths(1).AddDays(-1);
-
+            var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
+            var lastDay = today.AddDays(30);
             var result = new List<AvailableDayWithSlotsDTO>();
 
-            for (var date = firstDay; date <= lastDay; date = date.AddDays(1))
+            for (var date = today; date <= lastDay; date = date.AddDays(1))
             {
                 if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
                     continue;
 
+                var dayStart = date;
+                var dayEnd = date.AddDays(1);
+
+                // get ALL appointments that day regardless of hairstyle
                 var appointments = await _context.Appointments
-                    .Where(a => a.ServiceId == dto.ServiceId && a.AppointmentDate.Date == date.Date)
+                    .Include(a => a.HairStyle)
+                    .Where(a => a.AppointmentDate >= dayStart && a.AppointmentDate < dayEnd)
                     .ToListAsync();
 
                 var slots = new List<string>();
+                var endOfDay = date.AddHours(17);
+                var currentSlot = date.AddHours(8);
 
-                for (int hour = 8; hour < 16; hour++)
+                while (currentSlot.AddMinutes(service.DurationMinutes) <= endOfDay)
                 {
-                    for (int minute = 0; minute < 60; minute += service.DurationMinutes)
-                    {
-                        var slotStart = DateTime.SpecifyKind(date.Date.AddHours(hour).AddMinutes(minute),DateTimeKind.Utc);
-                        var slotEnd = slotStart.AddMinutes(service.DurationMinutes);
+                    var slotStart = currentSlot;
+                    var slotEnd = slotStart.AddMinutes(service.DurationMinutes);
 
-                        bool isTaken = appointments.Any(a =>
-                            a.AppointmentDate < slotEnd &&
-                            a.AppointmentDate.AddMinutes(service.DurationMinutes) > slotStart
-                        );
+                    bool isTaken = appointments.Any(a =>
+                        a.AppointmentDate < slotEnd &&
+                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart
+                    );
 
-                        if (!isTaken)
-                            slots.Add(slotStart.ToString("HH:mm"));
-                    }
+                    if (!isTaken)
+                        slots.Add(slotStart.ToString("HH:mm"));
+
+                    currentSlot = currentSlot.AddMinutes(service.DurationMinutes);
                 }
 
                 if (slots.Any())
                 {
                     result.Add(new AvailableDayWithSlotsDTO
                     {
-                        Day = date.Date,
+                        Day = date,
                         AvailableSlots = slots
                     });
                 }

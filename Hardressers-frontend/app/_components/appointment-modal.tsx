@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AppointmentConfirmation from './appointment-confirmation';
 import { AppointmentModalProps } from '../_models/models';
+import { postAppointment } from '../_api/appointment-api';
 
 const AppointmentModal: React.FC<AppointmentModalProps> = ({ 
   show, 
@@ -83,6 +84,32 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setMonth(month + 1);
     }
     setSelectedDay(null);
+  };
+
+  const handleConfirmAppointment = async () => {
+    if (!selectedDay || !selectedTime || !selectedHairStyle) {
+      return;
+    }
+
+    try {
+      // Combine selected date and time into ISO string
+      const appointmentDate = new Date(
+        selectedDay.getFullYear(),
+        selectedDay.getMonth(),
+        selectedDay.getDate(),
+        parseInt(selectedTime.split(':')[0]),
+        parseInt(selectedTime.split(':')[1])
+      ).toISOString();
+
+      // Post appointment to backend
+      await postAppointment(appointmentDate, selectedHairStyle.id);
+
+      // Close modal on success
+      onClose();
+    } catch (error) {
+      console.error('Failed to confirm appointment:', error);
+      // You can add error handling here (e.g., show error message to user)
+    }
   };
 
   if (!show) return null;
@@ -260,7 +287,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 </button>
                 <button
                   className="flex-1 px-6 py-2 rounded-full bg-[#D4AF37] text-black hover:bg-[#F4D03F] transition-all duration-200 font-semibold"
-                  onClick={onClose}
+                  onClick={handleConfirmAppointment}
                 >
                   Confirm
                 </button>
