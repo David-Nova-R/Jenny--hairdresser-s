@@ -58,14 +58,14 @@ namespace Models.Migrations
                     AppointmentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    ServiceId = table.Column<int>(type: "integer", nullable: false)
+                    HairStyleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Appointments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Appointments_HairStyles_ServiceId",
-                        column: x => x.ServiceId,
+                        name: "FK_Appointments_HairStyles_HairStyleId",
+                        column: x => x.HairStyleId,
                         principalTable: "HairStyles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -111,7 +111,7 @@ namespace Models.Migrations
 
             migrationBuilder.InsertData(
                 table: "Appointments",
-                columns: new[] { "Id", "AppointmentDate", "ServiceId", "Status", "UserId" },
+                columns: new[] { "Id", "AppointmentDate", "HairStyleId", "Status", "UserId" },
                 values: new object[,]
                 {
                     { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Utc), 1, 1, 1 },
@@ -120,9 +120,9 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointments_ServiceId",
+                name: "IX_Appointments_HairStyleId",
                 table: "Appointments",
-                column: "ServiceId");
+                column: "HairStyleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_UserId",

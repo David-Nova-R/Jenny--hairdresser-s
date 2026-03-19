@@ -22,7 +22,7 @@ namespace Models.Models
 
         // Clés étrangères
         public int UserId { get; set; }
-        public int ServiceId { get; set; }
+        public int HairStyleId { get; set; }
 
         // Navigation
         public virtual User User { get; set; } = null!;

@@ -30,7 +30,7 @@ namespace Models.Data
             builder.Entity<Appointment>().HasOne(a => a.User).WithMany(u => u.Appointments) .HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Restrict);
 
             // Appointment -> Service
-            builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.HairStyleId).OnDelete(DeleteBehavior.Restrict);
 
             // Seeds
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());

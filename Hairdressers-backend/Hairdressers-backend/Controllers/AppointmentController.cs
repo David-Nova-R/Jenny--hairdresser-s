@@ -1,4 +1,5 @@
 ﻿using Hairdressers_backend.Dtos;
+using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,13 @@ namespace Hairdressers_backend.Controllers
 
         private readonly AppDbContext _context;
         private readonly Client _supabase;
+        private readonly IAppointmentService _appointmentService;
 
-        public AppointmentController(AppDbContext context, Client supabase)
+        public AppointmentController(AppDbContext context, Client supabase,IAppointmentService appointmentService)
         {
             _context = context;
             _supabase = supabase;
+            _appointmentService = appointmentService;
         }
 
         [Authorize]
@@ -38,29 +41,18 @@ namespace Hairdressers_backend.Controllers
             if (user == null)
                 return NotFound();
 
-            var service = await _context.HairStyles
-                .FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
-            if (service == null)
+            var hairStyles = await _context.HairStyles
+                .FirstOrDefaultAsync(s => s.Id == dto.HairStyleId);
+            if (hairStyles == null)
                 return BadRequest("Service inexistant.");
 
-            var appointment = new Appointment
-            {
-                UserId = user.Id,
-                ServiceId = service.Id,
-                User = user,
-                HairStyle = service,
-                AppointmentDate = dto.AppointmentDate,
-                Status = AppointmentStatus.Pending
-            };
-
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
+            var appointment = await _appointmentService.CreateAppointmentAsync(user.Id, hairStyles.Id,dto.AppointmentDate);
 
             return Ok(new
             {
                 AppointmentId = appointment.Id,
                 UserId = user.Id,
-                ServiceId = service.Id,
+                ServiceId = hairStyles.Id,
                 appointment.AppointmentDate,
                 appointment.Status
             });

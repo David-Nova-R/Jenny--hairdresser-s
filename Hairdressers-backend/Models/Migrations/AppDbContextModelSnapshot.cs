@@ -36,7 +36,7 @@ namespace Models.Migrations
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ServiceId")
+                    b.Property<int>("HairStyleId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Status")
@@ -47,7 +47,7 @@ namespace Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("HairStyleId");
 
                     b.HasIndex("UserId");
 
@@ -58,7 +58,7 @@ namespace Models.Migrations
                         {
                             Id = 1,
                             AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Utc),
-                            ServiceId = 1,
+                            HairStyleId = 1,
                             Status = 1,
                             UserId = 1
                         },
@@ -66,7 +66,7 @@ namespace Models.Migrations
                         {
                             Id = 2,
                             AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Utc),
-                            ServiceId = 3,
+                            HairStyleId = 3,
                             Status = 0,
                             UserId = 2
                         },
@@ -74,7 +74,7 @@ namespace Models.Migrations
                         {
                             Id = 3,
                             AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Utc),
-                            ServiceId = 4,
+                            HairStyleId = 4,
                             Status = 0,
                             UserId = 3
                         });
@@ -310,7 +310,7 @@ namespace Models.Migrations
                 {
                     b.HasOne("Models.Models.HairStyle", "HairStyle")
                         .WithMany("Appointments")
-                        .HasForeignKey("ServiceId")
+                        .HasForeignKey("HairStyleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
