@@ -28,6 +28,27 @@ namespace Hairdressers_backend.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<ActionResult> GetUserAppointments()
+        {
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (supabaseUserId == null)
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+            if (user == null)
+                return NotFound(new { Message = "Utilisateur introuvable." });
+
+            var appointments = await _appointmentService.GetUserAppointmentsAsync(user.Id);
+
+            if (!appointments.Any())
+                return Ok(new { Message = "Aucun rendez-vous trouvé.", Data = new List<Appointment>() });
+
+            return Ok(appointments);
+        }
+
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> PostAppointment([FromBody] AppointmentDTO dto)
         {
@@ -57,6 +78,43 @@ namespace Hairdressers_backend.Controllers
                 appointment.Status
             });
         }
+
+        [Authorize]
+        [HttpDelete("{appointmentId}")]
+        public async Task<ActionResult> CancelAppointment(int appointmentId)
+        {
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (supabaseUserId == null)
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+            if (user == null)
+                return NotFound(new { Message = "Utilisateur introuvable." });
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (appointment == null)
+                return NotFound(new { Message = "Rendez-vous introuvable." });
+
+            // Vérification que le rendez-vous appartient bien à l'utilisateur
+            if (appointment.UserId != user.Id)
+                return StatusCode(403, new { Message = "Vous n'êtes pas autorisé à annuler ce rendez-vous." });
+
+            // Vérification que le rendez-vous n'est pas déjà annulé
+            if (appointment.Status == AppointmentStatus.Cancelled)
+                return BadRequest(new { Message = "Ce rendez-vous est déjà annulé." });
+
+            // Vérification que le rendez-vous n'est pas déjà complété
+            if (appointment.Status == AppointmentStatus.Completed)
+                return BadRequest(new { Message = "Impossible d'annuler un rendez-vous déjà complété." });
+
+            await _appointmentService.CancelAppointmentAsync(appointmentId);
+
+            return Ok(new { Message = "Rendez-vous annulé avec succès." });
+        }
+
+        
 
         [HttpPost]
         public async Task<ActionResult<List<AvailableDayWithSlotsDTO>>> GetAvailableMonth([FromBody] AvailableMonthDTO dto)

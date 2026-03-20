@@ -1,4 +1,5 @@
-﻿using Models.Models;
+﻿using Hairdressers_backend.Dtos;
+using Models.Models;
 
 namespace Hairdressers_backend.Interfaces
 {
@@ -6,6 +7,6 @@ namespace Hairdressers_backend.Interfaces
     {
         Task<Appointment> CreateAppointmentAsync(int userId, int hairStylesId, DateTime appointmentDate);
         Task CancelAppointmentAsync(int appointmentId);
-        Task<List<Appointment>> GetUserAppointmentsAsync(int userId);
+        Task<List<AppointmentResponseDTO>> GetUserAppointmentsAsync(int userId);
     }
 }
