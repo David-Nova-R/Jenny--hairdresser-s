@@ -113,65 +113,19 @@ namespace Hairdressers_backend.Controllers
 
             return Ok(new { Message = "Rendez-vous annulé avec succès." });
         }
-
-        
-
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<List<AvailableDayWithSlotsDTO>>> GetAvailableMonth([FromBody] AvailableMonthDTO dto)
         {
-            var service = await _context.HairStyles.FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
-            if (service == null)
-                return BadRequest("Service inexistant.");
-
-            var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
-            var lastDay = today.AddDays(30);
-            var result = new List<AvailableDayWithSlotsDTO>();
-
-            for (var date = today; date <= lastDay; date = date.AddDays(1))
+            try
             {
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-                    continue;
-
-                var dayStart = date;
-                var dayEnd = date.AddDays(1);
-
-                // get ALL appointments that day regardless of hairstyle
-                var appointments = await _context.Appointments
-                    .Include(a => a.HairStyle)
-                    .Where(a => a.AppointmentDate >= dayStart && a.AppointmentDate < dayEnd)
-                    .ToListAsync();
-
-                var slots = new List<string>();
-                var endOfDay = date.AddHours(17);
-                var currentSlot = date.AddHours(8);
-
-                while (currentSlot.AddMinutes(service.DurationMinutes) <= endOfDay)
-                {
-                    var slotStart = currentSlot;
-                    var slotEnd = slotStart.AddMinutes(service.DurationMinutes);
-
-                    bool isTaken = appointments.Any(a =>
-                        a.AppointmentDate < slotEnd &&
-                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart
-                    );
-
-                    if (!isTaken)
-                        slots.Add(slotStart.ToString("HH:mm"));
-
-                    currentSlot = currentSlot.AddMinutes(service.DurationMinutes);
-                }
-
-                if (slots.Any())
-                {
-                    result.Add(new AvailableDayWithSlotsDTO
-                    {
-                        Day = date,
-                        AvailableSlots = slots
-                    });
-                }
+                var result = await _appointmentService.GetAvailableMonthAsync(dto.ServiceId);
+                return Ok(result);
             }
-
-            return Ok(result);
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet]

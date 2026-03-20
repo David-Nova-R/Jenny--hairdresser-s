@@ -8,5 +8,6 @@ namespace Hairdressers_backend.Interfaces
         Task<Appointment> CreateAppointmentAsync(int userId, int hairStylesId, DateTime appointmentDate);
         Task CancelAppointmentAsync(int appointmentId);
         Task<List<AppointmentResponseDTO>> GetUserAppointmentsAsync(int userId);
+        Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId);
     }
 }

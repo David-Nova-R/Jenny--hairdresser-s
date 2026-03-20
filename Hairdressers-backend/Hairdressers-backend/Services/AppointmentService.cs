@@ -90,5 +90,60 @@ namespace Hairdressers_backend.Services
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
         }
+        public async Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId)
+        {
+            var hairStyle = await _context.HairStyles
+                .FirstOrDefaultAsync(s => s.Id == serviceId)
+                ?? throw new KeyNotFoundException("Service inexistant.");
+
+            var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
+            var lastDay = today.AddDays(30);
+            var result = new List<AvailableDayWithSlotsDTO>();
+
+            for (var date = today; date <= lastDay; date = date.AddDays(1))
+            {
+                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                    continue;
+
+                var dayStart = date;
+                var dayEnd = date.AddDays(1);
+
+                var appointments = await _context.Appointments
+                    .Include(a => a.HairStyle)
+                    .Where(a => a.AppointmentDate >= dayStart && a.AppointmentDate < dayEnd)
+                    .ToListAsync();
+
+                var slots = new List<string>();
+                var endOfDay = date.AddHours(17);
+                var currentSlot = date.AddHours(8);
+
+                while (currentSlot.AddMinutes(hairStyle.DurationMinutes) <= endOfDay)
+                {
+                    var slotStart = currentSlot;
+                    var slotEnd = slotStart.AddMinutes(hairStyle.DurationMinutes);
+
+                    bool isTaken = appointments.Any(a =>
+                        a.AppointmentDate < slotEnd &&
+                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart
+                    );
+
+                    if (!isTaken)
+                        slots.Add(slotStart.ToString("HH:mm"));
+
+                    currentSlot = currentSlot.AddMinutes(hairStyle.DurationMinutes);
+                }
+
+                if (slots.Any())
+                {
+                    result.Add(new AvailableDayWithSlotsDTO
+                    {
+                        Day = date,
+                        AvailableSlots = slots
+                    });
+                }
+            }
+
+            return result;
+        }
     }
 }
