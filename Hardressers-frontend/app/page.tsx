@@ -59,6 +59,7 @@ export default function App() {
     setSlots([]);
     setHairStylesLoading(true);
     try {
+      setHairStylesLoading(true);
       const data = await FetchHairStyles();
       setBookingHairStyles(data);
     } finally {
