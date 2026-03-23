@@ -11,7 +11,6 @@ namespace Hairdressers_backend.Dtos
         public decimal? PriceMax { get; set; }
         public int DurationMinutes { get; set; }
         public int? DurationMaxMinutes { get; set; }
-        public string? PhotoUrl { get; set; }
 
         public HairStyleDTO()
         {
@@ -26,7 +25,6 @@ namespace Hairdressers_backend.Dtos
             PriceMax = hairStyle.PriceMax;
             DurationMinutes = hairStyle.DurationMinutes;
             DurationMaxMinutes = hairStyle.DurationMaxMinutes;
-            PhotoUrl = hairStyle.PhotoUrl;
         }
     }
 }

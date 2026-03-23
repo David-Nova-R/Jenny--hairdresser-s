@@ -19,7 +19,7 @@ async function getAuthHeaders() {
 
 export async function FetchHairStyles(): Promise<HairStyle[]> {
     console.log('Fetching hair styles from API...');
-    const response = await axios.get<HairStyle[]>('https://localhost:7226/api/Appointment/GetHairStyles');
+    const response = await axios.get<HairStyle[]>('https://localhost:7226/api/HairStyles/GetHairStyles');
     return response.data;
 }
 
