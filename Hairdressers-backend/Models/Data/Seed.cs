@@ -16,8 +16,8 @@ namespace Hairdressers_backend.Data
                 new HairStyle { Id = 6, Name = "Baby Lights", PriceMin = 150, PriceMax = 250, DurationMinutes = 240, DurationMaxMinutes = 360 },
                 new HairStyle { Id = 7, Name = "Ombré", PriceMin = 150, PriceMax = 230, DurationMinutes = 240, DurationMaxMinutes = 360 },
                 new HairStyle { Id = 8, Name = "Californianas", PriceMin = 100, PriceMax = 200, DurationMinutes = 240, DurationMaxMinutes = 360 },
-                new HairStyle { Id = 9, Name = "Cortes dama", PriceMin = 20, PriceMax = null, DurationMinutes = 60, DurationMaxMinutes = null },
-                new HairStyle { Id = 10, Name = "Permanente hombres", PriceMin = 100, PriceMax = null, DurationMinutes = 180, DurationMaxMinutes = null },
+                new HairStyle { Id = 9, Name = "Cortes dama", PriceMin = 20, PriceMax = null, DurationMinutes = 60, DurationMaxMinutes = 60 },
+                new HairStyle { Id = 10, Name = "Permanente hombres", PriceMin = 100, PriceMax = null, DurationMinutes = 180, DurationMaxMinutes = 60 },
                 new HairStyle { Id = 11, Name = "Keratina", PriceMin = 140, PriceMax = 250, DurationMinutes = 300, DurationMaxMinutes = 420 },
                 new HairStyle { Id = 12, Name = "Aminoácido", PriceMin = 150, PriceMax = 300, DurationMinutes = 240, DurationMaxMinutes = 420 },
                 new HairStyle { Id = 13, Name = "Terapia capilar", PriceMin = 120, PriceMax = 200, DurationMinutes = 180, DurationMaxMinutes = 240 },
@@ -65,7 +65,7 @@ namespace Hairdressers_backend.Data
                 {
                     Id = 1,
                     UserId = 1,
-                    ServiceId = 1,
+                    HairStyleId = 1,
                     AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Confirmed
                 },
@@ -73,7 +73,7 @@ namespace Hairdressers_backend.Data
                 {
                     Id = 2,
                     UserId = 2,
-                    ServiceId = 3,
+                    HairStyleId = 3,
                     AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Pending
                 },
@@ -81,7 +81,7 @@ namespace Hairdressers_backend.Data
                 {
                     Id = 3,
                     UserId = 3,
-                    ServiceId = 4,
+                    HairStyleId = 4,
                     AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, DateTimeKind.Utc),
                     Status = AppointmentStatus.Pending
                 }

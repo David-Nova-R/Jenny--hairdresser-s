@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,6 +30,7 @@ namespace Models.Models
         public string? PhoneNumber { get; set; }
 
         // Navigation
+        [JsonIgnore]
         public virtual List<Appointment> Appointments { get; set; } = new();
     }
 }
