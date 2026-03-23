@@ -28,6 +28,7 @@ namespace Models.Models
         [Phone]
         [RegularExpression(@"^\d{3}-\d{3}-\d{4}$", ErrorMessage = "Format requis: XXX-XXX-XXXX")]
         public string? PhoneNumber { get; set; }
+        public bool IsAdmin { get; set; } = false;
 
         // Navigation
         [JsonIgnore]

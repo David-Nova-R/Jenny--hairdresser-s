@@ -15,6 +15,7 @@ namespace Models.Data
         {
         }
 
+        public DbSet<HairStylePhoto> HairStylePhotos { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<HairStyle> HairStyles { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
@@ -32,10 +33,14 @@ namespace Models.Data
             // Appointment -> Service
             builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.HairStyleId).OnDelete(DeleteBehavior.Restrict);
 
+            // HairStyle photos
+            builder.Entity<HairStylePhoto>().HasOne(p => p.HairStyle).WithMany(h => h.Photos).HasForeignKey(p => p.HairStyleId).OnDelete(DeleteBehavior.Cascade);
+
             // Seeds
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
+            
         }
     }
 }

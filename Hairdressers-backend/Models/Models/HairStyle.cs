@@ -16,8 +16,9 @@ namespace Models.Models
         public decimal? PriceMax { get; set; }
         public int DurationMinutes { get; set; }
         public int DurationMaxMinutes { get; set; } 
-        public string? PhotoUrl { get; set; }
 
+        [JsonIgnore]
+        public virtual ICollection<HairStylePhoto> Photos { get; set; } = new List<HairStylePhoto>();
         [JsonIgnore]
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
