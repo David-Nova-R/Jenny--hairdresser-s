@@ -13,6 +13,10 @@ namespace Hairdressers_backend.Dtos
         public int? DurationMaxMinutes { get; set; }
         public string? PhotoUrl { get; set; }
 
+        public HairStyleDTO()
+        {
+        }
+
         public HairStyleDTO(HairStyle hairStyle)
         {
             Id = hairStyle.Id;
