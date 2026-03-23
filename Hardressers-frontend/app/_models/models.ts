@@ -13,6 +13,7 @@ export interface HairStyleSelectModalProps {
   HairStyles: HairStyle[];
   onSelect: (HairStyle: HairStyle) => void;
   onClose: () => void;
+  loading?: boolean;
 }
 
 export interface AvailableDay {

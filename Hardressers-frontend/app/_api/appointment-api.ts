@@ -25,10 +25,14 @@ export async function FetchHairStyles(): Promise<HairStyle[]> {
 
 export async function FetchAvailableSlots(HairStyleId: number,year: number,month: number,): Promise<AvailableDay[]> {
     console.log('Fetching available slots from API...');
+    const headers = await getAuthHeaders();
     const response = await axios.post<AvailableDay[]>(
         `https://localhost:7226/api/Appointment/GetAvailableMonth`,
         {
             ServiceId: HairStyleId,
+        },
+        {
+            headers
         }
     );
     return response.data;
@@ -75,13 +79,13 @@ export async function loginUserWithBackend(email: string, password: string): Pro
 }
 
 // Post appointment to backend
-export async function postAppointment(appointmentDate: string, serviceId: number): Promise<any> {
-    console.log('Posting appointment to backend...');
+export async function postAppointment(appointmentDate: string, hairStyleId: number): Promise<any> {
+    console.log('Posting appointment to backend... : ' + appointmentDate + ' ' + hairStyleId);
     try {
         const headers = await getAuthHeaders();
         const response = await axios.post('https://localhost:7226/api/Appointment/PostAppointment', {
             appointmentDate,
-            serviceId
+            hairStyleId
         }, {
             headers
         });

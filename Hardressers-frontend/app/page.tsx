@@ -412,6 +412,7 @@ export default function App() {
               HairStyles={bookingHairStyles}
               onSelect={handleHairStyleSelect}
               onClose={handleCloseHairStyleModal}
+              loading={HairStylesLoading}
             />
           )}
 

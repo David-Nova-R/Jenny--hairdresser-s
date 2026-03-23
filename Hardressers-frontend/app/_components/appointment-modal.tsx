@@ -3,15 +3,17 @@ import AppointmentConfirmation from './appointment-confirmation';
 import { AppointmentModalProps } from '../_models/models';
 import { postAppointment } from '../_api/appointment-api';
 
-const AppointmentModal: React.FC<AppointmentModalProps> = ({ 
-  show, 
+const AppointmentModal: React.FC<AppointmentModalProps> = ({
+  show,
   onClose,
   onBackToHairStyle,
-  onDaySelect, 
-  slots = [], 
+  onDaySelect,
+  slots = [],
   selectedHairStyle,
-  slotsLoading = false 
+  slotsLoading = false
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [step, setStep] = useState<'calendar' | 'confirmation'>('calendar');
@@ -102,13 +104,16 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       ).toISOString();
 
       // Post appointment to backend
+      setIsLoading(true)
       await postAppointment(appointmentDate, selectedHairStyle.id);
 
-      // Close modal on success
-      onClose();
     } catch (error) {
       console.error('Failed to confirm appointment:', error);
       // You can add error handling here (e.g., show error message to user)
+    } finally {
+      setIsLoading(false)
+      setIsConfirmed(true);
+
     }
   };
 
@@ -143,7 +148,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 </div>
               )}
               {slotsLoading && (
-                <div className="text-center py-8">
+                <div className="flex flex-col items-center justify-center py-8 gap-4">
+                  <svg className="animate-spin h-10 w-10 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
                   <p className="text-gray-600">Loading available days...</p>
                 </div>
               )}
@@ -179,13 +188,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                       return day ? (
                         <button
                           key={day.toISOString()}
-                          className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 ${
-                            selectedDay && day.toDateString() === selectedDay.toDateString()
+                          className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 ${selectedDay && day.toDateString() === selectedDay.toDateString()
                               ? 'bg-[#D4AF37] text-white border-[#D4AF37]'
                               : hasSlots
-                              ? 'bg-gray-100 border-black text-black hover:bg-gray-400 hover:border-gray-400 hover:text-white'
-                              : 'bg-gray-100 border-gray-300 text-gray-300 cursor-not-allowed'
-                          }`}
+                                ? 'bg-gray-100 border-black text-black hover:bg-gray-400 hover:border-gray-400 hover:text-white'
+                                : 'bg-gray-100 border-gray-300 text-gray-300 cursor-not-allowed'
+                            }`}
                           onClick={() => {
                             handleDaySelect(day);
                             setSelectedTime(null);
@@ -211,7 +219,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         {weekdayNames[selectedDay.getDay() === 0 ? 6 : selectedDay.getDay() - 1]} {selectedDay.getDate()}/{selectedDay.getMonth() + 1}/{selectedDay.getFullYear()}
                       </div>
                       {slotsLoading ? (
-                        <div className="text-gray-500">Loading available times...</div>
+                        <div className="flex flex-col items-center justify-center gap-4">
+                          <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                          </svg>
+                          <div className="text-gray-500">Loading available times...</div>
+                        </div>
                       ) : (
                         <div>
                           <p className="text-sm text-gray-600 mb-3 font-semibold">Select time:</p>
@@ -220,11 +234,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                               getDaySlotsIfAvailable(selectedDay).map((time) => (
                                 <button
                                   key={time}
-                                  className={`px-4 py-2 rounded-lg border transition-all duration-200 font-semibold ${
-                                    selectedTime === time
+                                  className={`px-4 py-2 rounded-lg border transition-all duration-200 font-semibold ${selectedTime === time
                                       ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
                                       : 'bg-gray-100 border-gray-400 text-black hover:bg-gray-200 hover:border-[#D4AF37]'
-                                  }`}
+                                    }`}
                                   onClick={() => setSelectedTime(time)}
                                 >
                                   {time}
@@ -248,6 +261,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   HairStyle={selectedHairStyle}
                   selectedDate={selectedDay}
                   selectedTime={selectedTime}
+                  isLoading={isLoading}
+                  isConfirmed={isConfirmed}
                 />
               )}
             </>
@@ -266,11 +281,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   Back
                 </button>
                 <button
-                  className={`flex-1 px-6 py-2 rounded-full transition-all duration-200 font-semibold ${
-                    selectedDay && selectedTime
+                  className={`flex-1 px-6 py-2 rounded-full transition-all duration-200 font-semibold ${selectedDay && selectedTime
                       ? 'bg-[#D4AF37] text-black hover:bg-[#F4D03F]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                    }`}
                   onClick={() => setStep('confirmation')}
                   disabled={!selectedDay || !selectedTime}
                 >
@@ -278,7 +292,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 </button>
               </>
             ) : (
-              <>
+              !isLoading && !isConfirmed && <>
                 <button
                   className="flex-1 px-6 py-2 rounded-full bg-gray-200 text-black hover:bg-gray-300 transition-all duration-200 font-semibold"
                   onClick={() => setStep('calendar')}
@@ -291,8 +305,15 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 >
                   Confirm
                 </button>
-              </>
-            )}
+              </>)}
+            {
+              isConfirmed && <button
+                className="flex-1 px-6 py-2 rounded-full bg-gray-200 text-black hover:bg-gray-300 transition-all duration-200 font-semibold"
+                onClick={() => onClose()}
+              >
+                Close
+              </button>
+            }
           </div>
         )}
       </div>
