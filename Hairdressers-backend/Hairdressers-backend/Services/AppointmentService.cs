@@ -21,6 +21,16 @@ namespace Hairdressers_backend.Services
             _calendarService = calendarService;
         }
 
+        public async Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+        }
+
+        public async Task<Appointment?> GetAppointmentByIdAsync(int appointmentId)
+        {
+            return await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
+        }
+
         public async Task<List<AppointmentResponseDTO>> GetUserAppointmentsAsync(int userId)
         {
             return await _context.Appointments

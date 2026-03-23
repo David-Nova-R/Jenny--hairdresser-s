@@ -1,12 +1,8 @@
 ﻿using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Models.Data;
 using Models.Models;
-using Supabase;
 using System.Security.Claims;
 
 namespace Hairdressers_backend.Controllers
@@ -15,15 +11,10 @@ namespace Hairdressers_backend.Controllers
     [ApiController]
     public class AppointmentController : ControllerBase
     {
-
-        private readonly AppDbContext _context;
-        private readonly Client _supabase;
         private readonly IAppointmentService _appointmentService;
 
-        public AppointmentController(AppDbContext context, Client supabase,IAppointmentService appointmentService)
+        public AppointmentController(IAppointmentService appointmentService)
         {
-            _context = context;
-            _supabase = supabase;
             _appointmentService = appointmentService;
         }
 
@@ -35,15 +26,14 @@ namespace Hairdressers_backend.Controllers
             if (supabaseUserId == null)
                 return Unauthorized(new { Message = "Utilisateur non authentifié." });
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
             if (user == null)
                 return NotFound(new { Message = "Utilisateur introuvable." });
 
             var appointments = await _appointmentService.GetUserAppointmentsAsync(user.Id);
 
             if (!appointments.Any())
-                return Ok(new { Message = "Aucun rendez-vous trouvé.", Data = new List<Appointment>() });
+                return Ok(new { Message = "Aucun rendez-vous trouvé.", Data = new List<AppointmentResponseDTO>() });
 
             return Ok(appointments);
         }
@@ -52,31 +42,30 @@ namespace Hairdressers_backend.Controllers
         [HttpPost]
         public async Task<ActionResult> PostAppointment([FromBody] AppointmentDTO dto)
         {
-
             var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (supabaseUserId == null)
-                return Unauthorized();
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
             if (user == null)
-                return NotFound();
+                return NotFound(new { Message = "Utilisateur introuvable." });
 
-            var hairStyles = await _context.HairStyles
-                .FirstOrDefaultAsync(s => s.Id == dto.HairStyleId);
-            if (hairStyles == null)
-                return BadRequest("Service inexistant.");
-
-            var appointment = await _appointmentService.CreateAppointmentAsync(user.Id, hairStyles.Id,dto.AppointmentDate);
-
-            return Ok(new
+            try
             {
-                AppointmentId = appointment.Id,
-                UserId = user.Id,
-                ServiceId = hairStyles.Id,
-                appointment.AppointmentDate,
-                appointment.Status
-            });
+                var appointment = await _appointmentService.CreateAppointmentAsync(user.Id, dto.HairStyleId, dto.AppointmentDate);
+                return Ok(new
+                {
+                    AppointmentId = appointment.Id,
+                    UserId = user.Id,
+                    HairStyleId = dto.HairStyleId,
+                    appointment.AppointmentDate,
+                    appointment.Status
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [Authorize]
@@ -87,32 +76,34 @@ namespace Hairdressers_backend.Controllers
             if (supabaseUserId == null)
                 return Unauthorized(new { Message = "Utilisateur non authentifié." });
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseUserId == supabaseUserId);
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
             if (user == null)
                 return NotFound(new { Message = "Utilisateur introuvable." });
 
-            var appointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.Id == appointmentId);
-            if (appointment == null)
-                return NotFound(new { Message = "Rendez-vous introuvable." });
+            try
+            {
+                var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+                if (appointment == null)
+                    return NotFound(new { Message = "Rendez-vous introuvable." });
 
-            // Vérification que le rendez-vous appartient bien à l'utilisateur
-            if (appointment.UserId != user.Id)
-                return StatusCode(403, new { Message = "Vous n'êtes pas autorisé à annuler ce rendez-vous." });
+                if (appointment.UserId != user.Id)
+                    return StatusCode(403, new { Message = "Vous n'êtes pas autorisé à annuler ce rendez-vous." });
 
-            // Vérification que le rendez-vous n'est pas déjà annulé
-            if (appointment.Status == AppointmentStatus.Cancelled)
-                return BadRequest(new { Message = "Ce rendez-vous est déjà annulé." });
+                if (appointment.Status == AppointmentStatus.Cancelled)
+                    return BadRequest(new { Message = "Ce rendez-vous est déjà annulé." });
 
-            // Vérification que le rendez-vous n'est pas déjà complété
-            if (appointment.Status == AppointmentStatus.Completed)
-                return BadRequest(new { Message = "Impossible d'annuler un rendez-vous déjà complété." });
+                if (appointment.Status == AppointmentStatus.Completed)
+                    return BadRequest(new { Message = "Impossible d'annuler un rendez-vous déjà complété." });
 
-            await _appointmentService.CancelAppointmentAsync(appointmentId);
-
-            return Ok(new { Message = "Rendez-vous annulé avec succès." });
+                await _appointmentService.CancelAppointmentAsync(appointmentId);
+                return Ok(new { Message = "Rendez-vous annulé avec succès." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
+
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<List<AvailableDayWithSlotsDTO>>> GetAvailableMonth([FromBody] AvailableMonthDTO dto)
@@ -126,13 +117,6 @@ namespace Hairdressers_backend.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<HairStyle>>> GetHairStyles()
-        {
-            var hairStyles = await _context.HairStyles.Select(h => new HairStyleDTO(h)).ToListAsync();
-            return Ok(hairStyles);
         }
     }
 }

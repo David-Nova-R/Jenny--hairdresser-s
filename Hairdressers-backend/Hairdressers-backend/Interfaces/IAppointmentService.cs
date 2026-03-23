@@ -9,5 +9,7 @@ namespace Hairdressers_backend.Interfaces
         Task CancelAppointmentAsync(int appointmentId);
         Task<List<AppointmentResponseDTO>> GetUserAppointmentsAsync(int userId);
         Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId);
+        Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId);
+        Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
     }
 }
