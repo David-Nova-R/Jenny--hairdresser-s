@@ -1,5 +1,5 @@
 ﻿using Google.Apis.Calendar.v3;
-using Hairdressers_backend.Dtos;
+using Hairdressers_backend.Dtos.AppointmentResponseDTO;
 using Hairdressers_backend.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Models.Data;
@@ -48,6 +48,29 @@ namespace Hairdressers_backend.Services
                 .ToListAsync();
         }
 
+        public async Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync()
+        {
+            return await _context.Appointments
+                .Include(a => a.HairStyle)
+                .Include(a => a.User)
+                .Where(a => a.Status == AppointmentStatus.Pending)
+                .OrderBy(a => a.AppointmentDate)
+                .Select(a => new PendingAppointmentDTO
+                {
+                    Id = a.Id,
+                    AppointmentDate = a.AppointmentDate,
+                    Status = a.Status.ToString(),
+                    HairStyleId = a.HairStyleId,
+                    HairStyleName = a.HairStyle.Name,
+                    PriceMin = a.HairStyle.PriceMin,
+                    PriceMax = a.HairStyle.PriceMax,
+                    ClientFirstName = a.User.FirstName,
+                    ClientLastName = a.User.LastName,
+                    ClientPhone = a.User.PhoneNumber
+                })
+                .ToListAsync();
+        }
+
         public async Task<Appointment> CreateAppointmentAsync(int userId, int hairStylesId, DateTime appointmentDate)
         {
             var user = await _context.Users
@@ -69,20 +92,32 @@ namespace Hairdressers_backend.Services
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
+            return appointment;
+        }
+
+        public async Task AcceptAppointmentAsync(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.HairStyle)
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId)
+                ?? throw new KeyNotFoundException("Rendez-vous introuvable.");
+
+            if (appointment.Status != AppointmentStatus.Pending)
+                throw new InvalidOperationException("Seulement un rendez-vous en attente peut être accepté.");
+
             // Créer l'événement dans Google Calendar
-            var endDate = appointmentDate.AddMinutes(hairStyle.DurationMaxMinutes);
+            var endDate = appointment.AppointmentDate.AddMinutes(appointment.HairStyle.DurationMinutes);
             var googleEventId = await _calendarService.CreateEventAsync(
-                title: $"{hairStyle.Name} - {user.FirstName} {user.LastName} ",
-                description: $"Servicio: {hairStyle.Name}\nPrecio:{hairStyle.PriceMin} - {hairStyle.PriceMax}$",
-                start: appointmentDate,
+                title: $"{appointment.HairStyle.Name} - {appointment.User.FirstName} {appointment.User.LastName}",
+                description: $"Servicio: {appointment.HairStyle.Name}\nPrecio: {appointment.HairStyle.PriceMin} - {appointment.HairStyle.PriceMax}$",
+                start: appointment.AppointmentDate,
                 end: endDate
             );
 
-            // Sauvegarder l'ID de l'événement Google pour pouvoir le supprimer plus tard
             appointment.GoogleEventId = googleEventId;
+            appointment.Status = AppointmentStatus.Confirmed;
             await _context.SaveChangesAsync();
-
-            return appointment;
         }
 
         public async Task CancelAppointmentAsync(int appointmentId)
@@ -100,11 +135,14 @@ namespace Hairdressers_backend.Services
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
         }
+
         public async Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId)
         {
             var hairStyle = await _context.HairStyles
                 .FirstOrDefaultAsync(s => s.Id == serviceId)
                 ?? throw new KeyNotFoundException("Service inexistant.");
+
+            bool isKeratina = hairStyle.Name.ToLower().Contains("keratina");
 
             var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
             var lastDay = today.AddDays(30);
@@ -120,7 +158,10 @@ namespace Hairdressers_backend.Services
 
                 var appointments = await _context.Appointments
                     .Include(a => a.HairStyle)
-                    .Where(a => a.AppointmentDate >= dayStart && a.AppointmentDate < dayEnd)
+                    .Where(a =>
+                        a.AppointmentDate >= dayStart &&
+                        a.AppointmentDate < dayEnd &&
+                        (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Pending))
                     .ToListAsync();
 
                 var slots = new List<string>();
@@ -133,9 +174,24 @@ namespace Hairdressers_backend.Services
                     var slotEnd = slotStart.AddMinutes(hairStyle.DurationMinutes);
 
                     bool isTaken = appointments.Any(a =>
-                        a.AppointmentDate < slotEnd &&
-                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart
-                    );
+                    {
+                        bool overlaps = a.AppointmentDate < slotEnd &&
+                                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart;
+
+                        if (!overlaps) return false;
+
+                        // Confirmed bloque toujours
+                        if (a.Status == AppointmentStatus.Confirmed) return true;
+
+                        // Pending + Keratina bloque toujours
+                        if (a.Status == AppointmentStatus.Pending && isKeratina) return true;
+
+                        // Pending → bloque seulement si le service pending a un PriceMin >= au service demandé
+                        if (a.Status == AppointmentStatus.Pending)
+                            return a.HairStyle.PriceMin >= hairStyle.PriceMin;
+
+                        return false;
+                    });
 
                     if (!isTaken)
                         slots.Add(slotStart.ToString("HH:mm"));

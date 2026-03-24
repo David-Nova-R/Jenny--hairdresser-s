@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos;
+﻿using Hairdressers_backend.Dtos.UsersDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,4 @@
-﻿namespace Hairdressers_backend.Dtos
+﻿namespace Hairdressers_backend.Dtos.AppointmentResponseDTO
 {
     public class AppointmentDTO
     {

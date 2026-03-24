@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos;
+﻿using Hairdressers_backend.Dtos.AppointmentResponseDTO;
 using Models.Models;
 
 namespace Hairdressers_backend.Interfaces
@@ -11,5 +11,7 @@ namespace Hairdressers_backend.Interfaces
         Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId);
         Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId);
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
+        Task AcceptAppointmentAsync(int appointmentId);
+        Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync();
     }
 }
