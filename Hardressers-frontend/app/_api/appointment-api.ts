@@ -21,6 +21,14 @@ async function getAuthHeaders() {
   };
 }
 
+export type PagedAppointmentsResponse = {
+  items: AppointmentResponseDTO[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 export async function FetchHairStyles(): Promise<HairStyle[]> {
   const response = await axios.get<HairStyle[]>(
     `${API_BASE_URL}/api/HairStyles/GetHairStyles`
@@ -134,6 +142,48 @@ export async function FetchMyAppointments(): Promise<AppointmentResponseDTO[]> {
   } catch (err: any) {
     console.error(
       'Failed to fetch appointments:',
+      err.response?.data || err.message
+    );
+    throw err;
+  }
+}
+export async function FetchAllAppointmentsAdmin(
+  pageNumber: number
+): Promise<PagedAppointmentsResponse> {
+  const headers = await getAuthHeaders();
+    console.log('Fetching all appointments with headers:', pageNumber);
+  const response = await axios.post<PagedAppointmentsResponse>(
+    `${API_BASE_URL}/api/Appointment/GetAllAppointments`,
+     {pageNumber},
+    { headers }
+  );
+
+  return response.data;
+}
+
+export async function UpdateAppointmentStatusAdmin(
+  appointmentId: number,
+  status: number
+): Promise<void> {
+  try {
+    const headers = await getAuthHeaders();
+
+    await axios.put(
+      `${API_BASE_URL}/api/Appointment/PutAppointmentStatus`,
+            {
+        appointmentId,
+        status,
+      },
+      {
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (err: any) {
+    console.error(
+      'Failed to update appointment status:',
       err.response?.data || err.message
     );
     throw err;

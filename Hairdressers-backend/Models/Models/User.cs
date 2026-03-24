@@ -28,6 +28,11 @@ namespace Models.Models
         [Phone]
         [RegularExpression(@"^\d{3}-\d{3}-\d{4}$", ErrorMessage = "Format requis: XXX-XXX-XXXX")]
         public string? PhoneNumber { get; set; }
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(255)]
+        public string Email { get; set; } = string.Empty;
         public bool IsAdmin { get; set; } = false;
 
         // Navigation

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Models;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -16,6 +17,30 @@ namespace Hairdressers_backend.Controllers
         public AppointmentController(IAppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
+        }
+
+        private bool IsAdmin()
+        {
+            var appMetadata = User.FindFirst("app_metadata")?.Value;
+
+            if (string.IsNullOrEmpty(appMetadata))
+                return false;
+
+            try
+            {
+                var json = JsonDocument.Parse(appMetadata);
+
+                if (json.RootElement.TryGetProperty("isAdmin", out var isAdminProp))
+                {
+                    return isAdminProp.GetBoolean();
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
         }
 
         [Authorize]
@@ -140,6 +165,44 @@ namespace Hairdressers_backend.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
+        }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> PutAppointmentStatus(UpdateStatusDTO dto)
+        {
+            if (!IsAdmin())
+                return Forbid();
+
+            try
+            {
+                var updated = await _appointmentService.UpdateAppointmentStatusAsync(dto.AppointmentId, dto.Status);
+
+                if (!updated)
+                    return NotFound(new { message = "Appointment not found" });
+
+                return Ok(new { message = "Status updated" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> GetAllAppointments([FromBody] GetAdminAppointmentDTO dto)
+        {
+            if (!IsAdmin())
+                return Forbid();
+
+            if (dto.PageNumber < 1)
+                dto.PageNumber = 1;
+            const int pageSize = 10;
+
+            var result = await _appointmentService.GetAllAppointmentsAsync(dto.PageNumber, pageSize);
+
+            return Ok(result);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Google.Apis.Calendar.v3;
 using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using Models.Models;
@@ -42,55 +44,55 @@ namespace Hairdressers_backend.Services
                 .FirstOrDefaultAsync(s => s.Id == hairStylesId)
                 ?? throw new KeyNotFoundException("Service introuvable.");
 
-            // IMPORTANT: PostgreSQL timestamp with time zone => UTC only
-            if (appointmentDate.Kind == DateTimeKind.Unspecified)
-            {
-                appointmentDate = DateTime.SpecifyKind(appointmentDate, DateTimeKind.Utc);
-            }
-            else if (appointmentDate.Kind == DateTimeKind.Local)
-            {
-                appointmentDate = appointmentDate.ToUniversalTime();
-            }
+            var salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
 
-            var requestedDuration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
-            var requestedEnd = appointmentDate.AddMinutes(requestedDuration);
+            // 🔥 convertir ce que le backend reçoit (UTC) en LOCAL salon
+            var localAppointmentDate = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(appointmentDate, DateTimeKind.Utc),
+                salonTimeZone
+            );
 
-            // Heures de travail
-            var day = appointmentDate.Date;
-            var workStart = day.AddHours(heureDebut);
-            var workEnd = day.AddHours(heureFin);
-
-            // Vérifier jours ouvrables
-            if (appointmentDate.DayOfWeek == DayOfWeek.Saturday ||
-                appointmentDate.DayOfWeek == DayOfWeek.Sunday)
+            if (localAppointmentDate.DayOfWeek == DayOfWeek.Saturday ||
+                localAppointmentDate.DayOfWeek == DayOfWeek.Sunday)
             {
-                throw new InvalidOperationException("Aucun rendez-vous n'est disponible la fin de semaine.");
+                throw new InvalidOperationException("Aucun rendez-vous la fin de semaine.");
             }
 
-            // Vérifier que le rendez-vous est dans les heures de travail
-            if (appointmentDate < workStart || requestedEnd > workEnd)
+            var duration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
+
+            var localEnd = localAppointmentDate.AddMinutes(duration);
+
+            var localDay = localAppointmentDate.Date;
+            var localStartWork = localDay.AddHours(heureDebut);
+            var localEndWork = localDay.AddHours(heureFin);
+
+            if (localAppointmentDate < localStartWork || localEnd > localEndWork)
             {
-                throw new InvalidOperationException("Ce rendez-vous est en dehors des heures de travail.");
+                throw new InvalidOperationException("En dehors des heures de travail.");
             }
 
-            var dayStart = day;
-            var dayEnd = dayStart.AddDays(1);
+            // 🔥 reconvertir en UTC pour DB
+            var appointmentUtc = TimeZoneInfo.ConvertTimeToUtc(localAppointmentDate, salonTimeZone);
+            var endUtc = appointmentUtc.AddMinutes(duration);
+
+            var dayStartUtc = TimeZoneInfo.ConvertTimeToUtc(localDay, salonTimeZone);
+            var dayEndUtc = TimeZoneInfo.ConvertTimeToUtc(localDay.AddDays(1), salonTimeZone);
 
             var existingAppointments = await _context.Appointments
                 .Include(a => a.HairStyle)
                 .Where(a =>
-                    a.AppointmentDate >= dayStart &&
-                    a.AppointmentDate < dayEnd &&
+                    a.AppointmentDate >= dayStartUtc &&
+                    a.AppointmentDate < dayEndUtc &&
                     a.Status != AppointmentStatus.Cancelled)
                 .ToListAsync();
 
             bool overlaps = existingAppointments.Any(a =>
             {
                 var existingDuration = a.HairStyle.DurationMaxMinutes ?? a.HairStyle.DurationMinutes;
-                var existingStart = a.AppointmentDate;
-                var existingEnd = existingStart.AddMinutes(existingDuration);
+                var existingStartUtc = a.AppointmentDate;
+                var existingEndUtc = existingStartUtc.AddMinutes(existingDuration);
 
-                return appointmentDate < existingEnd && requestedEnd > existingStart;
+                return appointmentUtc < existingEndUtc && endUtc > existingStartUtc;
             });
 
             if (overlaps)
@@ -102,7 +104,7 @@ namespace Hairdressers_backend.Services
             {
                 UserId = userId,
                 HairStyleId = hairStyle.Id,
-                AppointmentDate = appointmentDate,
+                AppointmentDate = appointmentUtc,
                 Status = AppointmentStatus.Pending
             };
 
@@ -112,8 +114,8 @@ namespace Hairdressers_backend.Services
             var googleEventId = await _calendarService.CreateEventAsync(
                 title: $"{hairStyle.Name} - {user.FirstName} {user.LastName}",
                 description: $"Service: {hairStyle.Name}\nPrix: {hairStyle.PriceMin} - {hairStyle.PriceMax}$",
-                start: appointmentDate,
-                end: requestedEnd
+                start: appointmentUtc,
+                end: endUtc
             );
 
             appointment.GoogleEventId = googleEventId;
@@ -228,6 +230,55 @@ namespace Hairdressers_backend.Services
                 .Where(a => a.UserId == userId).Include(a => a.HairStyle)
                 .Select(a => new AppointmentResponseDTO(a))
                 .ToListAsync();
+        }
+
+        public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, int status)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+
+            if (appointment == null)
+                return false;
+
+            if (!Enum.IsDefined(typeof(AppointmentStatus), status))
+                throw new ArgumentException("Invalid appointment status");
+
+            appointment.Status = (AppointmentStatus)status;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.HairStyle)
+                .OrderByDescending(a => a.AppointmentDate); // 🔥 TRI PAR TEMPS
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(a => new AdminAppointmentResponseDTO
+                {
+                    Id = a.Id,
+                    AppointmentDate = a.AppointmentDate,
+                    Status = a.Status,
+                    UserName = a.User != null ? a.User.FirstName + " " + a.User.LastName : null,
+                    UserEmail = a.User != null ? a.User.Email : null,
+                    HairStyleName = a.HairStyle != null ? a.HairStyle.Name : null
+                })
+                .ToListAsync();
+
+            return new PagedResultDto<AdminAppointmentResponseDTO>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
     }
 }

@@ -12,5 +12,7 @@ namespace Hairdressers_backend.Interfaces
         Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId);
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
         Task<List<AppointmentResponseDTO>?> GetMyAppointmentsAsync(int userId);
+        Task<bool> UpdateAppointmentStatusAsync(int appointmentId, int status);
+        Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize);
     }
 }

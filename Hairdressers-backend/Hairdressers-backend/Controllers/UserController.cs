@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using Models.Models;
 using Supabase;
+using Supabase.Gotrue.Exceptions;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -25,57 +26,76 @@ namespace Hairdressers_backend.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(RegisterDTO registerDTO)
         {
-            // 1. Créer le user dans Supabase Auth
-            var session = await _supabase.Auth.SignUp(registerDTO.Email, registerDTO.Password);
-
-            if (session?.User == null)
+            try
             {
-                return StatusCode(500, new { Error = "Erreur lors de la création du compte Supabase." });
+                // 1. Créer le user dans Supabase Auth
+                var session = await _supabase.Auth.SignUp(registerDTO.Email, registerDTO.Password);
+
+                if (session?.User == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        Error = "Erreur lors de la création du compte Supabase."
+                    });
+                }
+
+                // 2. Vérifier que le user n'existe pas déjà dans notre BD
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.SupabaseUserId == session.User.Id);
+
+                if (existingUser != null)
+                {
+                    return BadRequest(new
+                    {
+                        Error = "Un profil existe déjà pour cet utilisateur."
+                    });
+                }
+
+                // 3. Créer le profil dans notre BD
+                var user = new User
+                {
+                    SupabaseUserId = session.User.Id!,
+                    FirstName = registerDTO.FirstName,
+                    LastName = registerDTO.LastName,
+                    PhoneNumber = registerDTO.PhoneNumber
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Message = "Compte créé avec succès. Veuillez confirmer votre adresse email."
+                });
             }
-
-            // 2. Vérifier que le user n'existe pas déjà dans notre BD
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseUserId == session.User.Id);
-
-            if (existingUser != null)
+            catch (GotrueException ex)
             {
-                return BadRequest(new { Error = "Un profil existe déjà pour cet utilisateur." });
+                var message = ex.Message.ToLower();
+
+                if (message.Contains("over_email_send_rate_limit") ||
+                    message.Contains("email rate limit exceeded"))
+                {
+                    return StatusCode(429, new
+                    {
+                        Error = "Trop d'emails de confirmation ont été envoyés. Veuillez attendre un peu avant de réessayer."
+                    });
+                }
+
+                return BadRequest(new
+                {
+                    Error = "Erreur Supabase lors de l'inscription.",
+                    Details = ex.Message
+                });
             }
-
-            // 3. Créer le profil dans notre BD
-            var user = new User
+            catch (Exception)
             {
-                SupabaseUserId = session.User.Id!,
-                FirstName = registerDTO.FirstName,
-                LastName = registerDTO.LastName,
-                PhoneNumber = registerDTO.PhoneNumber
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Compte créé avec succès." });
+                return StatusCode(500, new
+                {
+                    Error = "Une erreur interne est survenue lors de l'inscription."
+                });
+            }
         }
-
-        [HttpPost]
-        public async Task<ActionResult> Login(LoginDTO loginDTO)
-        {
-            // Supabase gère le login et retourne un JWT
-            var session = await _supabase.Auth.SignIn(loginDTO.Email, loginDTO.Password);
-
-            if (session?.AccessToken == null)
-            {
-                return Unauthorized(new { Error = "Email ou mot de passe invalide." });
-            }
-
-            return Ok(new
-            {
-                Token = session.AccessToken,
-                RefreshToken = session.RefreshToken,
-                UserId = session.User!.Id
-            });
-        }
-        [HttpGet]
+    [HttpGet]
         [Authorize]
         public ActionResult PrivateTest()
         {
