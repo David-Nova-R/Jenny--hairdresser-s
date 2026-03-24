@@ -13,6 +13,9 @@ namespace Hairdressers_backend.Services
         private readonly AppDbContext _context;
         private readonly Client _supabase;
         private readonly IGoogleCalendarService _calendarService;
+        const int heureDebut = 8;
+        const int heureFin = 17;
+        const int slotStepMinutes = 30;
 
         public AppointmentService(AppDbContext context, Client supabase,IGoogleCalendarService calendarService)
         {
@@ -39,6 +42,62 @@ namespace Hairdressers_backend.Services
                 .FirstOrDefaultAsync(s => s.Id == hairStylesId)
                 ?? throw new KeyNotFoundException("Service introuvable.");
 
+            // IMPORTANT: PostgreSQL timestamp with time zone => UTC only
+            if (appointmentDate.Kind == DateTimeKind.Unspecified)
+            {
+                appointmentDate = DateTime.SpecifyKind(appointmentDate, DateTimeKind.Utc);
+            }
+            else if (appointmentDate.Kind == DateTimeKind.Local)
+            {
+                appointmentDate = appointmentDate.ToUniversalTime();
+            }
+
+            var requestedDuration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
+            var requestedEnd = appointmentDate.AddMinutes(requestedDuration);
+
+            // Heures de travail
+            var day = appointmentDate.Date;
+            var workStart = day.AddHours(heureDebut);
+            var workEnd = day.AddHours(heureFin);
+
+            // Vérifier jours ouvrables
+            if (appointmentDate.DayOfWeek == DayOfWeek.Saturday ||
+                appointmentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                throw new InvalidOperationException("Aucun rendez-vous n'est disponible la fin de semaine.");
+            }
+
+            // Vérifier que le rendez-vous est dans les heures de travail
+            if (appointmentDate < workStart || requestedEnd > workEnd)
+            {
+                throw new InvalidOperationException("Ce rendez-vous est en dehors des heures de travail.");
+            }
+
+            var dayStart = day;
+            var dayEnd = dayStart.AddDays(1);
+
+            var existingAppointments = await _context.Appointments
+                .Include(a => a.HairStyle)
+                .Where(a =>
+                    a.AppointmentDate >= dayStart &&
+                    a.AppointmentDate < dayEnd &&
+                    a.Status != AppointmentStatus.Cancelled)
+                .ToListAsync();
+
+            bool overlaps = existingAppointments.Any(a =>
+            {
+                var existingDuration = a.HairStyle.DurationMaxMinutes ?? a.HairStyle.DurationMinutes;
+                var existingStart = a.AppointmentDate;
+                var existingEnd = existingStart.AddMinutes(existingDuration);
+
+                return appointmentDate < existingEnd && requestedEnd > existingStart;
+            });
+
+            if (overlaps)
+            {
+                throw new InvalidOperationException("Ce créneau n'est plus disponible.");
+            }
+
             var appointment = new Appointment
             {
                 UserId = userId,
@@ -50,18 +109,13 @@ namespace Hairdressers_backend.Services
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            // Créer l'événement dans Google Calendar
-            int duration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
-
-            var endDate = appointmentDate.AddMinutes(duration);
             var googleEventId = await _calendarService.CreateEventAsync(
-                title: $"{hairStyle.Name} - {user.FirstName} {user.LastName} ",
-                description: $"Servicio: {hairStyle.Name}\nPrecio:{hairStyle.PriceMin} - {hairStyle.PriceMax}$",
+                title: $"{hairStyle.Name} - {user.FirstName} {user.LastName}",
+                description: $"Service: {hairStyle.Name}\nPrix: {hairStyle.PriceMin} - {hairStyle.PriceMax}$",
                 start: appointmentDate,
-                end: endDate
+                end: requestedEnd
             );
 
-            // Sauvegarder l'ID de l'événement Google pour pouvoir le supprimer plus tard
             appointment.GoogleEventId = googleEventId;
             await _context.SaveChangesAsync();
 
@@ -89,49 +143,69 @@ namespace Hairdressers_backend.Services
                 .FirstOrDefaultAsync(s => s.Id == serviceId)
                 ?? throw new KeyNotFoundException("Service inexistant.");
 
-            var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
-            var lastDay = today.AddDays(30);
+            var salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+            var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, salonTimeZone).Date;
+            var localLastDay = localToday.AddDays(30);
+
+            var requestedDuration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
+
             var result = new List<AvailableDayWithSlotsDTO>();
 
-            for (var date = today; date <= lastDay; date = date.AddDays(1))
+            for (var localDate = localToday; localDate <= localLastDay; localDate = localDate.AddDays(1))
             {
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                if (localDate.DayOfWeek == DayOfWeek.Saturday || localDate.DayOfWeek == DayOfWeek.Sunday)
                     continue;
 
-                var dayStart = date;
-                var dayEnd = date.AddDays(1);
+                var localWorkStart = localDate.AddHours(heureDebut);
+                var localWorkEnd = localDate.AddHours(heureFin);
+
+                var utcWorkStart = TimeZoneInfo.ConvertTimeToUtc(localWorkStart, salonTimeZone);
+                var utcWorkEnd = TimeZoneInfo.ConvertTimeToUtc(localWorkEnd, salonTimeZone);
 
                 var appointments = await _context.Appointments
                     .Include(a => a.HairStyle)
-                    .Where(a => a.AppointmentDate >= dayStart && a.AppointmentDate < dayEnd)
+                    .Where(a =>
+                        a.AppointmentDate >= utcWorkStart &&
+                        a.AppointmentDate < utcWorkEnd &&
+                        a.Status != AppointmentStatus.Cancelled)
+                    .OrderBy(a => a.AppointmentDate)
                     .ToListAsync();
 
-                var slots = new List<string>();
-                var endOfDay = date.AddHours(17);
-                var currentSlot = date.AddHours(8);
+                var availableSlots = new List<string>();
+                var localCurrentSlot = localWorkStart;
 
-                while (currentSlot.AddMinutes(hairStyle.DurationMinutes) <= endOfDay)
+                while (localCurrentSlot.AddMinutes(requestedDuration) <= localWorkEnd)
                 {
-                    var slotStart = currentSlot;
-                    var slotEnd = slotStart.AddMinutes(hairStyle.DurationMinutes);
+                    var localSlotStart = localCurrentSlot;
+                    var localSlotEnd = localSlotStart.AddMinutes(requestedDuration);
 
-                    bool isTaken = appointments.Any(a =>
-                        a.AppointmentDate < slotEnd &&
-                        a.AppointmentDate.AddMinutes(a.HairStyle.DurationMinutes) > slotStart
-                    );
+                    var utcSlotStart = TimeZoneInfo.ConvertTimeToUtc(localSlotStart, salonTimeZone);
+                    var utcSlotEnd = TimeZoneInfo.ConvertTimeToUtc(localSlotEnd, salonTimeZone);
 
-                    if (!isTaken)
-                        slots.Add(slotStart.ToString("HH:mm"));
+                    bool overlaps = appointments.Any(a =>
+                    {
+                        var existingStartUtc = a.AppointmentDate;
+                        var existingDuration = a.HairStyle.DurationMaxMinutes ?? a.HairStyle.DurationMinutes;
+                        var existingEndUtc = existingStartUtc.AddMinutes(existingDuration);
 
-                    currentSlot = currentSlot.AddMinutes(hairStyle.DurationMinutes);
+                        return utcSlotStart < existingEndUtc && utcSlotEnd > existingStartUtc;
+                    });
+
+                    if (!overlaps)
+                    {
+                        availableSlots.Add(localSlotStart.ToString("HH:mm"));
+                    }
+
+                    localCurrentSlot = localCurrentSlot.AddMinutes(slotStepMinutes);
                 }
 
-                if (slots.Any())
+                if (availableSlots.Any())
                 {
                     result.Add(new AvailableDayWithSlotsDTO
                     {
-                        Day = date,
-                        AvailableSlots = slots
+                        Day = localDate,
+                        AvailableSlots = availableSlots
                     });
                 }
             }
