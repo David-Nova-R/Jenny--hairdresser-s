@@ -9,6 +9,7 @@ import {
     UpdateAppointmentStatusAdmin,
 } from '@/app/_api/appointment-api';
 import { AppointmentResponseDTO } from '@/app/_models/models';
+import AdminCalendar from './admin-calendar';
 
 const STATUS_OPTIONS = [
     { value: 0, label: 'Pending' },
@@ -17,7 +18,7 @@ const STATUS_OPTIONS = [
     { value: 3, label: 'Completed' },
 ];
 
-type AdminTab = 'appointments';
+type AdminTab = 'appointments' | 'calendar';
 
 type PagedAppointmentsResponse = {
     items: AppointmentResponseDTO[];
@@ -101,8 +102,8 @@ export default function AdminPage() {
                 key={page}
                 onClick={() => loadAppointments(page)}
                 className={`h-10 min-w-10 rounded-full px-3 text-sm transition-all ${page === pageNumber
-                        ? 'bg-[#D4AF37] text-black'
-                        : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
+                    ? 'bg-[#D4AF37] text-black'
+                    : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
                     }`}
             >
                 {page}
@@ -134,12 +135,20 @@ export default function AdminPage() {
                     <button
                         onClick={() => setActiveTab('appointments')}
                         className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'appointments'
-                                ? 'bg-[#D4AF37] text-black'
-                                : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
+                            ? 'bg-[#D4AF37] text-black'
+                            : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
                             }`}
                     >
                         <Calendar className="h-4 w-4" />
                         Appointments
+                    </button>
+                    <button 
+                    onClick={() => setActiveTab('calendar')}
+                    className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'calendar'
+                            ? 'bg-[#D4AF37] text-black'
+                            : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
+                            }`}>
+                        Calendar
                     </button>
                 </div>
 
@@ -265,6 +274,12 @@ export default function AdminPage() {
                             </>
                         )}
                     </section>
+                )}
+                {activeTab === 'calendar' && (
+                    <AdminCalendar
+                        appointments={appointments}
+                        setAppointments={setAppointments}
+                    />
                 )}
             </div>
         </div>

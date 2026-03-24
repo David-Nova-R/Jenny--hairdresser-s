@@ -40,3 +40,11 @@ export interface AppointmentResponseDTO {
   priceMin: number;
   priceMax?: number | null;
 }
+
+export type AppointmentDTO = {
+  id: number;
+  appointmentDate: string;
+  status: number;
+  hairStyleName: string;
+  userName?: string;
+};
