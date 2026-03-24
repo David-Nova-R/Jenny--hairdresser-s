@@ -11,5 +11,6 @@ namespace Hairdressers_backend.Interfaces
         Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId);
         Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId);
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
+        Task<List<AppointmentResponseDTO>?> GetMyAppointmentsAsync(int userId);
     }
 }

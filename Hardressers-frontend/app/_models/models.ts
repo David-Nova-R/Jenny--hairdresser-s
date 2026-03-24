@@ -10,10 +10,11 @@ export interface HairStyle {
 }
 
 export interface HairStyleSelectModalProps {
+  show: boolean;
   HairStyles: HairStyle[];
-  onSelect: (HairStyle: HairStyle) => void;
+  onSelect: (hairStyle: HairStyle) => void;
   onClose: () => void;
-  loading?: boolean;
+  loading: boolean;
 }
 
 export interface AvailableDay {
@@ -28,4 +29,14 @@ export interface AppointmentModalProps {
   slots?: AvailableDay[];
   selectedHairStyle?: HairStyle | null;
   slotsLoading?: boolean;
+}
+
+export interface AppointmentResponseDTO {
+  id: number;
+  appointmentDate: string;
+  status: string;
+  hairStyleId: number;
+  hairStyleName: string;
+  priceMin: number;
+  priceMax?: number | null;
 }

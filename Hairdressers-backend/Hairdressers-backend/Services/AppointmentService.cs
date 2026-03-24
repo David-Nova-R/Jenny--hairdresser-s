@@ -23,18 +23,9 @@ namespace Hairdressers_backend.Services
 
         public async Task<List<AppointmentResponseDTO>> GetUserAppointmentsAsync(int userId)
         {
-            return await _context.Appointments
-                .Where(a => a.UserId == userId)
-                .Select(a => new AppointmentResponseDTO
-                {
-                    Id = a.Id,
-                    AppointmentDate = a.AppointmentDate,
-                    Status = a.Status.ToString(),
-                    HairStyleId = a.HairStyleId,
-                    HairStyleName = a.HairStyle.Name,
-                    PriceMin = a.HairStyle.PriceMin,
-                    PriceMax = a.HairStyle.PriceMax
-                })
+             return await _context.Appointments
+                .Where(a => a.UserId == userId).Include(a => a.HairStyle)
+                .Select(a => new AppointmentResponseDTO(a))
                 .ToListAsync();
         }
 
@@ -157,5 +148,12 @@ namespace Hairdressers_backend.Services
             return await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
         }
 
+        public async Task<List<AppointmentResponseDTO>?> GetMyAppointmentsAsync(int userId)
+        {
+            return await _context.Appointments
+                .Where(a => a.UserId == userId).Include(a => a.HairStyle)
+                .Select(a => new AppointmentResponseDTO(a))
+                .ToListAsync();
+        }
     }
 }

@@ -118,5 +118,28 @@ namespace Hairdressers_backend.Controllers
                 return BadRequest(new { Message = ex.Message });
             }
         }
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<List<AppointmentResponseDTO>>?> GetMyAppointmentHistoric()
+        {
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (supabaseUserId == null)
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
+
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
+            if (user == null)
+                return NotFound(new { Message = "Utilisateur introuvable." });
+            try
+            {
+                var result = await _appointmentService.GetMyAppointmentsAsync(user.Id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
     }
 }
