@@ -126,7 +126,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white text-black rounded-xl shadow-2xl min-w-[320px] max-w-[500px] w-full max-h-[90vh] flex flex-col relative">
         {/* Close button X */}
         <button
@@ -309,7 +309,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             {
               isConfirmed && <button
                 className="flex-1 px-6 py-2 rounded-full bg-gray-200 text-black hover:bg-gray-300 transition-all duration-200 font-semibold"
-                onClick={() => onClose()}
+                onClick={onClose}
               >
                 Close
               </button>

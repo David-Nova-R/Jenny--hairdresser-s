@@ -433,7 +433,6 @@ export default function App() {
             show={showLoginModal}
             onClose={() => {
               setShowLoginModal(false);
-              setShowHairStyleModal(true);
               setSelectedHairStyle(null);
             }}
             onSwitchToRegister={() => {

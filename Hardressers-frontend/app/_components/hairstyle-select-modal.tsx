@@ -12,7 +12,7 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({ HairStyles,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white text-black rounded-xl shadow-2xl min-w-[320px] max-w-[500px] w-full max-h-[75vh] flex flex-col relative" style={{width: '400px', maxWidth: '90vw'}}>
         {/* Close button X */}
         <button
