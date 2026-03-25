@@ -36,16 +36,22 @@ namespace Models.Migrations
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("ExternalDurationMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("GoogleEventId")
                         .HasColumnType("text");
 
-                    b.Property<int>("HairStyleId")
+                    b.Property<int?>("HairStyleId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -94,7 +100,7 @@ namespace Models.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int?>("DurationMaxMinutes")
+                    b.Property<int>("DurationMaxMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
@@ -102,9 +108,6 @@ namespace Models.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
                     b.Property<decimal?>("PriceMax")
@@ -192,6 +195,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 9,
+                            DurationMaxMinutes = 60,
                             DurationMinutes = 60,
                             Name = "Cortes dama",
                             PriceMin = 20m
@@ -199,6 +203,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 10,
+                            DurationMaxMinutes = 60,
                             DurationMinutes = 180,
                             Name = "Permanente hombres",
                             PriceMin = 100m
@@ -250,6 +255,28 @@ namespace Models.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Models.Models.HairStylePhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("HairStyleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HairStyleId");
+
+                    b.ToTable("HairStylePhotos");
+                });
+
             modelBuilder.Entity("Models.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -262,6 +289,9 @@ namespace Models.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -287,6 +317,7 @@ namespace Models.Migrations
                         {
                             Id = 1,
                             FirstName = "Jean",
+                            IsAdmin = false,
                             LastName = "Tremblay",
                             PhoneNumber = "514-123-4567",
                             SupabaseUserId = "11111111-1111-1111-1111-111111111111"
@@ -295,6 +326,7 @@ namespace Models.Migrations
                         {
                             Id = 2,
                             FirstName = "Marie",
+                            IsAdmin = false,
                             LastName = "Dupont",
                             PhoneNumber = "438-987-6543",
                             SupabaseUserId = "22222222-2222-2222-2222-222222222222"
@@ -303,6 +335,7 @@ namespace Models.Migrations
                         {
                             Id = 3,
                             FirstName = "Luc",
+                            IsAdmin = false,
                             LastName = "Bernard",
                             PhoneNumber = "450-555-1234",
                             SupabaseUserId = "33333333-3333-3333-3333-333333333333"
@@ -314,23 +347,34 @@ namespace Models.Migrations
                     b.HasOne("Models.Models.HairStyle", "HairStyle")
                         .WithMany("Appointments")
                         .HasForeignKey("HairStyleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Models.Models.User", "User")
                         .WithMany("Appointments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("HairStyle");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Models.Models.HairStylePhoto", b =>
+                {
+                    b.HasOne("Models.Models.HairStyle", "HairStyle")
+                        .WithMany("Photos")
+                        .HasForeignKey("HairStyleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HairStyle");
+                });
+
             modelBuilder.Entity("Models.Models.HairStyle", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("Models.Models.User", b =>

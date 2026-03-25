@@ -27,9 +27,11 @@ namespace Hairdressers_backend.Services
 
         public async Task<List<HairStyleDTO>> GetHairStylesAsync()
         {
-            return await _context.HairStyles
-                .Select(h => new HairStyleDTO(h))
+            var hairStyles = await _context.HairStyles
+                .Include(h => h.Photos)
                 .ToListAsync();
+
+            return hairStyles.Select(h => new HairStyleDTO(h)).ToList();
         }
 
         public async Task<string> UploadPhotoAsync(int hairStyleId, IFormFile photo)

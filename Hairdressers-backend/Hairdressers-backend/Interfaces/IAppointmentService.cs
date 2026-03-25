@@ -13,5 +13,6 @@ namespace Hairdressers_backend.Interfaces
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
         Task AcceptAppointmentAsync(int appointmentId);
         Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync();
+        Task SyncFromGoogleCalendarAsync();
     }
 }

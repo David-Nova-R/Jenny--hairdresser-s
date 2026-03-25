@@ -27,11 +27,11 @@ namespace Models.Data
             // User
             builder.Entity<User>() .HasIndex(u => u.SupabaseUserId).IsUnique();
 
-            // Appointment -> User
-            builder.Entity<Appointment>().HasOne(a => a.User).WithMany(u => u.Appointments) .HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Restrict);
+            // Appointment -> User (nullable pour les rendez-vous externes)
+            builder.Entity<Appointment>().HasOne(a => a.User).WithMany(u => u.Appointments).HasForeignKey(a => a.UserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
-            // Appointment -> Service
-            builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.HairStyleId).OnDelete(DeleteBehavior.Restrict);
+            // Appointment -> Service (nullable pour les rendez-vous externes)
+            builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.HairStyleId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
             // HairStyle photos
             builder.Entity<HairStylePhoto>().HasOne(p => p.HairStyle).WithMany(h => h.Photos).HasForeignKey(p => p.HairStyleId).OnDelete(DeleteBehavior.Cascade);

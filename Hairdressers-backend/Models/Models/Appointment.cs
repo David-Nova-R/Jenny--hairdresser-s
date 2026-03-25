@@ -12,7 +12,8 @@ namespace Models.Models
         Pending,
         Confirmed,
         Cancelled,
-        Completed
+        Completed,
+        External
     }
 
     public class Appointment
@@ -21,16 +22,17 @@ namespace Models.Models
         public DateTime AppointmentDate { get; set; }
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
         public string? GoogleEventId { get; set; }
+        public string? Notes { get; set; }
+        public int? ExternalDurationMinutes { get; set; }
 
-        // Clés étrangères
-        public int UserId { get; set; }
-        public int HairStyleId { get; set; }
-
+        // Clés étrangères (nullable pour les rendez-vous externes)
+        public int? UserId { get; set; }
+        public int? HairStyleId { get; set; }
 
         // Navigation
         [JsonIgnore]
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; }
         [JsonIgnore]
-        public virtual HairStyle HairStyle { get; set; } = null!;
+        public virtual HairStyle? HairStyle { get; set; }
     }
 }
