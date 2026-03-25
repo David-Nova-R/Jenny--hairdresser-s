@@ -15,7 +15,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(
+    new Date(new Date().setHours(0, 0, 0, 0))
+  );
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [step, setStep] = useState<'calendar' | 'confirmation'>('calendar');
   const [month, setMonth] = useState(() => {
@@ -28,7 +30,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   });
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Helper: Check if a day has available slots
   const getDaySlotsIfAvailable = (checkDate: Date) => {
@@ -44,19 +46,28 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   // Get days grid for selected month
   const getMonthDaysGrid = (year: number, month: number) => {
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    let startIdx = (firstDay.getDay() + 6) % 7; // Align Monday=0
-    const grid = [];
-    // Fill empty slots before 1st
-    for (let i = 0; i < startIdx; i++) grid.push(null);
-    // Fill days
-    for (let d = 1; d <= daysInMonth; d++) {
-      grid.push(new Date(year, month, d));
+    const startIdx = firstDay.getDay(); // Sun = 0
+    const firstVisibleDay = new Date(year, month, 1 - startIdx);
+
+    return Array.from({ length: 42 }, (_, i) => {
+      const date = new Date(firstVisibleDay);
+      date.setDate(firstVisibleDay.getDate() + i);
+
+      return {
+        date,
+        isCurrentMonth: date.getMonth() === month,
+      };
+    });
+  };
+
+  const goToMonthOfDay = (day: Date) => {
+    if (day.getMonth() !== month || day.getFullYear() !== year) {
+      setMonth(day.getMonth());
+      setYear(day.getFullYear());
     }
-    // Fill empty slots after last day to complete grid
-    while (grid.length % 7 !== 0) grid.push(null);
-    return grid;
+
+    handleDaySelect(day);
+    setSelectedTime(null);
   };
 
   // Get previous and next month info
@@ -69,25 +80,38 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     setSelectedDay(day);
     if (onDaySelect) onDaySelect(day.getDate());
   };
-
   const handlePrevMonth = () => {
-    if (month === 0) {
-      setMonth(11);
-      setYear(year - 1);
-    } else {
-      setMonth(month - 1);
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+
+    setMonth(prevMonth);
+    setYear(prevYear);
+
+    const prevSelectedDay =
+      getMonthDaysGrid(prevYear, prevMonth).find((d) => d.isCurrentMonth)?.date || null;
+
+    setSelectedDay(prevSelectedDay);
+
+    if (prevSelectedDay && onDaySelect) {
+      onDaySelect(prevSelectedDay.getDate());
     }
-    setSelectedDay(null);
   };
 
   const handleNextMonth = () => {
-    if (month === 11) {
-      setMonth(0);
-      setYear(year + 1);
-    } else {
-      setMonth(month + 1);
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+
+    setMonth(nextMonth);
+    setYear(nextYear);
+
+    const nextSelectedDay =
+      getMonthDaysGrid(nextYear, nextMonth).find((d) => d.isCurrentMonth)?.date || null;
+
+    setSelectedDay(nextSelectedDay);
+
+    if (nextSelectedDay && onDaySelect) {
+      onDaySelect(nextSelectedDay.getDate());
     }
-    setSelectedDay(null);
   };
 
   const handleConfirmAppointment = async () => {
@@ -109,7 +133,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setIsLoading(true)
       await postAppointment(appointmentDate, selectedHairStyle.id);
 
-    } catch (error : any) {
+    } catch (error: any) {
       console.error('Failed to confirm appointment:', error);
       setError(error.message || 'Erreur lors de la réservation');
     } finally {
@@ -140,7 +164,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </button>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 pt-12">
+        <div className="flex-1 overflow-y-auto px-8 pt-12">
           {step === 'calendar' ? (
             <>
               {selectedHairStyle && (
@@ -185,68 +209,75 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     ))}
                   </div>
                   <div className="grid grid-cols-7 gap-2 mb-6">
-                    {monthGrid.map((day, idx) => {
-                      const hasSlots = day ? isAvailableDay(day) : false;
-                      return day ? (
+                    {monthGrid.map(({ date: day, isCurrentMonth }, idx) => {
+                      const hasSlots = isAvailableDay(day);
+                      const isSelected =
+                        selectedDay && day.toDateString() === selectedDay.toDateString();
+
+                      return (
                         <button
-                          key={day.toISOString()}
-                          className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 ${selectedDay && day.toDateString() === selectedDay.toDateString()
-                              ? 'bg-[#D4AF37] text-white border-[#D4AF37]'
-                              : hasSlots
+                          key={`${day.toISOString()}-${idx}`}
+                          className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 ${isSelected
+                            ? 'bg-[#D4AF37] text-white border-[#D4AF37]'
+                            : isCurrentMonth
+                              ? hasSlots
                                 ? 'bg-gray-100 border-black text-black hover:bg-gray-400 hover:border-gray-400 hover:text-white'
                                 : 'bg-gray-100 border-gray-300 text-gray-300 cursor-not-allowed'
+                              : hasSlots
+                                ? 'bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-200 hover:border-gray-400'
+                                : 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100'
                             }`}
-                          onClick={() => {
-                            handleDaySelect(day);
-                            setSelectedTime(null);
-                          }}
-                          disabled={!hasSlots}
+                          onClick={() => goToMonthOfDay(day)}
+                          disabled={isCurrentMonth && !hasSlots}
                           title={hasSlots ? 'Day has available slots' : 'No available slots'}
                         >
                           {day.getDate()}
                         </button>
-                      ) : (
-                        <div
-                          key={idx}
-                          className="w-10 h-10 flex items-center justify-center"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-gray-300 border border-gray-400 opacity-60" />
-                        </div>
                       );
                     })}
                   </div>
                   {selectedDay && (
-                    <div className="mb-6">
+                    <div>
                       <div className="text-sm text-[#D4AF37] mb-3 font-semibold">
-                        {weekdayNames[selectedDay.getDay() === 0 ? 6 : selectedDay.getDay() - 1]} {selectedDay.getDate()}/{selectedDay.getMonth() + 1}/{selectedDay.getFullYear()}
+                        {weekdayNames[selectedDay.getDay()]} {selectedDay.getDate()}/{selectedDay.getMonth() + 1}/{selectedDay.getFullYear()}
                       </div>
+
                       {slotsLoading ? (
-                        <div className="flex flex-col items-center justify-center gap-4">
-                          <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                          </svg>
-                          <div className="text-gray-500">Loading available times...</div>
+                        <div className="flex items-center justify-center">
+                          <div className="flex flex-col items-center justify-center gap-4">
+                            <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                            </svg>
+                            <div className="text-gray-500">Loading available times...</div>
+                          </div>
                         </div>
                       ) : (
                         <div>
                           <p className="text-sm text-gray-600 mb-3 font-semibold">Select time:</p>
-                          <div className="flex flex-wrap gap-2">
+
+                          <div>
                             {getDaySlotsIfAvailable(selectedDay).length > 0 ? (
-                              getDaySlotsIfAvailable(selectedDay).map((time) => (
-                                <button
-                                  key={time}
-                                  className={`px-4 py-2 rounded-lg border transition-all duration-200 font-semibold ${selectedTime === time
-                                      ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
-                                      : 'bg-gray-100 border-gray-400 text-black hover:bg-gray-200 hover:border-[#D4AF37]'
-                                    }`}
-                                  onClick={() => setSelectedTime(time)}
-                                >
-                                  {time}
-                                </button>
-                              ))
+                              <div className="overflow-x-auto pb-5">
+                                <div className="flex gap-2 min-w-max">
+                                  {getDaySlotsIfAvailable(selectedDay).map((time) => (
+                                    <button
+                                      key={time}
+                                      className={`px-4 py-2 rounded-lg border whitespace-nowrap transition-all duration-200 font-semibold ${selectedTime === time
+                                        ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
+                                        : 'bg-gray-100 border-gray-400 text-black hover:bg-gray-200 hover:border-[#D4AF37]'
+                                        }`}
+                                      onClick={() => setSelectedTime(time)}
+                                    >
+                                      {time}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
                             ) : (
-                              <p className="text-gray-500">No available times for this day</p>
+                              <div className=" flex items-center justify-center align-middle pb-5.5">
+                                <p className="text-gray-500 py-2">No available times for this day</p>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -265,7 +296,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   selectedTime={selectedTime}
                   isLoading={isLoading}
                   isConfirmed={isConfirmed}
-                  errorMessage ={error}
+                  errorMessage={error}
                 />
               )}
             </>
@@ -285,8 +316,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 </button>
                 <button
                   className={`flex-1 px-6 py-2 rounded-full transition-all duration-200 font-semibold ${selectedDay && selectedTime
-                      ? 'bg-[#D4AF37] text-black hover:bg-[#F4D03F]'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-[#D4AF37] text-black hover:bg-[#F4D03F]'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   onClick={() => setStep('confirmation')}
                   disabled={!selectedDay || !selectedTime}
