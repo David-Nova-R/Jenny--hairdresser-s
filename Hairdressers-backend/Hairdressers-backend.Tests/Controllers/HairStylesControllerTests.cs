@@ -1,5 +1,5 @@
 using Hairdressers_backend.Controllers;
-using Hairdressers_backend.Dtos.HairStylesDTO;
+using Hairdressers_backend.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Models;
