@@ -254,7 +254,7 @@ namespace Hairdressers_backend.Services
             var query = _context.Appointments
                 .Include(a => a.User)
                 .Include(a => a.HairStyle)
-                .OrderByDescending(a => a.AppointmentDate); // 🔥 TRI PAR TEMPS
+                .OrderByDescending(a => a.AppointmentDate);
 
             var totalCount = await query.CountAsync();
 
