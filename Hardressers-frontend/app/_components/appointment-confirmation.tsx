@@ -7,6 +7,7 @@ interface AppointmentConfirmationProps {
   selectedTime: string;
   isLoading: boolean;
   isConfirmed: boolean;
+  errorMessage?: string;
 }
 
 const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
@@ -14,7 +15,8 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   selectedDate,
   selectedTime,
   isLoading,
-  isConfirmed
+  isConfirmed,
+  errorMessage,
 }) => {
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -42,9 +44,9 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
           <span className="text-gray-600 text-base">Attente de vérification...</span>
         </div>
       )}
-      {!isLoading && (
+      {!isLoading && !errorMessage && (
         <>
-          <div className="pb-4 border-b border-gray-200">
+          <div className="pb-4 border-b border-gray-200 text-center">
             {isConfirmed && (
               <p className="text-2xl font-bold text-green-600 mb-1">Votre rendez-vous est confirmé !</p>
             )}
@@ -74,6 +76,42 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
             </div>
           </div>
         </>)}
+      {errorMessage && !isLoading && (
+        <>
+          <div className="pb-4 border-b border-gray-200 text-center">
+            {isConfirmed && (
+              <>
+                <p className="text-2xl text-white mb-2 bg-red-600 p-2 rounded">Erreur lors de la réservation ! <br /> Veuillez réessayer plus tard.</p>
+                <p className="text-1xl text-red-600 mb-1 bg-red-100 p-2 rounded">{errorMessage}</p>
+              </>
+            )}
+            <p className="text-sm text-gray-600 mb-1">HairStyle</p>
+            <p className="text-2xl font-semibold text-[#D4AF37]">{HairStyle.name}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Date</p>
+              <p className="text-lg font-semibold">{formattedDate}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Time</p>
+              <p className="text-lg font-semibold text-[#D4AF37]">{selectedTime}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Duration</p>
+              <p className="text-lg font-semibold">{durationLabel}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Price</p>
+              <p className="text-lg font-semibold text-[#D4AF37]">{priceLabel}</p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

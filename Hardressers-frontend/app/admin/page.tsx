@@ -16,6 +16,7 @@ const STATUS_OPTIONS = [
     { value: 1, label: 'Confirmed' },
     { value: 2, label: 'Cancelled' },
     { value: 3, label: 'Completed' },
+    { value: 4, label: 'External' },
 ];
 
 type AdminTab = 'appointments' | 'calendar';
@@ -142,9 +143,9 @@ export default function AdminPage() {
                         <Calendar className="h-4 w-4" />
                         Appointments
                     </button>
-                    <button 
-                    onClick={() => setActiveTab('calendar')}
-                    className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'calendar'
+                    <button
+                        onClick={() => setActiveTab('calendar')}
+                        className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'calendar'
                             ? 'bg-[#D4AF37] text-black'
                             : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
                             }`}>
@@ -275,12 +276,7 @@ export default function AdminPage() {
                         )}
                     </section>
                 )}
-                {activeTab === 'calendar' && (
-                    <AdminCalendar
-                        appointments={appointments}
-                        setAppointments={setAppointments}
-                    />
-                )}
+                {activeTab === 'calendar' && <AdminCalendar />}
             </div>
         </div>
     );

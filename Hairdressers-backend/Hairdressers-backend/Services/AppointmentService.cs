@@ -108,7 +108,7 @@ namespace Hairdressers_backend.Services
 
             bool overlaps = existingAppointments.Any(a =>
             {
-                var existingDuration = a.HairStyle.DurationMaxMinutes ?? a.HairStyle.DurationMinutes;
+                var existingDuration = a.HairStyle?.DurationMaxMinutes ?? a.HairStyle?.DurationMinutes ?? a.ExternalDurationMinutes ?? 60;
                 var existingStartUtc = a.AppointmentDate;
                 var existingEndUtc = existingStartUtc.AddMinutes(existingDuration);
 
@@ -207,14 +207,14 @@ namespace Hairdressers_backend.Services
                 var endOfDay = date.AddHours(17);
                 var currentSlot = date.AddHours(8);
 
-                while (currentSlot.AddMinutes(hairStyle.DurationMinutes) <= endOfDay)
+                while (currentSlot.AddMinutes(hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes) <= endOfDay)
                 {
                     var slotStart = currentSlot;
-                    var slotEnd = slotStart.AddMinutes(hairStyle.DurationMinutes);
+                    var slotEnd = slotStart.AddMinutes(hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes);
 
                     bool isTaken = appointments.Any(a =>
                     {
-                        var apptDuration = a.HairStyle?.DurationMinutes ?? a.ExternalDurationMinutes ?? 60;
+                        var apptDuration = a.HairStyle?.DurationMaxMinutes ?? a.HairStyle?.DurationMinutes ?? a.ExternalDurationMinutes ?? 60;
                         bool overlaps = a.AppointmentDate < slotEnd &&
                                         a.AppointmentDate.AddMinutes(apptDuration) > slotStart;
 
@@ -366,6 +366,39 @@ namespace Hairdressers_backend.Services
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
+        }
+
+        public async Task<List<AdminCalendarAppointmentDTO>> GetAdminCalendarAppointmentsAsync(DateTime weekStart)
+        {
+            if (weekStart == default)
+                weekStart = DateTime.Today;
+
+            var start = weekStart.Date;
+            var end = start.AddDays(7);
+
+            return await _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.HairStyle)
+                .Where(a => a.AppointmentDate >= start && a.AppointmentDate < end)
+                .OrderBy(a => a.AppointmentDate)
+                .Select(a => new AdminCalendarAppointmentDTO
+                {
+                    Id = a.Id,
+                    AppointmentDate = a.AppointmentDate,
+                    Status = (int)a.Status,
+                    HairStyleName = a.Status == AppointmentStatus.External
+                        ? "External"
+                        : a.HairStyle != null
+                            ? a.HairStyle.Name
+                            : "Appointment",
+                    UserName = a.User != null
+                        ? a.User.FirstName + " " + a.User.LastName
+                        : "Client",
+                    PriceMin = a.HairStyle != null ? a.HairStyle.PriceMin : 0,
+                    PriceMax = a.HairStyle != null ? a.HairStyle.PriceMax : null,
+                    Notes = a.Notes,
+                    ExternalDurationMinutes = a.ExternalDurationMinutes
+                }).ToListAsync();
         }
     }
 }

@@ -256,5 +256,17 @@ namespace Hairdressers_backend.Controllers
 
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> GetAdminCalendarAppointments([FromBody] GetAdminCalendarAppointmentsDTO dto)
+        {
+            if (!IsAdmin())
+                return Forbid();
+
+            var result = await _appointmentService.GetAdminCalendarAppointmentsAsync(dto.WeekStart);
+
+            return Ok(result);
+        }
     }
 }

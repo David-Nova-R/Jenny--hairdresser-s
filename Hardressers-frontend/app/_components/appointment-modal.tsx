@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AppointmentConfirmation from './appointment-confirmation';
 import { AppointmentModalProps } from '../_models/models';
 import { postAppointment } from '../_api/appointment-api';
+import { setServers } from 'dns';
 
 const AppointmentModal: React.FC<AppointmentModalProps> = ({
   show,
@@ -25,6 +26,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     const now = new Date();
     return now.getFullYear();
   });
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -107,9 +109,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setIsLoading(true)
       await postAppointment(appointmentDate, selectedHairStyle.id);
 
-    } catch (error) {
+    } catch (error : any) {
       console.error('Failed to confirm appointment:', error);
-      // You can add error handling here (e.g., show error message to user)
+      setError(error.message || 'Erreur lors de la réservation');
     } finally {
       setIsLoading(false)
       setIsConfirmed(true);
@@ -263,6 +265,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   selectedTime={selectedTime}
                   isLoading={isLoading}
                   isConfirmed={isConfirmed}
+                  errorMessage ={error}
                 />
               )}
             </>

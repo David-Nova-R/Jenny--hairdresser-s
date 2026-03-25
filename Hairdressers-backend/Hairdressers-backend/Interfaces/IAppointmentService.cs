@@ -17,5 +17,6 @@ namespace Hairdressers_backend.Interfaces
         Task AcceptAppointmentAsync(int appointmentId);
         Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync();
         Task SyncFromGoogleCalendarAsync();
+        Task<List<AdminCalendarAppointmentDTO>> GetAdminCalendarAppointmentsAsync(DateTime weekStart);
     }
 }

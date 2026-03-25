@@ -48,3 +48,15 @@ export type AppointmentDTO = {
   hairStyleName: string;
   userName?: string;
 };
+
+export type AdminCalendarAppointmentDTO = {
+  id: number;
+  appointmentDate: string;
+  status: number;
+  hairStyleName?: string | null;
+  userName?: string | null;
+  priceMin: number;
+  priceMax?: number | null;
+  notes?: string | null;
+  externalDurationMinutes?: number | null;
+};

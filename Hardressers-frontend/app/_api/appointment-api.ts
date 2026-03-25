@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AvailableDay, HairStyle, AppointmentResponseDTO } from '@/app/_models/models';
+import { AvailableDay, HairStyle, AppointmentResponseDTO, AdminCalendarAppointmentDTO } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
 const API_BASE_URL = 'https://localhost:7226';
@@ -188,4 +188,23 @@ export async function UpdateAppointmentStatusAdmin(
     );
     throw err;
   }
+}
+
+export async function FetchAdminCalendarAppointments(
+  weekStart: string
+): Promise<AdminCalendarAppointmentDTO[]> {
+  const headers = await getAuthHeaders();
+
+  const response = await axios.post<AdminCalendarAppointmentDTO[]>(
+    `${API_BASE_URL}/api/Appointment/GetAdminCalendarAppointments`,
+    { weekStart },
+    {
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return response.data;
 }
