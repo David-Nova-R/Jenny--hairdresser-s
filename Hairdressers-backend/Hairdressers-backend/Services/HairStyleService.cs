@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos.HairStylesDTO;
+﻿using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Models.Data;
