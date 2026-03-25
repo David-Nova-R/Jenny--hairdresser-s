@@ -100,7 +100,7 @@ namespace Models.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("DurationMaxMinutes")
+                    b.Property<int?>("DurationMaxMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")

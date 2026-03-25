@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260325033828_poolling")]
-    partial class poolling
+    [Migration("20260325140130_merge1.0")]
+    partial class merge10
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,7 +103,7 @@ namespace Models.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("DurationMaxMinutes")
+                    b.Property<int?>("DurationMaxMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
@@ -288,6 +288,11 @@ namespace Models.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -319,6 +324,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 1,
+                            Email = "",
                             FirstName = "Jean",
                             IsAdmin = false,
                             LastName = "Tremblay",
@@ -328,6 +334,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 2,
+                            Email = "",
                             FirstName = "Marie",
                             IsAdmin = false,
                             LastName = "Dupont",
@@ -337,6 +344,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 3,
+                            Email = "",
                             FirstName = "Luc",
                             IsAdmin = false,
                             LastName = "Bernard",

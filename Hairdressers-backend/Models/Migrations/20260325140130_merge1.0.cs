@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-    public partial class poolling : Migration
+    public partial class merge10 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,7 @@ namespace Models.Migrations
                     PriceMin = table.Column<decimal>(type: "numeric", nullable: false),
                     PriceMax = table.Column<decimal>(type: "numeric", nullable: true),
                     DurationMinutes = table.Column<int>(type: "integer", nullable: false),
-                    DurationMaxMinutes = table.Column<int>(type: "integer", nullable: false)
+                    DurationMaxMinutes = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -42,6 +42,7 @@ namespace Models.Migrations
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     IsAdmin = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -124,12 +125,12 @@ namespace Models.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "FirstName", "IsAdmin", "LastName", "PhoneNumber", "SupabaseUserId" },
+                columns: new[] { "Id", "Email", "FirstName", "IsAdmin", "LastName", "PhoneNumber", "SupabaseUserId" },
                 values: new object[,]
                 {
-                    { 1, "Jean", false, "Tremblay", "514-123-4567", "11111111-1111-1111-1111-111111111111" },
-                    { 2, "Marie", false, "Dupont", "438-987-6543", "22222222-2222-2222-2222-222222222222" },
-                    { 3, "Luc", false, "Bernard", "450-555-1234", "33333333-3333-3333-3333-333333333333" }
+                    { 1, "", "Jean", false, "Tremblay", "514-123-4567", "11111111-1111-1111-1111-111111111111" },
+                    { 2, "", "Marie", false, "Dupont", "438-987-6543", "22222222-2222-2222-2222-222222222222" },
+                    { 3, "", "Luc", false, "Bernard", "450-555-1234", "33333333-3333-3333-3333-333333333333" }
                 });
 
             migrationBuilder.InsertData(
