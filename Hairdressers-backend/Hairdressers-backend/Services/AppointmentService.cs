@@ -1,8 +1,5 @@
-﻿using Google.Apis.Calendar.v3;
-using Hairdressers_backend.Dtos.AppointmentResponseDTO;
+﻿using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using Models.Models;
@@ -190,16 +187,13 @@ namespace Hairdressers_backend.Services
             var lastDay = today.AddDays(30);
             var result = new List<AvailableDayWithSlotsDTO>();
 
-            for (var localDate = localToday; localDate <= localLastDay; localDate = localDate.AddDays(1))
+            for (var date = today; date <= lastDay; date = date.AddDays(1))
             {
-                if (localDate.DayOfWeek == DayOfWeek.Saturday || localDate.DayOfWeek == DayOfWeek.Sunday)
+                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
                     continue;
 
-                var localWorkStart = localDate.AddHours(heureDebut);
-                var localWorkEnd = localDate.AddHours(heureFin);
-
-                var utcWorkStart = TimeZoneInfo.ConvertTimeToUtc(localWorkStart, salonTimeZone);
-                var utcWorkEnd = TimeZoneInfo.ConvertTimeToUtc(localWorkEnd, salonTimeZone);
+                var dayStart = date;
+                var dayEnd = date.AddDays(1);
 
                 var appointments = await _context.Appointments
                     .Include(a => a.HairStyle)
@@ -209,16 +203,14 @@ namespace Hairdressers_backend.Services
                         (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.External))
                     .ToListAsync();
 
-                var availableSlots = new List<string>();
-                var localCurrentSlot = localWorkStart;
+                var slots = new List<string>();
+                var endOfDay = date.AddHours(17);
+                var currentSlot = date.AddHours(8);
 
-                while (localCurrentSlot.AddMinutes(requestedDuration) <= localWorkEnd)
+                while (currentSlot.AddMinutes(hairStyle.DurationMinutes) <= endOfDay)
                 {
-                    var localSlotStart = localCurrentSlot;
-                    var localSlotEnd = localSlotStart.AddMinutes(requestedDuration);
-
-                    var utcSlotStart = TimeZoneInfo.ConvertTimeToUtc(localSlotStart, salonTimeZone);
-                    var utcSlotEnd = TimeZoneInfo.ConvertTimeToUtc(localSlotEnd, salonTimeZone);
+                    var slotStart = currentSlot;
+                    var slotEnd = slotStart.AddMinutes(hairStyle.DurationMinutes);
 
                     bool isTaken = appointments.Any(a =>
                     {
@@ -241,20 +233,18 @@ namespace Hairdressers_backend.Services
                         return false;
                     });
 
-                    if (!overlaps)
-                    {
-                        availableSlots.Add(localSlotStart.ToString("HH:mm"));
-                    }
+                    if (!isTaken)
+                        slots.Add(slotStart.ToString("HH:mm"));
 
-                    localCurrentSlot = localCurrentSlot.AddMinutes(slotStepMinutes);
+                    currentSlot = currentSlot.AddMinutes(hairStyle.DurationMinutes);
                 }
 
-                if (availableSlots.Any())
+                if (slots.Any())
                 {
                     result.Add(new AvailableDayWithSlotsDTO
                     {
-                        Day = localDate,
-                        AvailableSlots = availableSlots
+                        Day = date,
+                        AvailableSlots = slots
                     });
                 }
             }

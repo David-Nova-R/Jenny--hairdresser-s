@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos.AppointmentResponseDTO;
+﻿using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +31,7 @@ namespace Hairdressers_backend.Controllers
                 var json = JsonDocument.Parse(appMetadata);
 
                 if (json.RootElement.TryGetProperty("isAdmin", out var isAdminProp))
-                {
                     return isAdminProp.GetBoolean();
-                }
             }
             catch
             {
@@ -197,10 +195,9 @@ namespace Hairdressers_backend.Controllers
             }
         }
 
-
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<List<AppointmentResponseDTO>>?> GetMyAppointmentHistoric()
+        public async Task<ActionResult<List<AppointmentResponseDTO>?>> GetMyAppointmentHistoric()
         {
             var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (supabaseUserId == null)
@@ -209,6 +206,7 @@ namespace Hairdressers_backend.Controllers
             var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
             if (user == null)
                 return NotFound(new { Message = "Utilisateur introuvable." });
+
             try
             {
                 var result = await _appointmentService.GetMyAppointmentsAsync(user.Id);
@@ -222,7 +220,7 @@ namespace Hairdressers_backend.Controllers
 
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> PutAppointmentStatus(UpdateStatusDTO dto)
+        public async Task<IActionResult> PutAppointmentStatus([FromBody] UpdateStatusDTO dto)
         {
             if (!IsAdmin())
                 return Forbid();
@@ -251,6 +249,7 @@ namespace Hairdressers_backend.Controllers
 
             if (dto.PageNumber < 1)
                 dto.PageNumber = 1;
+
             const int pageSize = 10;
 
             var result = await _appointmentService.GetAllAppointmentsAsync(dto.PageNumber, pageSize);

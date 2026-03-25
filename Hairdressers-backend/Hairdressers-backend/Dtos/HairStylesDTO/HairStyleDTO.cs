@@ -1,6 +1,6 @@
 ﻿using Models.Models;
 
-namespace Hairdressers_backend.Dtos.HairStylesDTO
+namespace Hairdressers_backend.Dtos
 {
     public class HairStyleDTO
     {

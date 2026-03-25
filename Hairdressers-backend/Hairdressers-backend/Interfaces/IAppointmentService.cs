@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos.AppointmentResponseDTO;
+﻿using Hairdressers_backend.Dtos;
 using Models.Models;
 
 namespace Hairdressers_backend.Interfaces

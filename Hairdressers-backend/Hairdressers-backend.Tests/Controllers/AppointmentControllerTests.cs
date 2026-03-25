@@ -1,5 +1,5 @@
 using Hairdressers_backend.Controllers;
-using Hairdressers_backend.Dtos.AppointmentResponseDTO;
+using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

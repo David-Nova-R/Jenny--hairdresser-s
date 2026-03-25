@@ -1,4 +1,4 @@
-﻿namespace Hairdressers_backend.Dtos.UsersDTO
+﻿namespace Hairdressers_backend.Dtos
 {
     public class RegisterDTO
     {
