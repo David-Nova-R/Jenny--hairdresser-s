@@ -32,6 +32,8 @@ namespace Models.Data
 
             // Appointment -> Service (nullable pour les rendez-vous externes)
             builder.Entity<Appointment>().HasOne(a => a.HairStyle).WithMany(s => s.Appointments).HasForeignKey(a => a.HairStyleId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+            // Appointment -> Sauves les heures en heure normal
+            builder.Entity<Appointment>().Property(a => a.AppointmentDate).HasColumnType("timestamp without time zone");
 
             // HairStyle photos
             builder.Entity<HairStylePhoto>().HasOne(p => p.HairStyle).WithMany(h => h.Photos).HasForeignKey(p => p.HairStyleId).OnDelete(DeleteBehavior.Cascade);

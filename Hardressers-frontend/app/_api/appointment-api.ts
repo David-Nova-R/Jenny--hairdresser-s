@@ -205,6 +205,6 @@ export async function FetchAdminCalendarAppointments(
       },
     }
   );
-
+  console.log('Fetched admin calendar appointments:', response.data);
   return response.data;
 }

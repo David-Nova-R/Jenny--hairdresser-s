@@ -1,6 +1,6 @@
 ﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Hairdressers_backend.Interfaces;
 
@@ -10,6 +10,7 @@ namespace Hairdressers_backend.Services
     {
         private readonly CalendarService _calendarService;
         private readonly string _calendarId;
+        private readonly TimeZoneInfo _salonTimeZone;
 
         public GoogleCalendarService(IConfiguration configuration)
         {
@@ -18,6 +19,8 @@ namespace Hairdressers_backend.Services
 
             _calendarId = configuration["Google:CalendarId"]
                 ?? throw new InvalidOperationException("Google Calendar ID not found.");
+
+            _salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
 
             GoogleCredential credential = GoogleCredential
                 .FromFile(credentialsPath)
@@ -32,18 +35,24 @@ namespace Hairdressers_backend.Services
 
         public async Task<string> CreateEventAsync(string title, string description, DateTime start, DateTime end)
         {
+            var startLocal = DateTime.SpecifyKind(start, DateTimeKind.Unspecified);
+            var endLocal = DateTime.SpecifyKind(end, DateTimeKind.Unspecified);
+
+            var startOffset = new DateTimeOffset(startLocal, _salonTimeZone.GetUtcOffset(startLocal));
+            var endOffset = new DateTimeOffset(endLocal, _salonTimeZone.GetUtcOffset(endLocal));
+
             var newEvent = new Event()
             {
                 Summary = title,
                 Description = description,
                 Start = new EventDateTime()
                 {
-                    DateTimeDateTimeOffset = start,
+                    DateTimeDateTimeOffset = startOffset,
                     TimeZone = "America/Toronto"
                 },
                 End = new EventDateTime()
                 {
-                    DateTimeDateTimeOffset = end,
+                    DateTimeDateTimeOffset = endOffset,
                     TimeZone = "America/Toronto"
                 }
             };
@@ -62,9 +71,16 @@ namespace Hairdressers_backend.Services
         public async Task<IList<Event>> GetAppointmentsAsync(DateTime? timeMin = null, DateTime? timeMax = null)
         {
             var request = _calendarService.Events.List(_calendarId);
-            request.TimeMinDateTimeOffset = timeMin ?? DateTime.UtcNow;
+
+            var minLocal = DateTime.SpecifyKind(timeMin ?? DateTime.Now, DateTimeKind.Unspecified);
+            request.TimeMinDateTimeOffset = new DateTimeOffset(minLocal, _salonTimeZone.GetUtcOffset(minLocal));
+
             if (timeMax.HasValue)
-                request.TimeMaxDateTimeOffset = timeMax.Value;
+            {
+                var maxLocal = DateTime.SpecifyKind(timeMax.Value, DateTimeKind.Unspecified);
+                request.TimeMaxDateTimeOffset = new DateTimeOffset(maxLocal, _salonTimeZone.GetUtcOffset(maxLocal));
+            }
+
             request.SingleEvents = true;
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 

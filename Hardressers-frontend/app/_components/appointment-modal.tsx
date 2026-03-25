@@ -121,16 +121,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
     try {
       // Combine selected date and time into ISO string
-      const appointmentDate = new Date(
-        selectedDay.getFullYear(),
-        selectedDay.getMonth(),
-        selectedDay.getDate(),
-        parseInt(selectedTime.split(':')[0]),
-        parseInt(selectedTime.split(':')[1])
-      ).toISOString();
+    const appointmentDate = `${selectedDay.toLocaleDateString('sv-SE')}T${selectedTime}:00`;
 
       // Post appointment to backend
       setIsLoading(true)
+      console.log('Attempting to post appointment with date:', appointmentDate);
       await postAppointment(appointmentDate, selectedHairStyle.id);
 
     } catch (error: any) {

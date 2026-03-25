@@ -25,7 +25,7 @@ namespace Hairdressers_backend.Services
                     using var scope = _scopeFactory.CreateScope();
                     var appointmentService = scope.ServiceProvider.GetRequiredService<IAppointmentService>();
                     await appointmentService.SyncFromGoogleCalendarAsync();
-                    _logger.LogInformation("Sync Google Calendar effectuée à {Time}", DateTimeOffset.UtcNow);
+                    _logger.LogInformation("Sync Google Calendar effectuée à {Time}", DateTime.Now);
                 }
                 catch (Exception ex)
                 {
