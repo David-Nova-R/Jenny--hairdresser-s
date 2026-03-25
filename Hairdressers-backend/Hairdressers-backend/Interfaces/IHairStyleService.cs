@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos.HairStylesDTO;
+﻿using Hairdressers_backend.Dtos;
 using Models.Models;
 
 public interface IHairStyleService
