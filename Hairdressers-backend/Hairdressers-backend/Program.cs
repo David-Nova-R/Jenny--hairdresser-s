@@ -13,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 builder.Services.AddScoped<IHairStyleService, HairStyleService>();
+builder.Services.AddHostedService<CalendarSyncBackgroundService>();
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger avec support JWT

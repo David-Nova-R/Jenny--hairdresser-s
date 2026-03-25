@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos;
+﻿using Hairdressers_backend.Dtos.AppointmentResponseDTO;
 using Models.Models;
 
 namespace Hairdressers_backend.Interfaces
@@ -14,5 +14,8 @@ namespace Hairdressers_backend.Interfaces
         Task<List<AppointmentResponseDTO>?> GetMyAppointmentsAsync(int userId);
         Task<bool> UpdateAppointmentStatusAsync(int appointmentId, int status);
         Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize);
+        Task AcceptAppointmentAsync(int appointmentId);
+        Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync();
+        Task SyncFromGoogleCalendarAsync();
     }
 }

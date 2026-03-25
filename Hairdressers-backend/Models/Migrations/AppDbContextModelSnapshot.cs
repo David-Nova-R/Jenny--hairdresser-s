@@ -36,16 +36,22 @@ namespace Models.Migrations
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("ExternalDurationMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("GoogleEventId")
                         .HasColumnType("text");
 
-                    b.Property<int>("HairStyleId")
+                    b.Property<int?>("HairStyleId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -94,7 +100,7 @@ namespace Models.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int?>("DurationMaxMinutes")
+                    b.Property<int>("DurationMaxMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
@@ -349,14 +355,12 @@ namespace Models.Migrations
                     b.HasOne("Models.Models.HairStyle", "HairStyle")
                         .WithMany("Appointments")
                         .HasForeignKey("HairStyleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Models.Models.User", "User")
                         .WithMany("Appointments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("HairStyle");
 

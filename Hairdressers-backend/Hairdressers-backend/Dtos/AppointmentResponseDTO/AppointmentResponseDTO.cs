@@ -1,4 +1,4 @@
-﻿using Models.Models;
+using Models.Models;
 
 namespace Hairdressers_backend.Dtos
 {

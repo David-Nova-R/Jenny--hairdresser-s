@@ -1,6 +1,6 @@
 ﻿using Models.Models;
 
-namespace Hairdressers_backend.Dtos
+namespace Hairdressers_backend.Dtos.HairStylesDTO
 {
     public class HairStyleDTO
     {
@@ -11,10 +11,7 @@ namespace Hairdressers_backend.Dtos
         public decimal? PriceMax { get; set; }
         public int DurationMinutes { get; set; }
         public int? DurationMaxMinutes { get; set; }
-
-        public HairStyleDTO()
-        {
-        }
+        public List<string> PhotoUrls { get; set; } = new();
 
         public HairStyleDTO(HairStyle hairStyle)
         {
@@ -25,6 +22,7 @@ namespace Hairdressers_backend.Dtos
             PriceMax = hairStyle.PriceMax;
             DurationMinutes = hairStyle.DurationMinutes;
             DurationMaxMinutes = hairStyle.DurationMaxMinutes;
+            PhotoUrls = hairStyle.Photos.Select(p => p.PhotoUrl).ToList();
         }
     }
 }

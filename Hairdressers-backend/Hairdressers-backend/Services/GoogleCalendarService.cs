@@ -58,5 +58,18 @@ namespace Hairdressers_backend.Services
         {
             await _calendarService.Events.Delete(_calendarId, eventId).ExecuteAsync();
         }
+
+        public async Task<IList<Event>> GetAppointmentsAsync(DateTime? timeMin = null, DateTime? timeMax = null)
+        {
+            var request = _calendarService.Events.List(_calendarId);
+            request.TimeMinDateTimeOffset = timeMin ?? DateTime.UtcNow;
+            if (timeMax.HasValue)
+                request.TimeMaxDateTimeOffset = timeMax.Value;
+            request.SingleEvents = true;
+            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+            var events = await request.ExecuteAsync();
+            return events.Items ?? new List<Event>();
+        }
     }
 }

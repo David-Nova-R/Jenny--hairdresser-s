@@ -1,0 +1,13 @@
+# Claude
+.claude/
+
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Environment
+appsettings.Development.json

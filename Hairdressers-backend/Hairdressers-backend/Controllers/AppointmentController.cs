@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Dtos;
+﻿using Hairdressers_backend.Dtos.AppointmentResponseDTO;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,6 +64,29 @@ namespace Hairdressers_backend.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<ActionResult> GetPendingAppointments()
+        {
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (supabaseUserId == null)
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
+
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
+            if (user == null)
+                return NotFound(new { Message = "Utilisateur introuvable." });
+
+            if (!user.IsAdmin)
+                return StatusCode(403, new { Message = "Accès refusé." });
+
+            var appointments = await _appointmentService.GetPendingAppointmentsAsync();
+
+            if (!appointments.Any())
+                return Ok(new { Message = "Aucun rendez-vous en attente.", Data = new List<PendingAppointmentDTO>() });
+
+            return Ok(appointments);
+        }
+
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> PostAppointment([FromBody] AppointmentDTO dto)
         {
@@ -90,6 +113,36 @@ namespace Hairdressers_backend.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { Message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{appointmentId}")]
+        public async Task<ActionResult> AcceptAppointment(int appointmentId)
+        {
+            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (supabaseUserId == null)
+                return Unauthorized(new { Message = "Utilisateur non authentifié." });
+
+            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
+            if (user == null)
+                return NotFound(new { Message = "Utilisateur introuvable." });
+
+            if (!user.IsAdmin)
+                return StatusCode(403, new { Message = "Accès refusé." });
+
+            try
+            {
+                await _appointmentService.AcceptAppointmentAsync(appointmentId);
+                return Ok(new { Message = "Rendez-vous accepté et ajouté au calendrier avec succès." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
             }
         }
 

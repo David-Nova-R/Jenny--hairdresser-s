@@ -1,5 +1,5 @@
 ﻿using Google.Apis.Calendar.v3;
-using Hairdressers_backend.Dtos;
+using Hairdressers_backend.Dtos.AppointmentResponseDTO;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +31,29 @@ namespace Hairdressers_backend.Services
              return await _context.Appointments
                 .Where(a => a.UserId == userId).Include(a => a.HairStyle)
                 .Select(a => new AppointmentResponseDTO(a))
+                .ToListAsync();
+        }
+
+        public async Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync()
+        {
+            return await _context.Appointments
+                .Include(a => a.HairStyle)
+                .Include(a => a.User)
+                .Where(a => a.Status == AppointmentStatus.Pending)
+                .OrderBy(a => a.AppointmentDate)
+                .Select(a => new PendingAppointmentDTO
+                {
+                    Id = a.Id,
+                    AppointmentDate = a.AppointmentDate,
+                    Status = a.Status.ToString(),
+                    HairStyleId = a.HairStyleId!.Value,
+                    HairStyleName = a.HairStyle!.Name,
+                    PriceMin = a.HairStyle.PriceMin,
+                    PriceMax = a.HairStyle.PriceMax,
+                    ClientFirstName = a.User!.FirstName,
+                    ClientLastName = a.User.LastName,
+                    ClientPhone = a.User.PhoneNumber
+                })
                 .ToListAsync();
         }
 
@@ -111,17 +134,32 @@ namespace Hairdressers_backend.Services
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
+            return appointment;
+        }
+
+        public async Task AcceptAppointmentAsync(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.HairStyle)
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId)
+                ?? throw new KeyNotFoundException("Rendez-vous introuvable.");
+
+            if (appointment.Status != AppointmentStatus.Pending)
+                throw new InvalidOperationException("Seulement un rendez-vous en attente peut être accepté.");
+
+            // Créer l'événement dans Google Calendar
+            var endDate = appointment.AppointmentDate.AddMinutes(appointment.HairStyle.DurationMinutes);
             var googleEventId = await _calendarService.CreateEventAsync(
-                title: $"{hairStyle.Name} - {user.FirstName} {user.LastName}",
-                description: $"Service: {hairStyle.Name}\nPrix: {hairStyle.PriceMin} - {hairStyle.PriceMax}$",
-                start: appointmentUtc,
-                end: endUtc
+                title: $"{appointment.HairStyle.Name} - {appointment.User.FirstName} {appointment.User.LastName}",
+                description: $"Servicio: {appointment.HairStyle.Name}\nPrecio: {appointment.HairStyle.PriceMin} - {appointment.HairStyle.PriceMax}$",
+                start: appointment.AppointmentDate,
+                end: endDate
             );
 
             appointment.GoogleEventId = googleEventId;
+            appointment.Status = AppointmentStatus.Confirmed;
             await _context.SaveChangesAsync();
-
-            return appointment;
         }
 
         public async Task CancelAppointmentAsync(int appointmentId)
@@ -139,19 +177,17 @@ namespace Hairdressers_backend.Services
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
         }
+
         public async Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId)
         {
             var hairStyle = await _context.HairStyles
                 .FirstOrDefaultAsync(s => s.Id == serviceId)
                 ?? throw new KeyNotFoundException("Service inexistant.");
 
-            var salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            bool isKeratina = hairStyle.Name.ToLower().Contains("keratina");
 
-            var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, salonTimeZone).Date;
-            var localLastDay = localToday.AddDays(30);
-
-            var requestedDuration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
-
+            var today = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc);
+            var lastDay = today.AddDays(30);
             var result = new List<AvailableDayWithSlotsDTO>();
 
             for (var localDate = localToday; localDate <= localLastDay; localDate = localDate.AddDays(1))
@@ -168,10 +204,9 @@ namespace Hairdressers_backend.Services
                 var appointments = await _context.Appointments
                     .Include(a => a.HairStyle)
                     .Where(a =>
-                        a.AppointmentDate >= utcWorkStart &&
-                        a.AppointmentDate < utcWorkEnd &&
-                        a.Status != AppointmentStatus.Cancelled)
-                    .OrderBy(a => a.AppointmentDate)
+                        a.AppointmentDate >= dayStart &&
+                        a.AppointmentDate < dayEnd &&
+                        (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.External))
                     .ToListAsync();
 
                 var availableSlots = new List<string>();
@@ -185,13 +220,25 @@ namespace Hairdressers_backend.Services
                     var utcSlotStart = TimeZoneInfo.ConvertTimeToUtc(localSlotStart, salonTimeZone);
                     var utcSlotEnd = TimeZoneInfo.ConvertTimeToUtc(localSlotEnd, salonTimeZone);
 
-                    bool overlaps = appointments.Any(a =>
+                    bool isTaken = appointments.Any(a =>
                     {
-                        var existingStartUtc = a.AppointmentDate;
-                        var existingDuration = a.HairStyle.DurationMaxMinutes ?? a.HairStyle.DurationMinutes;
-                        var existingEndUtc = existingStartUtc.AddMinutes(existingDuration);
+                        var apptDuration = a.HairStyle?.DurationMinutes ?? a.ExternalDurationMinutes ?? 60;
+                        bool overlaps = a.AppointmentDate < slotEnd &&
+                                        a.AppointmentDate.AddMinutes(apptDuration) > slotStart;
 
-                        return utcSlotStart < existingEndUtc && utcSlotEnd > existingStartUtc;
+                        if (!overlaps) return false;
+
+                        // External et Confirmed bloquent toujours
+                        if (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.External) return true;
+
+                        // Pending + Keratina bloque toujours
+                        if (a.Status == AppointmentStatus.Pending && isKeratina) return true;
+
+                        // Pending → bloque seulement si le service pending a un PriceMin >= au service demandé
+                        if (a.Status == AppointmentStatus.Pending && a.HairStyle != null)
+                            return a.HairStyle.PriceMin >= hairStyle.PriceMin;
+
+                        return false;
                     });
 
                     if (!overlaps)
@@ -213,6 +260,56 @@ namespace Hairdressers_backend.Services
             }
 
             return result;
+        }
+
+        public async Task SyncFromGoogleCalendarAsync()
+        {
+            var timeMin = DateTime.UtcNow.AddDays(-1);
+            var timeMax = DateTime.UtcNow.AddDays(60);
+
+            var googleEvents = await _calendarService.GetAppointmentsAsync(timeMin, timeMax);
+
+            var existingGoogleIds = (await _context.Appointments
+                .Where(a => a.GoogleEventId != null)
+                .Select(a => a.GoogleEventId)
+                .ToListAsync()).ToHashSet();
+
+            // Supprimer les External qui n'existent plus dans Google Calendar
+            var externalAppointments = await _context.Appointments
+                .Where(a => a.Status == AppointmentStatus.External)
+                .ToListAsync();
+
+            var googleEventIds = googleEvents.Select(e => e.Id).ToHashSet();
+
+            foreach (var ext in externalAppointments)
+            {
+                if (ext.GoogleEventId != null && !googleEventIds.Contains(ext.GoogleEventId))
+                    _context.Appointments.Remove(ext);
+            }
+
+            // Ajouter les nouveaux événements manuels pas encore en DB
+            foreach (var ev in googleEvents)
+            {
+                if (existingGoogleIds.Contains(ev.Id)) continue;
+
+                var start = ev.Start?.DateTimeDateTimeOffset?.UtcDateTime;
+                var end = ev.End?.DateTimeDateTimeOffset?.UtcDateTime;
+
+                if (start == null) continue;
+
+                var duration = end.HasValue ? (int)(end.Value - start.Value).TotalMinutes : 60;
+
+                _context.Appointments.Add(new Appointment
+                {
+                    GoogleEventId = ev.Id,
+                    AppointmentDate = start.Value,
+                    ExternalDurationMinutes = duration,
+                    Notes = ev.Summary,
+                    Status = AppointmentStatus.External
+                });
+            }
+
+            await _context.SaveChangesAsync();
         }
         public async Task<User?> GetUserBySupabaseIdAsync(string supabaseUserId)
         {
