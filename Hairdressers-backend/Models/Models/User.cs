@@ -36,5 +36,8 @@ namespace Models.Models
         // Navigation
         [JsonIgnore]
         public virtual List<Appointment> Appointments { get; set; } = new();
+
+        [JsonIgnore]
+        public virtual List<Review> Reviews { get; set; } = [];
     }
 }

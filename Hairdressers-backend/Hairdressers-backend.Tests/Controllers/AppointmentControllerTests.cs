@@ -13,20 +13,33 @@ namespace Hairdressers_backend.Tests.Controllers
     public class AppointmentControllerTests
     {
         private readonly Mock<IAppointmentService> _serviceMock;
-
+        private readonly Mock<IGoogleCalendarService> _googleCalendarMock;
         public AppointmentControllerTests()
         {
             _serviceMock = new Mock<IAppointmentService>();
+            _googleCalendarMock = new Mock<IGoogleCalendarService>();
         }
 
         // ─── Helpers ────────────────────────────────────────────────────────────────
 
-        private AppointmentController BuildController(string? supabaseUserId = "user-abc")
+        private AppointmentController BuildController(string? supabaseUserId = "user-abc",bool isAdmin = false)
         {
-            var controller = new AppointmentController(_serviceMock.Object);
-            var claims = supabaseUserId != null
-                ? new List<Claim> { new Claim(ClaimTypes.NameIdentifier, supabaseUserId) }
-                : new List<Claim>();
+            var controller = new AppointmentController(
+                _serviceMock.Object,
+                _googleCalendarMock.Object
+            );
+
+            var claims = new List<Claim>();
+
+            if (supabaseUserId != null)
+            {
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, supabaseUserId));
+            }
+
+            if (isAdmin)
+            {
+                claims.Add(new Claim("app_metadata", "{\"isAdmin\":true}"));
+            }
 
             controller.ControllerContext = new ControllerContext
             {
@@ -35,6 +48,7 @@ namespace Hairdressers_backend.Tests.Controllers
                     User = new ClaimsPrincipal(new ClaimsIdentity(claims, "Test"))
                 }
             };
+
             return controller;
         }
 

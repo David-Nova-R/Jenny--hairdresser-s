@@ -68,31 +68,53 @@ namespace Hairdressers_backend.Tests.Controllers
         }
 
         // ─── UploadPhoto ────────────────────────────────────────────────────────────
+        private UploadHairstylePhotoRequest BuildUploadRequest()
+        {
+            return new UploadHairstylePhotoRequest
+            {
+                Photo = BuildFormFile().Object
+            };
+        }
 
         [Fact]
         public async Task UploadPhoto_Returns200_WhenSuccess()
         {
-            _serviceMock.Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>())).ReturnsAsync("https://storage/photo.jpg");
+            _serviceMock
+                .Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>()))
+                .ReturnsAsync("https://storage/photo.jpg");
+
             var controller = BuildController();
-            var result = await controller.UploadPhoto(1, BuildFormFile().Object) as OkObjectResult;
+
+            var result = await controller.UploadPhoto(1, BuildUploadRequest()) as OkObjectResult;
+
             Assert.Equal(200, result!.StatusCode);
         }
 
         [Fact]
         public async Task UploadPhoto_Returns404_WhenHairStyleNotFound()
         {
-            _serviceMock.Setup(s => s.UploadPhotoAsync(999, It.IsAny<IFormFile>())).ThrowsAsync(new KeyNotFoundException("Service introuvable."));
+            _serviceMock
+                .Setup(s => s.UploadPhotoAsync(999, It.IsAny<IFormFile>()))
+                .ThrowsAsync(new KeyNotFoundException("Service introuvable."));
+
             var controller = BuildController();
-            var result = await controller.UploadPhoto(999, BuildFormFile().Object) as NotFoundObjectResult;
+
+            var result = await controller.UploadPhoto(999, BuildUploadRequest()) as NotFoundObjectResult;
+
             Assert.Equal(404, result!.StatusCode);
         }
 
         [Fact]
         public async Task UploadPhoto_Returns400_WhenInvalidOperation()
         {
-            _serviceMock.Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>())).ThrowsAsync(new InvalidOperationException("Format non supporté."));
+            _serviceMock
+                .Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>()))
+                .ThrowsAsync(new InvalidOperationException("Format non supporté."));
+
             var controller = BuildController();
-            var result = await controller.UploadPhoto(1, BuildFormFile().Object) as BadRequestObjectResult;
+
+            var result = await controller.UploadPhoto(1, BuildUploadRequest()) as BadRequestObjectResult;
+
             Assert.Equal(400, result!.StatusCode);
         }
 

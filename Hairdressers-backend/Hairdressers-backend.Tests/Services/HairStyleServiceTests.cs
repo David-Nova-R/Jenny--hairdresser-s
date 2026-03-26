@@ -55,15 +55,15 @@ namespace Hairdressers_backend.Tests.Services
         }
 
         [Fact]
-        public async Task GetHairStyles_ReturnsEmptyPhotoUrls_WhenNoPhotosAdded()
+        public async Task GetHairStyles_ReturnsEmptyPhotos_WhenNoPhotosAdded()
         {
             var result = await _service.GetHairStylesAsync();
 
-            Assert.All(result, hs => Assert.Empty(hs.PhotoUrls));
+            Assert.All(result, hs => Assert.Empty(hs.Photos));
         }
 
         [Fact]
-        public async Task GetHairStyles_ReturnsPhotoUrls_WhenPhotosExist()
+        public async Task GetHairStyles_ReturnsPhotos_WhenPhotosExist()
         {
             _context.HairStylePhotos.AddRange(
                 new HairStylePhoto { HairStyleId = 1, PhotoUrl = "https://storage/photo1.jpg" },
@@ -74,8 +74,9 @@ namespace Hairdressers_backend.Tests.Services
             var result = await _service.GetHairStylesAsync();
 
             var corte = result.First(hs => hs.Id == 1);
-            Assert.Equal(2, corte.PhotoUrls.Count);
-            Assert.Contains("https://storage/photo1.jpg", corte.PhotoUrls);
+            Assert.Equal(2, corte.Photos.Count);
+            Assert.Contains(corte.Photos, p => p.PhotoUrl == "https://storage/photo1.jpg");
+            Assert.Contains(corte.Photos, p => p.PhotoUrl == "https://storage/photo2.jpg");
         }
 
         [Fact]
@@ -90,8 +91,10 @@ namespace Hairdressers_backend.Tests.Services
 
             var style1 = result.First(hs => hs.Id == 1);
             var style2 = result.First(hs => hs.Id == 2);
-            Assert.Empty(style1.PhotoUrls);
-            Assert.Single(style2.PhotoUrls);
+
+            Assert.Empty(style1.Photos);
+            Assert.Single(style2.Photos);
+            Assert.Equal("https://storage/photo-style2.jpg", style2.Photos[0].PhotoUrl);
         }
 
         // ─── GetUserBySupabaseIdAsync ───────────────────────────────────────────────
