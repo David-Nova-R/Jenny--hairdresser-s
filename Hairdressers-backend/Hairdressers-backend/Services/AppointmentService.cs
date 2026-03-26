@@ -104,6 +104,10 @@ namespace Hairdressers_backend.Services
 
             bool overlaps = existingAppointments.Any(a =>
             {
+
+                if (a.Status == AppointmentStatus.Cancelled)
+                    return false;
+
                 var existingDuration = a.HairStyle?.DurationMaxMinutes
                     ?? a.HairStyle?.DurationMinutes
                     ?? a.ExternalDurationMinutes
@@ -200,10 +204,7 @@ namespace Hairdressers_backend.Services
                     .Include(a => a.HairStyle)
                     .Where(a =>
                         a.AppointmentDate >= dayStart &&
-                        a.AppointmentDate < dayEnd &&
-                        (a.Status == AppointmentStatus.Confirmed ||
-                         a.Status == AppointmentStatus.Pending ||
-                         a.Status == AppointmentStatus.External))
+                        a.AppointmentDate < dayEnd)
                     .ToListAsync();
 
                 var slots = new List<string>();
@@ -232,14 +233,19 @@ namespace Hairdressers_backend.Services
                         if (!overlaps)
                             return false;
 
-                        if (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.External)
+                        if (a.Status == AppointmentStatus.Confirmed ||
+                        a.Status == AppointmentStatus.Pending ||
+                        a.Status == AppointmentStatus.Completed ||
+                        a.Status == AppointmentStatus.External)
+                        {
                             return true;
+                        }
 
-                        if (a.Status == AppointmentStatus.Pending && isKeratina)
-                            return true;
+                        //if (a.Status == AppointmentStatus.Pending && isKeratina)
+                        //    return true;
 
-                        if (a.Status == AppointmentStatus.Pending && a.HairStyle != null)
-                            return a.HairStyle.PriceMin >= hairStyle.PriceMin;
+                        //if (a.Status == AppointmentStatus.Pending && a.HairStyle != null)
+                        //    return a.HairStyle.PriceMin >= hairStyle.PriceMin;
 
                         return false;
                     });
