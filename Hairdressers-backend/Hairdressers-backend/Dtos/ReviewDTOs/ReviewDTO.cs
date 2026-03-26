@@ -1,4 +1,4 @@
-﻿namespace Hairdressers_backend.Dtos.ReviewDTOs
+﻿namespace Hairdressers_backend.Dtos
 {
     public class ReviewDTO
     {

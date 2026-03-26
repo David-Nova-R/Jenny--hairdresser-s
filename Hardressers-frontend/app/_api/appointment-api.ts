@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos } from '@/app/_models/models';
+import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
 const API_BASE_URL = 'https://localhost:7226';
@@ -266,4 +266,41 @@ export async function DeleteHairStylePhoto(photoId: number): Promise<void> {
         );
         throw err;
     }
+}
+
+export async function FetchAllReviewsAdmin(): Promise<AdminReviewDTO[]> {
+  const headers = await getAuthHeaders();
+
+  const response = await axios.get<AdminReviewDTO[]>(
+    `${API_BASE_URL}/api/Reviews/GetAllReviews`,
+    { headers }
+  );
+
+  return response.data;
+}
+
+export async function PutVisibilityReview(reviewId: number): Promise<void> {
+  const headers = await getAuthHeaders();
+
+  await axios.put(
+    `${API_BASE_URL}/api/Reviews/PutVisibilityReview/${reviewId}`,
+    {},
+    { headers }
+  );
+}
+
+export async function DeleteReview(reviewId: number): Promise<void> {
+  const headers = await getAuthHeaders();
+
+  await axios.delete(
+    `${API_BASE_URL}/api/Reviews/DeleteReview/${reviewId}`,
+    { headers }
+  );
+}
+export async function FetchVisibleReviews(): Promise<ReviewDisplayDTO[]> {
+  const response = await axios.get<ReviewDisplayDTO[]>(
+    `${API_BASE_URL}/api/Reviews/GetVisibleReviews`
+  );
+
+  return response.data;
 }

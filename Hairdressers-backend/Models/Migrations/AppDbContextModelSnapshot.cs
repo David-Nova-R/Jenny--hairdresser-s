@@ -285,6 +285,9 @@ namespace Models.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsVisible")
                         .HasColumnType("boolean");
 
@@ -295,14 +298,66 @@ namespace Models.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId1")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Review");
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Reviews");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 3, 16, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1107),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Excellent service, très professionnelle.",
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 3, 18, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1116),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Très bon résultat, je recommande !",
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2026, 3, 21, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1118),
+                            IsVisible = true,
+                            Stars = 4,
+                            Text = "Service rapide et efficace.",
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 3, 23, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1120),
+                            IsVisible = false,
+                            Stars = 4,
+                            Text = "Bonne expérience globale.",
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2026, 3, 25, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1122),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Je reviendrai sûrement !",
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("Models.Models.User", b =>
@@ -403,8 +458,14 @@ namespace Models.Migrations
             modelBuilder.Entity("Models.Models.Review", b =>
                 {
                     b.HasOne("Models.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Models.User", null)
                         .WithMany("Reviews")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });

@@ -11,6 +11,7 @@ import {
   Scissors,
   ChevronLeft,
   ChevronRight,
+  Star,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -21,8 +22,8 @@ import LoginModal from './_components/LoginModal';
 import RegisterModal from './_components/RegisterModal';
 import { useAuth } from './_context/auth-context';
 import { useModal } from './_context/modal-context';
-import { AvailableDay, HairStyle, HairStyleWithPhotos } from './_models/models';
-import { FetchAvailableSlots, FetchHairStyles } from './_api/appointment-api';
+import { FetchAvailableSlots, FetchHairStyles, FetchVisibleReviews } from './_api/appointment-api';
+import { AvailableDay, HairStyle, HairStyleWithPhotos, ReviewDisplayDTO } from './_models/models';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -36,6 +37,10 @@ export default function HomePage() {
   const [galleryHairStyles, setGalleryHairStyles] = useState<HairStyleWithPhotos[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(false);
+  const [reviews, setReviews] = useState<ReviewDisplayDTO[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  const reviewScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user && (selectedHairStyle || pendingBooking)) {
@@ -46,7 +51,10 @@ export default function HomePage() {
   useEffect(() => {
     void loadGallery();
   }, []);
-
+  useEffect(() => {
+    void loadGallery();
+    void loadReviews();
+  }, []);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const uiHairStyles = useMemo(() => [{
@@ -97,6 +105,19 @@ export default function HomePage() {
     });
   };
 
+  const loadReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      const data = await FetchVisibleReviews();
+      setReviews(data);
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
   const openHairStyleModal = async () => {
     openModal('hairstyle');
     setSelectedHairStyle(null);
@@ -118,6 +139,17 @@ export default function HomePage() {
       hairStyleName: hairStyle.name,
     }))
   );
+
+  const scrollReviews = (direction: 'left' | 'right') => {
+    if (!reviewScrollRef.current) return;
+
+    const { clientWidth } = reviewScrollRef.current;
+
+    reviewScrollRef.current.scrollBy({
+      left: direction === 'left' ? -clientWidth : clientWidth,
+      behavior: 'smooth',
+    });
+  };
 
   const openCalendarModal = async (hairStyle: HairStyle) => {
     setSelectedHairStyle(hairStyle);
@@ -400,6 +432,89 @@ export default function HomePage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="reviews" className="bg-black px-6 py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-20 text-center">
+            <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
+              Testimonials
+            </span>
+            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
+              Client Reviews
+            </h2>
+            <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
+          </div>
+
+          {reviewsLoading ? (
+            <div className="flex min-h-[200px] items-center justify-center">
+              <span className="text-gray-400">Loading reviews...</span>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-[#D4AF37]/20 bg-[#0a0a0a] text-gray-400">
+              No reviews available yet.
+            </div>
+          ) : (
+            <div className="relative">
+              <button
+                onClick={() => scrollReviews('left')}
+                className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              <button
+                onClick={() => scrollReviews('right')}
+                className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-16 bg-gradient-to-r from-black to-transparent md:block" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-16 bg-gradient-to-l from-black to-transparent md:block" />
+
+              <div
+                ref={reviewScrollRef}
+                className="flex gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {reviews.map((review, index) => (
+                  <div
+                    key={`${review.authorName ?? 'review'}-${index}`}
+                    className="min-w-[320px] max-w-[320px] rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10"
+                  >
+                    <div className="mb-4 flex items-center gap-1">
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <Star
+                          key={starIndex}
+                          className={`h-4 w-4 ${starIndex < review.stars
+                              ? 'fill-[#D4AF37] text-[#D4AF37]'
+                              : 'text-gray-600'
+                            }`}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="mb-6 min-h-[96px] leading-relaxed text-gray-300">
+                      “{review.text}”
+                    </p>
+
+                    <div className="border-t border-[#D4AF37]/10 pt-4">
+                      <p className="text-sm font-medium text-white">
+                        {review.authorName || 'Anonymous'}
+                      </p>
+
+                      {review.createdAt && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

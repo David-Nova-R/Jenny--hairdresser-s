@@ -19,6 +19,7 @@ namespace Models.Data
         public DbSet<User> Users { get; set; }
         public DbSet<HairStyle> HairStyles { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -38,11 +39,15 @@ namespace Models.Data
             // HairStyle photos
             builder.Entity<HairStylePhoto>().HasOne(p => p.HairStyle).WithMany(h => h.Photos).HasForeignKey(p => p.HairStyleId).OnDelete(DeleteBehavior.Cascade);
 
+            // Reviews
+            builder.Entity<Review>().HasOne(r => r.User).WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+
             // Seeds
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
-            
+            builder.Entity<Review>().HasData(Seed.SeedReviews());
+
         }
     }
 }

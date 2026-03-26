@@ -12,7 +12,7 @@ import {
 import { AppointmentResponseDTO, HairStyleWithPhotos } from '@/app/_models/models';
 import AdminCalendar from './admin-calendar';
 import HairStyleGalleryManager from './hairstyle-gallery-manager';
-
+import AdminReviews from './admin-reviews';
 const STATUS_OPTIONS = [
     { value: 0, label: 'Pending' },
     { value: 1, label: 'Confirmed' },
@@ -21,7 +21,7 @@ const STATUS_OPTIONS = [
     { value: 4, label: 'External' },
 ];
 
-type AdminTab = 'appointments' | 'calendar' | 'photos';
+type AdminTab = 'appointments' | 'calendar' | 'photos' | 'reviews';
 
 type PagedAppointmentsResponse = {
     items: AppointmentResponseDTO[];
@@ -184,6 +184,15 @@ export default function AdminPage() {
                     >
                         Photos
                     </button>
+                    <button
+                        onClick={() => setActiveTab('reviews')}
+                        className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'reviews'
+                                ? 'bg-[#D4AF37] text-black'
+                                : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
+                            }`}
+                    >
+                        Reviews
+                    </button>
                 </div>
 
                 {activeTab === 'appointments' && (
@@ -325,6 +334,7 @@ export default function AdminPage() {
                         )}
                     </section>
                 )}
+                {activeTab === 'reviews' && <AdminReviews />}
             </div>
         </div>
     );

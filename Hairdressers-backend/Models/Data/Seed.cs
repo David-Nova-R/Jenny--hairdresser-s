@@ -87,5 +87,57 @@ namespace Hairdressers_backend.Data
                 }
             };
         }
+
+        public static Review[] SeedReviews()
+        {
+            return new Review[]
+            {
+        new Review
+        {
+            Id = 1,
+            UserId = 1,
+            Text = "Excellent service, très professionnelle.",
+            Stars = 5,
+            IsVisible = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-10)
+        },
+        new Review
+        {
+            Id = 2,
+            UserId = 2,
+            Text = "Très bon résultat, je recommande !",
+            Stars = 5,
+            IsVisible = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-8)
+        },
+        new Review
+        {
+            Id = 3,
+            UserId = 3,
+            Text = "Service rapide et efficace.",
+            Stars = 4,
+            IsVisible = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-5)
+        },
+        new Review
+        {
+            Id = 4,
+            UserId = 1,
+            Text = "Bonne expérience globale.",
+            Stars = 4,
+            IsVisible = false,
+            CreatedAt = DateTime.UtcNow.AddDays(-3)
+        },
+        new Review
+        {
+            Id = 5,
+            UserId = 2,
+            Text = "Je reviendrai sûrement !",
+            Stars = 5,
+            IsVisible = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-1)
+        }
+            };
+        }
     }
 }

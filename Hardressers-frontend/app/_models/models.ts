@@ -70,3 +70,19 @@ export interface HairStylePhoto {
 export type HairStyleWithPhotos = HairStyle & {
   photos?: HairStylePhoto[];
 };
+
+export interface AdminReviewDTO {
+  id: number;
+  authorName?: string;
+  text: string;
+  stars: number;
+  isVisible: boolean;
+  createdAt: string;
+}
+
+export interface ReviewDisplayDTO {
+  authorName?: string;
+  text: string;
+  stars: number;
+  createdAt?: string;
+}
