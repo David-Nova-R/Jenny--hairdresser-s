@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/_context/auth-context';
 import {
     FetchAllAppointmentsAdmin,
+    FetchHairStyles,
     UpdateAppointmentStatusAdmin,
 } from '@/app/_api/appointment-api';
-import { AppointmentResponseDTO } from '@/app/_models/models';
+import { AppointmentResponseDTO, HairStyleWithPhotos } from '@/app/_models/models';
 import AdminCalendar from './admin-calendar';
+import HairStyleGalleryManager from './hairstyle-gallery-manager';
 
 const STATUS_OPTIONS = [
     { value: 0, label: 'Pending' },
@@ -19,7 +21,7 @@ const STATUS_OPTIONS = [
     { value: 4, label: 'External' },
 ];
 
-type AdminTab = 'appointments' | 'calendar';
+type AdminTab = 'appointments' | 'calendar' | 'photos';
 
 type PagedAppointmentsResponse = {
     items: AppointmentResponseDTO[];
@@ -39,6 +41,8 @@ export default function AdminPage() {
     const [savingId, setSavingId] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [hairStyles, setHairStyles] = useState<HairStyleWithPhotos[]>([]);
+    const [loadingPhotos, setLoadingPhotos] = useState(false);
 
     useEffect(() => {
         if (!loading && (!user || !user.app_metadata?.isAdmin)) {
@@ -51,6 +55,12 @@ export default function AdminPage() {
             void loadAppointments(1);
         }
     }, [loading, user]);
+
+    useEffect(() => {
+        if (activeTab === 'photos') {
+            void loadHairStyles();
+        }
+    }, [activeTab]);
 
     const loadAppointments = async (page = 1) => {
         try {
@@ -66,6 +76,20 @@ export default function AdminPage() {
             setAppointments([]);
         } finally {
             setLoadingAppointments(false);
+        }
+    };
+
+    const loadHairStyles = async () => {
+        try {
+            setLoadingPhotos(true);
+            const data = await FetchHairStyles();
+            console.log('Loaded hairstyles:', data);
+            setHairStyles(data);
+        } catch (error) {
+            console.error('Failed to load hairstyles:', error);
+            setHairStyles([]);
+        } finally {
+            setLoadingPhotos(false);
         }
     };
 
@@ -150,6 +174,15 @@ export default function AdminPage() {
                             : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
                             }`}>
                         Calendar
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('photos')}
+                        className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-all ${activeTab === 'photos'
+                            ? 'bg-[#D4AF37] text-black'
+                            : 'border border-[#D4AF37]/20 bg-[#0a0a0a] text-[#D4AF37] hover:border-[#D4AF37]/40'
+                            }`}
+                    >
+                        Photos
                     </button>
                 </div>
 
@@ -277,6 +310,21 @@ export default function AdminPage() {
                     </section>
                 )}
                 {activeTab === 'calendar' && <AdminCalendar />}
+                {activeTab === 'photos' && (
+                    <section className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-5">
+                        {loadingPhotos ? (
+                            <div className="flex min-h-[300px] items-center justify-center">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                            </div>
+                        ) : (
+                            <HairStyleGalleryManager
+                                hairStyles={hairStyles}
+                                isAdmin={true}
+                                onRefresh={loadHairStyles}
+                            />
+                        )}
+                    </section>
+                )}
             </div>
         </div>
     );

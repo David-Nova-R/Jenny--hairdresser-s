@@ -19,7 +19,7 @@ import LoginModal from './_components/LoginModal';
 import RegisterModal from './_components/RegisterModal';
 import { useAuth } from './_context/auth-context';
 import { useModal } from './_context/modal-context';
-import { AvailableDay, HairStyle } from './_models/models';
+import { AvailableDay, HairStyle, HairStyleWithPhotos } from './_models/models';
 import { FetchAvailableSlots, FetchHairStyles } from './_api/appointment-api';
 
 export default function HomePage() {
@@ -31,6 +31,8 @@ export default function HomePage() {
   const [hairStylesLoading, setHairStylesLoading] = useState(false);
   const [slots, setSlots] = useState<AvailableDay[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [galleryHairStyles, setGalleryHairStyles] = useState<HairStyleWithPhotos[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
 
   useEffect(() => {
     if (user && activeModal === 'login' && selectedHairStyle) {
@@ -38,43 +40,46 @@ export default function HomePage() {
     }
   }, [user, activeModal, selectedHairStyle]);
 
-  const uiHairStyles = useMemo(
-    () => [
-      {
-        icon: Scissors,
-        title: 'Haircuts',
-        description: 'Precision cuts tailored to your unique style and personality.',
-        price: 'From $80',
-      },
-      {
-        icon: Palette,
-        title: 'Coloring',
-        description: 'Expert color services including highlights, balayage, and full color.',
-        price: 'From $150',
-      },
-      {
-        icon: Sparkles,
-        title: 'Styling',
-        description: 'Professional styling for special occasions and everyday elegance.',
-        price: 'From $60',
-      },
-      {
-        icon: Heart,
-        title: 'Treatments',
-        description: 'Luxurious treatments to restore and nourish your hair.',
-        price: 'From $100',
-      },
-    ],
-    []
-  );
+  useEffect(() => {
+    void loadGallery();
+  }, []);
 
-  const galleryImages = useMemo(
-    () => [
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibG9uZGUlMjBiYWxheWFnZSUyMGhhaXJ8ZW58MXx8fHwxNzczMjM3NzUwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      'https://images.unsplash.com/photo-1703705632900-4cb9361015e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxicnVuZXR0ZSUyMGxheWVycyUyMGhhaXJjdXR8ZW58MXx8fHwxNzczMjM3NzUwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    ],
-    []
-  );
+  const uiHairStyles = useMemo(() => [{
+    icon: Scissors,
+    title: 'Haircuts',
+    description: 'Precision cuts tailored to your unique style and personality.',
+    price: 'From $80',
+  },
+  {
+    icon: Palette,
+    title: 'Coloring',
+    description: 'Expert color services including highlights, balayage, and full color.',
+    price: 'From $150',
+  },
+  {
+    icon: Sparkles, title: 'Styling',
+    description: 'Professional styling for special occasions and everyday elegance.',
+    price: 'From $60',
+  },
+  {
+    icon: Heart,
+    title: 'Treatments',
+    description: 'Luxurious treatments to restore and nourish your hair.',
+    price: 'From $100',
+  },], []);
+
+  const loadGallery = async () => {
+    try {
+      setGalleryLoading(true);
+      const data = await FetchHairStyles();
+      setGalleryHairStyles(data);
+    } catch (err) {
+      console.error('Failed to load gallery:', err);
+      setGalleryHairStyles([]);
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
 
   const openHairStyleModal = async () => {
     openModal('hairstyle');
@@ -211,25 +216,35 @@ export default function HomePage() {
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
               Portfolio
             </span>
-            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">My Work</h2>
+            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
+              My Work
+            </h2>
             <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {galleryImages.map((image, index) => (
-              <div
-                key={index}
-                className="group relative aspect-square overflow-hidden rounded-2xl border border-[#D4AF37]/20 transition-all duration-300 hover:border-[#D4AF37]/50"
-              >
-                <ImageWithFallback
-                  src={image}
-                  alt={`Gallery ${index + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              </div>
-            ))}
-          </div>
+          {galleryLoading ? (
+            <div className="flex min-h-[200px] items-center justify-center">
+              <span className="text-gray-400">Loading gallery...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {galleryHairStyles.flatMap((hairStyle) =>
+                (hairStyle.photos ?? []).map((photo) => (
+                  <div
+                    key={photo.id}
+                    className="group relative aspect-square overflow-hidden rounded-2xl border border-[#D4AF37]/20 transition-all duration-300 hover:border-[#D4AF37]/50"
+                  >
+                    <ImageWithFallback
+                      src={photo.photoUrl}
+                      alt={hairStyle.name}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </section>
 

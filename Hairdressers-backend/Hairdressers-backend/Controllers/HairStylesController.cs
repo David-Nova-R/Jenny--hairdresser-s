@@ -1,10 +1,12 @@
 ﻿using Hairdressers_backend.Data;
+using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -19,6 +21,28 @@ namespace Hairdressers_backend.Controllers
             _hairStyleService = hairStyleService;
         }
 
+        private bool IsAdmin()
+        {
+            var appMetadata = User.FindFirst("app_metadata")?.Value;
+
+            if (string.IsNullOrEmpty(appMetadata))
+                return false;
+
+            try
+            {
+                var json = JsonDocument.Parse(appMetadata);
+
+                if (json.RootElement.TryGetProperty("isAdmin", out var isAdminProp))
+                    return isAdminProp.GetBoolean();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
+        }
+
         [HttpGet]
         public async Task<ActionResult> GetHairStyles()
         {
@@ -27,22 +51,14 @@ namespace Hairdressers_backend.Controllers
         }
         [Authorize]
         [HttpPost("{hairStyleId}")]
-        public async Task<ActionResult> UploadPhoto(int hairStyleId, IFormFile photo)
+        public async Task<ActionResult> UploadPhoto(int hairStyleId, [FromForm] UploadHairstylePhotoRequest dto)
         {
-            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (supabaseUserId == null)
-                return Unauthorized(new { Message = "Utilisateur non authentifié." });
-
-            var user = await _hairStyleService.GetUserBySupabaseIdAsync(supabaseUserId);
-            if (user == null)
-                return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
+            if (!IsAdmin())
+                return Forbid();
 
             try
             {
-                var url = await _hairStyleService.UploadPhotoAsync(hairStyleId, photo);
+                var url = await _hairStyleService.UploadPhotoAsync(hairStyleId, dto.Photo);
                 return Ok(new { Message = "Photo uploadée avec succès.", Url = url });
             }
             catch (KeyNotFoundException ex)
@@ -59,16 +75,8 @@ namespace Hairdressers_backend.Controllers
         [HttpDelete("{photoId}")]
         public async Task<ActionResult> DeletePhoto(int photoId)
         {
-            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (supabaseUserId == null)
-                return Unauthorized(new { Message = "Utilisateur non authentifié." });
-
-            var user = await _hairStyleService.GetUserBySupabaseIdAsync(supabaseUserId);
-            if (user == null)
-                return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
+            if (!IsAdmin())
+                return Forbid();
 
             try
             {

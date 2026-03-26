@@ -1,14 +1,3 @@
-export interface HairStyle {
-  id: number;
-  name: string;
-  description?: string;
-  priceMin: number;
-  priceMax?: number;
-  durationMinutes: number;
-  durationMaxMinutes?: number;
-  photoUrl?: string;
-}
-
 export interface HairStyleSelectModalProps {
   show: boolean;
   HairStyles: HairStyle[];
@@ -59,4 +48,25 @@ export type AdminCalendarAppointmentDTO = {
   priceMax?: number | null;
   notes?: string | null;
   externalDurationMinutes?: number | null;
+};
+
+export interface HairStyle {
+  id: number;
+  name: string;
+  description?: string;
+  priceMin: number;
+  priceMax?: number;
+  durationMinutes: number;
+  durationMaxMinutes?: number;
+  photoUrl?: string;
+}
+
+export interface HairStylePhoto {
+  id: number;
+  hairStyleId: number;
+  photoUrl: string;
+}
+
+export type HairStyleWithPhotos = HairStyle & {
+  photos?: HairStylePhoto[];
 };
