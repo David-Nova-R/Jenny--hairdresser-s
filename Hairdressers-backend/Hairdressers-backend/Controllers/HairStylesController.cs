@@ -1,4 +1,4 @@
-﻿using Hairdressers_backend.Data;
+using Hairdressers_backend.Data;
 using Hairdressers_backend.Dtos;
 using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;

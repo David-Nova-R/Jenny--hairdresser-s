@@ -95,7 +95,39 @@ namespace Hairdressers_backend.Controllers
                 });
             }
         }
-    [HttpGet]
+
+        [HttpPost]
+        public async Task<ActionResult> Login(LoginDTO loginDTO)
+        {
+            try
+            {
+                // 1. Authentifier via Supabase
+                var session = await _supabase.Auth.SignIn(loginDTO.Email, loginDTO.Password);
+
+                if (session?.User == null || session.AccessToken == null)
+                    return Unauthorized(new { Error = "Email ou mot de passe incorrect." });
+
+                return Ok( session.AccessToken);
+            }
+            catch (GotrueException ex)
+            {
+                var message = ex.Message.ToLower();
+
+                if (message.Contains("invalid login credentials") || message.Contains("invalid_credentials"))
+                    return Unauthorized(new { Error = "Email ou mot de passe incorrect." });
+
+                if (message.Contains("email not confirmed"))
+                    return StatusCode(403, new { Error = "Veuillez confirmer votre adresse email avant de vous connecter." });
+
+                return BadRequest(new { Error = "Erreur lors de la connexion.", Details = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { Error = "Une erreur interne est survenue lors de la connexion." });
+            }
+        }
+
+        [HttpGet]
         [Authorize]
         public ActionResult PrivateTest()
         {

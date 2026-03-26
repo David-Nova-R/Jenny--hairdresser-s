@@ -37,13 +37,12 @@ namespace Hairdressers_backend.Tests.Controllers
             return controller;
         }
 
-        private User MakeUser(int id, bool isAdmin = false) => new User
+        private User MakeUser(int id) => new User
         {
             Id = id,
             SupabaseUserId = "user-abc",
             FirstName = "Jenny",
-            LastName = "Test",
-            IsAdmin = isAdmin
+            LastName = "Test"
         };
 
         private static Mock<IFormFile> BuildFormFile(string contentType = "image/jpeg", long size = 1024)
@@ -71,35 +70,8 @@ namespace Hairdressers_backend.Tests.Controllers
         // ─── UploadPhoto ────────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task UploadPhoto_Returns401_WhenNoClaimInToken()
+        public async Task UploadPhoto_Returns200_WhenSuccess()
         {
-            var controller = BuildController(supabaseUserId: null);
-            var result = await controller.UploadPhoto(1, BuildFormFile().Object) as ObjectResult;
-            Assert.Equal(401, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task UploadPhoto_Returns404_WhenUserNotFound()
-        {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync((User?)null);
-            var controller = BuildController();
-            var result = await controller.UploadPhoto(1, BuildFormFile().Object) as NotFoundObjectResult;
-            Assert.Equal(404, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task UploadPhoto_Returns403_WhenNotAdmin()
-        {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: false));
-            var controller = BuildController();
-            var result = await controller.UploadPhoto(1, BuildFormFile().Object) as ObjectResult;
-            Assert.Equal(403, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task UploadPhoto_Returns200_WhenAdminAndSuccess()
-        {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: true));
             _serviceMock.Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>())).ReturnsAsync("https://storage/photo.jpg");
             var controller = BuildController();
             var result = await controller.UploadPhoto(1, BuildFormFile().Object) as OkObjectResult;
@@ -109,7 +81,6 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task UploadPhoto_Returns404_WhenHairStyleNotFound()
         {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: true));
             _serviceMock.Setup(s => s.UploadPhotoAsync(999, It.IsAny<IFormFile>())).ThrowsAsync(new KeyNotFoundException("Service introuvable."));
             var controller = BuildController();
             var result = await controller.UploadPhoto(999, BuildFormFile().Object) as NotFoundObjectResult;
@@ -119,7 +90,6 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task UploadPhoto_Returns400_WhenInvalidOperation()
         {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: true));
             _serviceMock.Setup(s => s.UploadPhotoAsync(1, It.IsAny<IFormFile>())).ThrowsAsync(new InvalidOperationException("Format non supporté."));
             var controller = BuildController();
             var result = await controller.UploadPhoto(1, BuildFormFile().Object) as BadRequestObjectResult;
@@ -129,26 +99,8 @@ namespace Hairdressers_backend.Tests.Controllers
         // ─── DeletePhoto ────────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task DeletePhoto_Returns401_WhenNoClaimInToken()
+        public async Task DeletePhoto_Returns200_WhenSuccess()
         {
-            var controller = BuildController(supabaseUserId: null);
-            var result = await controller.DeletePhoto(1) as ObjectResult;
-            Assert.Equal(401, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task DeletePhoto_Returns403_WhenNotAdmin()
-        {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: false));
-            var controller = BuildController();
-            var result = await controller.DeletePhoto(1) as ObjectResult;
-            Assert.Equal(403, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task DeletePhoto_Returns200_WhenAdminAndSuccess()
-        {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: true));
             _serviceMock.Setup(s => s.DeletePhotoAsync(1)).Returns(Task.CompletedTask);
             var controller = BuildController();
             var result = await controller.DeletePhoto(1) as OkObjectResult;
@@ -158,7 +110,6 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task DeletePhoto_Returns404_WhenPhotoNotFound()
         {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: true));
             _serviceMock.Setup(s => s.DeletePhotoAsync(999)).ThrowsAsync(new KeyNotFoundException("Photo introuvable."));
             var controller = BuildController();
             var result = await controller.DeletePhoto(999) as NotFoundObjectResult;

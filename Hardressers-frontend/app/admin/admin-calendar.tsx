@@ -5,6 +5,7 @@ import { addDays, startOfWeek, format } from 'date-fns';
 import {
     FetchAdminCalendarAppointments,
     UpdateAppointmentStatusAdmin,
+    AcceptAppointmentAdmin,
 } from '@/app/_api/appointment-api';
 import { Loader2, Clock3, User2, Scissors, StickyNote } from 'lucide-react';
 import { AdminCalendarAppointmentDTO } from '../_models/models';
@@ -76,7 +77,11 @@ export default function AdminCalendar() {
         setLoadingIds((prev) => [...prev, appointment.id]);
 
         try {
-            await UpdateAppointmentStatusAdmin(appointment.id, newStatus);
+            if (type === 'confirm') {
+                await AcceptAppointmentAdmin(appointment.id);
+            } else {
+                await UpdateAppointmentStatusAdmin(appointment.id, newStatus);
+            }
 
             setAppointments((prev) =>
                 prev.map((a) =>
@@ -302,7 +307,7 @@ export default function AdminCalendar() {
                                                                         <p className="line-clamp-3 text-[11px] leading-relaxed opacity-95">
                                                                             {a.status === 4
                                                                                 ? a.notes || 'External'
-                                                                                : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} $`}
+                                                                                : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} CAD`}
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -313,7 +318,7 @@ export default function AdminCalendar() {
                                                             <div className="mt-auto truncate text-[11px] opacity-90">
                                                                 {a.status === 4
                                                                     ? a.notes || 'External'
-                                                                    : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} $`}
+                                                                    : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} CAD`}
                                                             </div>
                                                         )}
                                                     </div>

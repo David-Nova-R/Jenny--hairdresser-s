@@ -161,6 +161,17 @@ export async function FetchAllAppointmentsAdmin(
     return response.data;
 }
 
+export async function AcceptAppointmentAdmin(
+  appointmentId: number
+): Promise<void> {
+  const headers = await getAuthHeaders();
+  await axios.put(
+    `${API_BASE_URL}/api/Appointment/AcceptAppointment/${appointmentId}`,
+    null,
+    { headers }
+  );
+}
+
 export async function UpdateAppointmentStatusAdmin(
     appointmentId: number,
     status: number

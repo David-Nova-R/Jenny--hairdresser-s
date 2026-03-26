@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Models;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -13,32 +12,12 @@ namespace Hairdressers_backend.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+        private readonly IGoogleCalendarService _calendarService;
 
-        public AppointmentController(IAppointmentService appointmentService)
+        public AppointmentController(IAppointmentService appointmentService, IGoogleCalendarService calendarService)
         {
             _appointmentService = appointmentService;
-        }
-
-        private bool IsAdmin()
-        {
-            var appMetadata = User.FindFirst("app_metadata")?.Value;
-
-            if (string.IsNullOrEmpty(appMetadata))
-                return false;
-
-            try
-            {
-                var json = JsonDocument.Parse(appMetadata);
-
-                if (json.RootElement.TryGetProperty("isAdmin", out var isAdminProp))
-                    return isAdminProp.GetBoolean();
-            }
-            catch
-            {
-                return false;
-            }
-
-            return false;
+            _calendarService = calendarService;
         }
 
         [Authorize]
@@ -65,17 +44,6 @@ namespace Hairdressers_backend.Controllers
         [HttpGet]
         public async Task<ActionResult> GetPendingAppointments()
         {
-            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (supabaseUserId == null)
-                return Unauthorized(new { Message = "Utilisateur non authentifié." });
-
-            var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
-            if (user == null)
-                return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
-
             var appointments = await _appointmentService.GetPendingAppointmentsAsync();
 
             if (!appointments.Any())
@@ -125,9 +93,6 @@ namespace Hairdressers_backend.Controllers
             var user = await _appointmentService.GetUserBySupabaseIdAsync(supabaseUserId);
             if (user == null)
                 return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
 
             try
             {
@@ -222,9 +187,6 @@ namespace Hairdressers_backend.Controllers
         [HttpPut]
         public async Task<IActionResult> PutAppointmentStatus([FromBody] UpdateStatusDTO dto)
         {
-            if (!IsAdmin())
-                return Forbid();
-
             try
             {
                 var updated = await _appointmentService.UpdateAppointmentStatusAsync(dto.AppointmentId, dto.Status);
@@ -244,9 +206,6 @@ namespace Hairdressers_backend.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllAppointments([FromBody] GetAdminAppointmentDTO dto)
         {
-            if (!IsAdmin())
-                return Forbid();
-
             if (dto.PageNumber < 1)
                 dto.PageNumber = 1;
 
@@ -261,12 +220,10 @@ namespace Hairdressers_backend.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAdminCalendarAppointments([FromBody] GetAdminCalendarAppointmentsDTO dto)
         {
-            if (!IsAdmin())
-                return Forbid();
-
             var result = await _appointmentService.GetAdminCalendarAppointmentsAsync(dto.WeekStart);
 
             return Ok(result);
         }
+
     }
 }

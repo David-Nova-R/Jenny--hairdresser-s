@@ -29,8 +29,8 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
     ? `${HairStyle.durationMinutes} - ${HairStyle.durationMaxMinutes} min`
     : `${HairStyle.durationMinutes} min`;
   const priceLabel = HairStyle.priceMax
-    ? `€${HairStyle.priceMin} - €${HairStyle.priceMax}`
-    : `€${HairStyle.priceMin}`;
+    ? `${HairStyle.priceMin} CAD - ${HairStyle.priceMax} CAD`
+    : `${HairStyle.priceMin} CAD`;
 
   return (
     <div className="space-y-4">

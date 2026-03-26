@@ -76,10 +76,10 @@ export default function MyAppointmentsPage() {
 
   const formatPrice = (priceMin: number, priceMax?: number | null) => {
     if (priceMax && priceMax !== priceMin) {
-      return `${priceMin}$ - ${priceMax}$`;
+      return `${priceMin} CAD - ${priceMax} CAD`;
     }
 
-    return `${priceMin}$`;
+    return `${priceMin} CAD`;
   };
 
   if (loading || pageLoading) {
