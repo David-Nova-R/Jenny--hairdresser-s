@@ -6,6 +6,7 @@ using Supabase;
 using Models.Data;
 using Hairdressers_backend.Interfaces;
 using Hairdressers_backend.Services;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,18 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 builder.Services.AddScoped<IHairStyleService, HairStyleService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<CalendarSyncBackgroundService>();
+
+// Resend
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(options =>
+{
+    options.ApiToken = builder.Configuration["Resend:ApiKey"]
+        ?? throw new InvalidOperationException("Resend:ApiKey non configuré.");
+});
+builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger avec support JWT

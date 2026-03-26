@@ -1,10 +1,6 @@
-﻿using Hairdressers_backend.Data;
-using Hairdressers_backend.Interfaces;
+﻿using Hairdressers_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Models.Data;
-using System.Security.Claims;
 
 namespace Hairdressers_backend.Controllers
 {
@@ -29,17 +25,6 @@ namespace Hairdressers_backend.Controllers
         [HttpPost("{hairStyleId}")]
         public async Task<ActionResult> UploadPhoto(int hairStyleId, IFormFile photo)
         {
-            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (supabaseUserId == null)
-                return Unauthorized(new { Message = "Utilisateur non authentifié." });
-
-            var user = await _hairStyleService.GetUserBySupabaseIdAsync(supabaseUserId);
-            if (user == null)
-                return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
-
             try
             {
                 var url = await _hairStyleService.UploadPhotoAsync(hairStyleId, photo);
@@ -59,17 +44,6 @@ namespace Hairdressers_backend.Controllers
         [HttpDelete("{photoId}")]
         public async Task<ActionResult> DeletePhoto(int photoId)
         {
-            var supabaseUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (supabaseUserId == null)
-                return Unauthorized(new { Message = "Utilisateur non authentifié." });
-
-            var user = await _hairStyleService.GetUserBySupabaseIdAsync(supabaseUserId);
-            if (user == null)
-                return NotFound(new { Message = "Utilisateur introuvable." });
-
-            if (!user.IsAdmin)
-                return StatusCode(403, new { Message = "Accès refusé." });
-
             try
             {
                 await _hairStyleService.DeletePhotoAsync(photoId);

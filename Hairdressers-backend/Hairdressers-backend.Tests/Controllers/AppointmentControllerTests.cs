@@ -38,7 +38,7 @@ namespace Hairdressers_backend.Tests.Controllers
             return controller;
         }
 
-        private User MakeUser(int id, bool isAdmin = false) => new User
+        private User MakeUser(int id) => new User
         {
             Id = id,
             SupabaseUserId = "user-abc",
@@ -101,22 +101,9 @@ namespace Hairdressers_backend.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetPendingAppointments_Returns403_WhenUserNotAdmin()
+        public async Task GetPendingAppointments_Returns200_WhenHasPending()
         {
-            var user = MakeUser(1, isAdmin: false);
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(user);
-            var controller = BuildController();
-            var result = await controller.GetPendingAppointments() as ObjectResult;
-            Assert.Equal(403, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task GetPendingAppointments_Returns200_WhenAdminAndHasPending()
-        {
-            var admin = MakeUser(1);
-            admin.IsAdmin = true;
             var pending = new List<PendingAppointmentDTO> { new PendingAppointmentDTO { Id = 1 } };
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(admin);
             _serviceMock.Setup(s => s.GetPendingAppointmentsAsync()).ReturnsAsync(pending);
             var controller = BuildController();
             var result = await controller.GetPendingAppointments() as OkObjectResult;
@@ -127,9 +114,6 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task GetPendingAppointments_Returns200WithEmptyMessage_WhenNoPending()
         {
-            var admin = MakeUser(1);
-            admin.IsAdmin = true;
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(admin);
             _serviceMock.Setup(s => s.GetPendingAppointmentsAsync()).ReturnsAsync(new List<PendingAppointmentDTO>());
             var controller = BuildController();
             var result = await controller.GetPendingAppointments() as OkObjectResult;
@@ -182,20 +166,9 @@ namespace Hairdressers_backend.Tests.Controllers
         // ─── AcceptAppointment ──────────────────────────────────────────────────────
 
         [Fact]
-        public async Task AcceptAppointment_Returns403_WhenNotAdmin()
+        public async Task AcceptAppointment_Returns200_WhenSuccess()
         {
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1, isAdmin: false));
-            var controller = BuildController();
-            var result = await controller.AcceptAppointment(1) as ObjectResult;
-            Assert.Equal(403, result!.StatusCode);
-        }
-
-        [Fact]
-        public async Task AcceptAppointment_Returns200_WhenAdminAndSuccess()
-        {
-            var admin = MakeUser(1);
-            admin.IsAdmin = true;
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(admin);
+            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1));
             _serviceMock.Setup(s => s.AcceptAppointmentAsync(5)).Returns(Task.CompletedTask);
             var controller = BuildController();
             var result = await controller.AcceptAppointment(5) as OkObjectResult;
@@ -205,9 +178,7 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task AcceptAppointment_Returns404_WhenAppointmentNotFound()
         {
-            var admin = MakeUser(1);
-            admin.IsAdmin = true;
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(admin);
+            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1));
             _serviceMock.Setup(s => s.AcceptAppointmentAsync(99)).ThrowsAsync(new KeyNotFoundException());
             var controller = BuildController();
             var result = await controller.AcceptAppointment(99) as NotFoundObjectResult;
@@ -217,9 +188,7 @@ namespace Hairdressers_backend.Tests.Controllers
         [Fact]
         public async Task AcceptAppointment_Returns400_WhenAppointmentNotPending()
         {
-            var admin = MakeUser(1);
-            admin.IsAdmin = true;
-            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(admin);
+            _serviceMock.Setup(s => s.GetUserBySupabaseIdAsync("user-abc")).ReturnsAsync(MakeUser(1));
             _serviceMock.Setup(s => s.AcceptAppointmentAsync(2)).ThrowsAsync(new InvalidOperationException("Seulement un rendez-vous en attente peut être accepté."));
             var controller = BuildController();
             var result = await controller.AcceptAppointment(2) as BadRequestObjectResult;

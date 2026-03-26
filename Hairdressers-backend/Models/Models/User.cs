@@ -33,8 +33,6 @@ namespace Models.Models
         [EmailAddress]
         [MaxLength(255)]
         public string Email { get; set; } = string.Empty;
-        public bool IsAdmin { get; set; } = false;
-
         // Navigation
         [JsonIgnore]
         public virtual List<Appointment> Appointments { get; set; } = new();
