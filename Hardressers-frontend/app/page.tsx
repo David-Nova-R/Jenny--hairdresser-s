@@ -9,8 +9,10 @@ import {
   MapPin,
   Clock,
   Scissors,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ImageWithFallback } from './ImageWithFallBack';
 import AppointmentModal from './_components/appointment-modal';
@@ -43,6 +45,8 @@ export default function HomePage() {
   useEffect(() => {
     void loadGallery();
   }, []);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const uiHairStyles = useMemo(() => [{
     icon: Scissors,
@@ -81,6 +85,17 @@ export default function HomePage() {
     }
   };
 
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+
+    const { clientWidth } = scrollRef.current;
+
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -clientWidth : clientWidth,
+      behavior: 'smooth',
+    });
+  };
+
   const openHairStyleModal = async () => {
     openModal('hairstyle');
     setSelectedHairStyle(null);
@@ -95,6 +110,13 @@ export default function HomePage() {
       setHairStylesLoading(false);
     }
   };
+
+  const allGalleryPhotos = galleryHairStyles.flatMap((hairStyle) =>
+    (hairStyle.photos ?? []).map((photo) => ({
+      ...photo,
+      hairStyleName: hairStyle.name,
+    }))
+  );
 
   const openCalendarModal = async (hairStyle: HairStyle) => {
     setSelectedHairStyle(hairStyle);
@@ -226,23 +248,69 @@ export default function HomePage() {
             <div className="flex min-h-[200px] items-center justify-center">
               <span className="text-gray-400">Loading gallery...</span>
             </div>
+          ) : allGalleryPhotos.length <= 4 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {allGalleryPhotos.map((photo) => (
+                <div
+                  key={photo.id}
+                  className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
+                >
+                  <ImageWithFallback
+                    src={photo.photoUrl}
+                    alt={photo.hairStyleName}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="text-sm font-medium text-white">{photo.hairStyleName}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {galleryHairStyles.flatMap((hairStyle) =>
-                (hairStyle.photos ?? []).map((photo) => (
+            <div className="relative">
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-16 bg-gradient-to-r from-black to-transparent md:block" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-16 bg-gradient-to-l from-black to-transparent md:block" />
+
+              <div
+                ref={scrollRef}
+                className="flex gap-6 overflow-x-auto scroll-smooth px-2 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {allGalleryPhotos.map((photo) => (
                   <div
                     key={photo.id}
-                    className="group relative aspect-square overflow-hidden rounded-2xl border border-[#D4AF37]/20 transition-all duration-300 hover:border-[#D4AF37]/50"
+                    className="group relative aspect-[4/5] w-[280px] min-w-[280px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
                   >
                     <ImageWithFallback
                       src={photo.photoUrl}
-                      alt={hairStyle.name}
+                      alt={photo.hairStyleName}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <p className="text-sm font-medium text-white">{photo.hairStyleName}</p>
+                    </div>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>
