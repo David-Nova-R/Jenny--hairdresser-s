@@ -83,8 +83,8 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
                           selected === hairStyle.id ? 'text-black/80' : 'text-gray-600'
                         }`}
                       >
-                        {hairStyle.priceMin}€
-                        {hairStyle.priceMax ? ` - ${hairStyle.priceMax}€` : ''} |{' '}
+                        {hairStyle.priceMin} CAD
+                        {hairStyle.priceMax ? ` - ${hairStyle.priceMax} CAD` : ''} |{' '}
                         {hairStyle.durationMinutes} min
                         {hairStyle.durationMaxMinutes
                           ? ` - ${hairStyle.durationMaxMinutes} min`

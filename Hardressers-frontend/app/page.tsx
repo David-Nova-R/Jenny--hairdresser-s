@@ -31,12 +31,13 @@ export default function HomePage() {
   const [hairStylesLoading, setHairStylesLoading] = useState(false);
   const [slots, setSlots] = useState<AvailableDay[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(false);
 
   useEffect(() => {
-    if (user && activeModal === 'login' && selectedHairStyle) {
+    if (user && (selectedHairStyle || pendingBooking)) {
       void handleLoginSuccess();
     }
-  }, [user, activeModal, selectedHairStyle]);
+  }, [user]);
 
   const uiHairStyles = useMemo(
     () => [
@@ -44,25 +45,25 @@ export default function HomePage() {
         icon: Scissors,
         title: 'Haircuts',
         description: 'Precision cuts tailored to your unique style and personality.',
-        price: 'From $80',
+        price: 'From 80 CAD',
       },
       {
         icon: Palette,
         title: 'Coloring',
         description: 'Expert color services including highlights, balayage, and full color.',
-        price: 'From $150',
+        price: 'From 150 CAD',
       },
       {
         icon: Sparkles,
         title: 'Styling',
         description: 'Professional styling for special occasions and everyday elegance.',
-        price: 'From $60',
+        price: 'From 60 CAD',
       },
       {
         icon: Heart,
         title: 'Treatments',
         description: 'Luxurious treatments to restore and nourish your hair.',
-        price: 'From $100',
+        price: 'From 100 CAD',
       },
     ],
     []
@@ -121,12 +122,14 @@ export default function HomePage() {
   };
 
   const handleLoginSuccess = async () => {
-    if (!selectedHairStyle) {
+    if (selectedHairStyle) {
+      await openCalendarModal(selectedHairStyle);
+    } else if (pendingBooking) {
+      setPendingBooking(false);
+      await openHairStyleModal();
+    } else {
       closeModal();
-      return;
     }
-
-    await openCalendarModal(selectedHairStyle);
   };
 
   const handleBackToHairStyle = () => {
@@ -187,9 +190,17 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             {uiHairStyles.map((hairStyle, index) => (
-              <div
+              <button
                 key={index}
-                className="group rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10"
+                onClick={() => {
+                  if (!user) {
+                    setPendingBooking(true);
+                    openModal('login');
+                  } else {
+                    void openHairStyleModal();
+                  }
+                }}
+                className="group flex flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 text-left transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10 cursor-pointer"
               >
                 <div className="mb-6">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37] bg-black transition-all duration-300 group-hover:bg-[#D4AF37]">
@@ -197,9 +208,9 @@ export default function HomePage() {
                   </div>
                 </div>
                 <h3 className="mb-3 text-2xl font-normal">{hairStyle.title}</h3>
-                <p className="mb-6 leading-relaxed text-gray-400">{hairStyle.description}</p>
+                <p className="mb-6 grow leading-relaxed text-gray-400">{hairStyle.description}</p>
                 <p className="text-lg text-[#D4AF37]">{hairStyle.price}</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
