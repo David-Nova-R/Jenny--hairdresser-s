@@ -17,6 +17,9 @@ namespace Hairdressers_backend.Services
         const int heureFin = 17;
         const int slotStepMinutes = 30;
 
+        private static readonly TimeZoneInfo _torontoTz =
+            TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+
         public AppointmentService(AppDbContext context, Client supabase, IGoogleCalendarService calendarService)
         {
             _context = context;
@@ -181,7 +184,7 @@ namespace Hairdressers_backend.Services
 
             bool isKeratina = hairStyle.Name.ToLower().Contains("keratina");
 
-            var today = DateTime.Today;
+            var today = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _torontoTz).DateTime.Date;
             var lastDay = today.AddDays(30);
             var result = new List<AvailableDayWithSlotsDTO>();
 
