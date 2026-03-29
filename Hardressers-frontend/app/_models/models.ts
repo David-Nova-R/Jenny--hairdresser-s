@@ -6,7 +6,7 @@ export interface HairStyle {
   priceMax?: number;
   durationMinutes: number;
   durationMaxMinutes?: number;
-  photoUrl?: string;
+  photoUrls?: string[];
 }
 
 export interface HairStyleSelectModalProps {

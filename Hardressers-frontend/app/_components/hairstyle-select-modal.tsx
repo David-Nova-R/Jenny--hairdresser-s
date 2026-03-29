@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { HairStyleSelectModalProps } from '../_models/models';
+import { useLang } from '../_context/language-context';
+import { tr } from '../_config/translations';
+import { getHairStyleDisplay } from '../_config/hairstyle-descriptions';
 
 
 const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
@@ -9,6 +12,7 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
   onClose,
   loading,
 }) => {
+  const { lang } = useLang();
    if (!show) return null;
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -49,7 +53,7 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
         </button>
 
         <div className="shrink-0 px-8 pt-12 pb-4">
-          <h3 className="text-2xl font-semibold">Choisissez un HairStyle</h3>
+          <h3 className="text-2xl font-semibold">{tr('modal_choose', lang)}</h3>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 pb-4">
@@ -68,7 +72,7 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
                     onClick={() => setSelected(hairStyle.id)}
                   >
                     <div className="flex flex-col gap-1">
-                      <span className="text-lg font-bold">{hairStyle.name}</span>
+                      <span className="text-lg font-bold">{getHairStyleDisplay(hairStyle.name, lang).title}</span>
                       {hairStyle.description && (
                         <span
                           className={`text-sm ${
@@ -108,7 +112,7 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
             onClick={handleNext}
             disabled={selected === null || loading}
           >
-            Next
+            {tr('modal_next', lang)}
           </button>
         </div>
       </div>
