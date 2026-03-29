@@ -17,6 +17,7 @@ namespace Models.Data
 
         public DbSet<HairStylePhoto> HairStylePhotos { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<HairStyle> HairStyles { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
 
@@ -24,8 +25,12 @@ namespace Models.Data
         {
             base.OnModelCreating(builder);
 
+            // Role
+            builder.Entity<Role>().HasIndex(r => r.Name).IsUnique();
+
             // User
-            builder.Entity<User>() .HasIndex(u => u.SupabaseUserId).IsUnique();
+            builder.Entity<User>().HasIndex(u => u.SupabaseUserId).IsUnique();
+            builder.Entity<User>().HasOne(u => u.Role).WithMany(r => r.Users).HasForeignKey(u => u.RoleId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
             // Appointment -> User (nullable pour les rendez-vous externes)
             builder.Entity<Appointment>().HasOne(a => a.User).WithMany(u => u.Appointments).HasForeignKey(a => a.UserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
@@ -39,6 +44,7 @@ namespace Models.Data
             builder.Entity<HairStylePhoto>().HasOne(p => p.HairStyle).WithMany(h => h.Photos).HasForeignKey(p => p.HairStyleId).OnDelete(DeleteBehavior.Cascade);
 
             // Seeds
+            builder.Entity<Role>().HasData(Seed.SeedRoles());
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());

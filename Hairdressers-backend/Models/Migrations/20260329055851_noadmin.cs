@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-    public partial class merge10 : Migration
+    public partial class noadmin : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,21 +33,16 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "Roles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SupabaseUserId = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false)
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -71,12 +66,36 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SupabaseUserId = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    RoleId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Appointments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AppointmentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AppointmentDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     GoogleEventId = table.Column<string>(type: "text", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true),
@@ -124,13 +143,23 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "Email", "FirstName", "IsAdmin", "LastName", "PhoneNumber", "SupabaseUserId" },
+                table: "Roles",
+                columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "", "Jean", false, "Tremblay", "514-123-4567", "11111111-1111-1111-1111-111111111111" },
-                    { 2, "", "Marie", false, "Dupont", "438-987-6543", "22222222-2222-2222-2222-222222222222" },
-                    { 3, "", "Luc", false, "Bernard", "450-555-1234", "33333333-3333-3333-3333-333333333333" }
+                    { 1, "Admin" },
+                    { 2, "Styliste" },
+                    { 3, "Client" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "FirstName", "LastName", "PhoneNumber", "RoleId", "SupabaseUserId" },
+                values: new object[,]
+                {
+                    { 1, "", "Jean", "Tremblay", "514-123-4567", 3, "11111111-1111-1111-1111-111111111111" },
+                    { 2, "", "Marie", "Dupont", "438-987-6543", 3, "22222222-2222-2222-2222-222222222222" },
+                    { 3, "", "Luc", "Bernard", "450-555-1234", 3, "33333333-3333-3333-3333-333333333333" }
                 });
 
             migrationBuilder.InsertData(
@@ -138,9 +167,9 @@ namespace Models.Migrations
                 columns: new[] { "Id", "AppointmentDate", "ExternalDurationMinutes", "GoogleEventId", "HairStyleId", "Notes", "Status", "UserId" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Utc), null, null, 1, null, 1, 1 },
-                    { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Utc), null, null, 3, null, 0, 2 },
-                    { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Utc), null, null, 4, null, 0, 3 }
+                    { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, null, 1, 1 },
+                    { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified), null, null, 3, null, 0, 2 },
+                    { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 3 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -157,6 +186,17 @@ namespace Models.Migrations
                 name: "IX_HairStylePhotos_HairStyleId",
                 table: "HairStylePhotos",
                 column: "HairStyleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Roles_Name",
+                table: "Roles",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RoleId",
+                table: "Users",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_SupabaseUserId",
@@ -179,6 +219,9 @@ namespace Models.Migrations
 
             migrationBuilder.DropTable(
                 name: "HairStyles");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }
