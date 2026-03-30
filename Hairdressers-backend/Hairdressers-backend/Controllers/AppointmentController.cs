@@ -12,12 +12,10 @@ namespace Hairdressers_backend.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
-        private readonly IGoogleCalendarService _calendarService;
 
-        public AppointmentController(IAppointmentService appointmentService, IGoogleCalendarService calendarService)
+        public AppointmentController(IAppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
-            _calendarService = calendarService;
         }
 
         [Authorize]

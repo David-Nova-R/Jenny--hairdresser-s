@@ -1,9 +1,8 @@
 'use client';
 
 import {
+  Scissors,
   Palette,
-  Sparkles,
-  Heart,
   Calendar,
   Phone,
   MapPin,
@@ -13,7 +12,18 @@ import {
   ChevronRight,
   Star,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+
+const COLOR_SERVICES = new Set([
+  'Tinte permanente',
+  'Tinte demipermanente',
+  'Baño de color',
+  'Técnicas de mechas y efectos de luz',
+  'Balayage',
+  'Baby Lights',
+  'Ombré',
+  'Californianas',
+]);
+import { useEffect, useState } from 'react';
 
 import { ImageWithFallback } from './ImageWithFallBack';
 import AppointmentModal from './_components/appointment-modal';
@@ -22,12 +32,17 @@ import LoginModal from './_components/LoginModal';
 import RegisterModal from './_components/RegisterModal';
 import { useAuth } from './_context/auth-context';
 import { useModal } from './_context/modal-context';
+import { useLang } from './_context/language-context';
+import ServerErrorModal from './_components/ServerErrorModal';
 import { FetchAvailableSlots, FetchHairStyles, FetchVisibleReviews } from './_api/appointment-api';
 import { AvailableDay, HairStyle, HairStyleWithPhotos, ReviewDisplayDTO } from './_models/models';
+import { getHairStyleDisplay } from './_config/hairstyle-descriptions';
+import { tr } from './_config/translations';
 
 export default function HomePage() {
   const { user } = useAuth();
   const { activeModal, openModal, closeModal } = useModal();
+  const { lang } = useLang();
 
   const [selectedHairStyle, setSelectedHairStyle] = useState<HairStyle | null>(null);
   const [bookingHairStyles, setBookingHairStyles] = useState<HairStyle[]>([]);
@@ -41,6 +56,23 @@ export default function HomePage() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
   const reviewScrollRef = useRef<HTMLDivElement>(null);
+  const [highlightBooking, setHighlightBooking] = useState(false);
+  const [serverError, setServerError] = useState(false);
+  const [pageHairStyles, setPageHairStyles] = useState<HairStyle[]>([]);
+  const [pageHairStylesLoading, setPageHairStylesLoading] = useState(true);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  useEffect(() => {
+    const handleHighlight = () => {
+      setHighlightBooking(false);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setHighlightBooking(true));
+      });
+      setTimeout(() => setHighlightBooking(false), 3100);
+    };
+    window.addEventListener('highlightBookingBtn', handleHighlight);
+    return () => window.removeEventListener('highlightBookingBtn', handleHighlight);
+  }, []);
 
   useEffect(() => {
     if (user && (selectedHairStyle || pendingBooking)) {
@@ -48,6 +80,12 @@ export default function HomePage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    FetchHairStyles()
+      .then(setPageHairStyles)
+      .catch((err: any) => { if (!err?.response) setServerError(true); })
+      .finally(() => setPageHairStylesLoading(false));
+  }, []);
   useEffect(() => {
     void loadGallery();
   }, []);
@@ -128,6 +166,11 @@ export default function HomePage() {
     try {
       const data = await FetchHairStyles();
       setBookingHairStyles(data);
+    } catch (err: any) {
+      if (!err?.response) {
+        closeModal();
+        setServerError(true);
+      }
     } finally {
       setHairStylesLoading(false);
     }
@@ -210,27 +253,27 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl px-6 text-center">
           <div className="mb-6 inline-block rounded-full border border-[#D4AF37] px-6 py-2">
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              Private Studio
+              {tr('hero_badge', lang)}
             </span>
           </div>
 
           <h1 className="mb-6 text-6xl font-light tracking-tight md:text-7xl lg:text-8xl">
-            Luxury Hair
+            {tr('hero_title_1', lang)}
             <br />
-            Experience
+            {tr('hero_title_2', lang)}
           </h1>
 
           <div className="mx-auto mb-8 h-[1px] w-24 bg-[#D4AF37]" />
 
           <p className="mx-auto mb-12 max-w-2xl text-xl font-light text-gray-300 md:text-2xl">
-            Personalized attention in an intimate home studio setting
+            {tr('hero_subtitle', lang)}
           </p>
 
           <button
             className="rounded-full bg-[#D4AF37] px-12 py-4 text-lg tracking-wide text-black shadow-lg shadow-[#D4AF37]/20 transition-all duration-300 hover:bg-[#F4D03F]"
             onClick={openHairStyleModal}
           >
-            Book Appointment
+            {tr('hero_book_btn', lang)}
           </button>
         </div>
       </section>
@@ -239,38 +282,94 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-20 text-center">
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              My HairStyles
+              {tr('services_badge', lang)}
             </span>
             <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-              Premium Treatments
+              {tr('services_title', lang)}
             </h2>
             <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {uiHairStyles.map((hairStyle, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  if (!user) {
-                    setPendingBooking(true);
-                    openModal('login');
-                  } else {
-                    void openHairStyleModal();
-                  }
-                }}
-                className="group flex flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 text-left transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10 cursor-pointer"
+          {/* Carrousel */}
+          <div className="relative">
+            {/* Flèches */}
+            {!pageHairStylesLoading && pageHairStyles.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))}
+                  disabled={carouselIndex === 0}
+                  className="absolute -left-14 top-1/2 z-10 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-7 w-7" />
+                </button>
+                <button
+                  onClick={() => setCarouselIndex((i) => Math.min(Math.max(0, pageHairStyles.length - 3), i + 1))}
+                  disabled={carouselIndex === Math.max(0, pageHairStyles.length - 3)}
+                  className="absolute -right-14 top-1/2 z-10 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-7 w-7" />
+                </button>
+              </>
+            )}
+
+            {/* Track */}
+            <div className="overflow-hidden">
+              <div
+                className="flex gap-8 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(calc(-${carouselIndex} * (100% / 3 + 11px)))` }}
               >
-                <div className="mb-6">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37] bg-black transition-all duration-300 group-hover:bg-[#D4AF37]">
-                    <hairStyle.icon className="h-7 w-7 text-[#D4AF37] transition-colors duration-300 group-hover:text-black" />
-                  </div>
-                </div>
-                <h3 className="mb-3 text-2xl font-normal">{hairStyle.title}</h3>
-                <p className="mb-6 grow leading-relaxed text-gray-400">{hairStyle.description}</p>
-                <p className="text-lg text-[#D4AF37]">{hairStyle.price}</p>
-              </button>
-            ))}
+                {pageHairStylesLoading
+                  ? Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="w-full shrink-0 basis-full md:basis-[calc(50%-16px)] lg:basis-[calc(33.333%-22px)] flex flex-col rounded-2xl border border-[#D4AF37]/10 bg-gradient-to-b from-[#0a0a0a] to-black p-8 animate-pulse">
+                        <div className="mb-6 h-16 w-16 rounded-full bg-[#D4AF37]/10" />
+                        <div className="mb-3 h-6 w-3/4 rounded bg-white/10" />
+                        <div className="mb-2 h-4 w-full rounded bg-white/5" />
+                        <div className="mb-6 h-4 w-5/6 rounded bg-white/5" />
+                        <div className="h-5 w-1/3 rounded bg-[#D4AF37]/20" />
+                      </div>
+                    ))
+                  : pageHairStyles.map((hairStyle) => (
+                      <button
+                        key={hairStyle.id}
+                        onClick={() => handleHairStyleSelect(hairStyle)}
+                        className="w-full shrink-0 basis-full md:basis-[calc(50%-16px)] lg:basis-[calc(33.333%-22px)] group flex flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 text-left transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10 cursor-pointer"
+                      >
+                        <div className="mb-6">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37] bg-black transition-all duration-300 group-hover:bg-[#D4AF37]">
+                            {COLOR_SERVICES.has(hairStyle.name)
+                              ? <Palette className="h-7 w-7 text-[#D4AF37] transition-colors duration-300 group-hover:text-black" />
+                              : <Scissors className="h-7 w-7 text-[#D4AF37] transition-colors duration-300 group-hover:text-black" />
+                            }
+                          </div>
+                        </div>
+                        <h3 className="mb-3 text-2xl font-normal">
+                          {getHairStyleDisplay(hairStyle.name, lang).title}
+                        </h3>
+                        <p className="mb-6 grow leading-relaxed text-gray-400">
+                          {getHairStyleDisplay(hairStyle.name, lang).description}
+                        </p>
+                        <p className="text-lg text-[#D4AF37]">
+                          {tr('services_from', lang)} {hairStyle.priceMin} CAD
+                        </p>
+                      </button>
+                    ))}
+              </div>
+            </div>
+
+            {/* Points de navigation */}
+            {!pageHairStylesLoading && pageHairStyles.length > 1 && (
+              <div className="mt-8 flex justify-center gap-2">
+                {Array.from({ length: Math.max(0, pageHairStyles.length - 2) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCarouselIndex(i)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      i === carouselIndex ? 'w-6 bg-[#D4AF37]' : 'w-2 bg-[#D4AF37]/30 hover:bg-[#D4AF37]/60'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -279,11 +378,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-20 text-center">
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              Portfolio
+              {tr('gallery_badge', lang)}
             </span>
-            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-              My Work
-            </h2>
+            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">{tr('gallery_title', lang)}</h2>
             <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
           </div>
 
@@ -362,23 +459,23 @@ export default function HomePage() {
       <section id="booking" className="relative overflow-hidden bg-black px-6 py-24">
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-            Book Now
+            {tr('booking_badge', lang)}
           </span>
           <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-            Ready for Your
+            {tr('booking_title_1', lang)}
             <br />
-            Transformation?
+            {tr('booking_title_2', lang)}
           </h2>
           <div className="mx-auto mb-8 h-[1px] w-24 bg-[#D4AF37]" />
           <p className="mx-auto mb-12 max-w-2xl text-xl text-gray-300">
-            Schedule your private appointment and experience personalized luxury
+            {tr('booking_subtitle', lang)}
           </p>
           <button
-            className="group inline-flex items-center gap-3 rounded-full bg-[#D4AF37] px-16 py-5 text-lg text-black shadow-2xl shadow-[#D4AF37]/30 transition-all duration-300 hover:bg-[#F4D03F]"
+            className={`group inline-flex items-center gap-3 rounded-full bg-[#D4AF37] px-16 py-5 text-lg text-black shadow-2xl shadow-[#D4AF37]/30 transition-all duration-300 hover:bg-[#F4D03F]${highlightBooking ? ' booking-highlight' : ''}`}
             onClick={openHairStyleModal}
           >
             <Calendar className="h-5 w-5 transition-transform group-hover:scale-110" />
-            Book an Appointment
+            {tr('booking_btn', lang)}
           </button>
         </div>
       </section>
@@ -387,10 +484,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-20 text-center">
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              Get in Touch
+              {tr('contact_badge', lang)}
             </span>
             <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-              Visit My Studio
+              {tr('contact_title', lang)}
             </h2>
             <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
           </div>
@@ -400,11 +497,11 @@ export default function HomePage() {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37] bg-black">
                 <MapPin className="h-8 w-8 text-[#D4AF37]" />
               </div>
-              <h3 className="mb-3 text-xl">Location</h3>
+              <h3 className="mb-3 text-xl">{tr('contact_location', lang)}</h3>
               <p className="leading-relaxed text-gray-400">
-                Private Home Studio
+                {tr('contact_location_1', lang)}
                 <br />
-                By Appointment Only
+                {tr('contact_location_2', lang)}
               </p>
             </div>
 
@@ -412,7 +509,7 @@ export default function HomePage() {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37] bg-black">
                 <Phone className="h-8 w-8 text-[#D4AF37]" />
               </div>
-              <h3 className="mb-3 text-xl">Contact</h3>
+              <h3 className="mb-3 text-xl">{tr('contact_contact', lang)}</h3>
               <p className="leading-relaxed text-gray-400">
                 +1 (555) 123-4567
                 <br />
@@ -424,11 +521,11 @@ export default function HomePage() {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-[#D4AF37] bg-black">
                 <Clock className="h-8 w-8 text-[#D4AF37]" />
               </div>
-              <h3 className="mb-3 text-xl">Hours</h3>
+              <h3 className="mb-3 text-xl">{tr('contact_hours', lang)}</h3>
               <p className="leading-relaxed text-gray-400">
-                Tue - Sat: 9AM - 6PM
+                {tr('contact_hours_1', lang)}
                 <br />
-                By Appointment Only
+                {tr('contact_hours_2', lang)}
               </p>
             </div>
           </div>
@@ -547,6 +644,11 @@ export default function HomePage() {
         show={activeModal === 'register'}
         onClose={closeModal}
         onSwitchToLogin={() => openModal('login')}
+      />
+
+      <ServerErrorModal
+        show={serverError}
+        onClose={() => setServerError(false)}
       />
     </div>
   );

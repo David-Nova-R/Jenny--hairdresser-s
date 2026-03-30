@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Models.Data;
 using Models.Models;
 using Supabase;
+using System.Globalization;
+using System.Text;
 
 namespace Hairdressers_backend.Services
 {
@@ -54,7 +56,8 @@ namespace Hairdressers_backend.Services
             var fileBytes = memoryStream.ToArray();
 
             // Nom unique pour éviter les conflits
-            var fileName = $"{hairStyleId}/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}";
+            var folderName = RemoveDiacritics(hairStyle.Name);
+            var fileName = $"{folderName}/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}";
 
             // Upload dans Supabase Storage
             await _supabase.Storage
@@ -89,11 +92,12 @@ namespace Hairdressers_backend.Services
                 .FirstOrDefaultAsync(p => p.Id == photoId)
                 ?? throw new KeyNotFoundException("Photo introuvable.");
 
-            // Extraire le nom du fichier depuis l'URL
-            var uri = new Uri(photo.PhotoUrl);
-            var fileName = string.Join("/", uri.Segments.Skip(
-                uri.Segments.ToList().IndexOf(BucketName + "/") + 1
-            ));
+            // Extraire le chemin du fichier depuis l'URL (après /object/public/{bucket}/)
+            var marker = $"/object/public/{BucketName}/";
+            var markerIndex = photo.PhotoUrl.IndexOf(marker);
+            if (markerIndex == -1)
+                throw new InvalidOperationException("URL de photo invalide.");
+            var fileName = photo.PhotoUrl[(markerIndex + marker.Length)..];
 
             // Supprimer de Supabase Storage
             await _supabase.Storage
@@ -110,6 +114,18 @@ namespace Hairdressers_backend.Services
             return await _context.HairStylePhotos
                 .Where(p => p.HairStyleId == hairStyleId)
                 .ToListAsync();
+        }
+
+        private static string RemoveDiacritics(string text)
+        {
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            }
+            return sb.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 }

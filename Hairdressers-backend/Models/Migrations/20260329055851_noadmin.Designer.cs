@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260325140130_merge1.0")]
-    partial class merge10
+    [Migration("20260329055851_noadmin")]
+    partial class noadmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,7 +37,7 @@ namespace Models.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("ExternalDurationMinutes")
                         .HasColumnType("integer");
@@ -69,7 +69,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 1,
-                            AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Utc),
+                            AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified),
                             HairStyleId = 1,
                             Status = 1,
                             UserId = 1
@@ -77,7 +77,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 2,
-                            AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Utc),
+                            AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified),
                             HairStyleId = 3,
                             Status = 0,
                             UserId = 2
@@ -85,7 +85,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 3,
-                            AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Utc),
+                            AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified),
                             HairStyleId = 4,
                             Status = 0,
                             UserId = 3
@@ -280,6 +280,44 @@ namespace Models.Migrations
                     b.ToTable("HairStylePhotos");
                 });
 
+            modelBuilder.Entity("Models.Models.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Styliste"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Client"
+                        });
+                });
+
             modelBuilder.Entity("Models.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -298,9 +336,6 @@ namespace Models.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -309,11 +344,16 @@ namespace Models.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SupabaseUserId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("SupabaseUserId")
                         .IsUnique();
@@ -326,9 +366,9 @@ namespace Models.Migrations
                             Id = 1,
                             Email = "",
                             FirstName = "Jean",
-                            IsAdmin = false,
                             LastName = "Tremblay",
                             PhoneNumber = "514-123-4567",
+                            RoleId = 3,
                             SupabaseUserId = "11111111-1111-1111-1111-111111111111"
                         },
                         new
@@ -336,9 +376,9 @@ namespace Models.Migrations
                             Id = 2,
                             Email = "",
                             FirstName = "Marie",
-                            IsAdmin = false,
                             LastName = "Dupont",
                             PhoneNumber = "438-987-6543",
+                            RoleId = 3,
                             SupabaseUserId = "22222222-2222-2222-2222-222222222222"
                         },
                         new
@@ -346,9 +386,9 @@ namespace Models.Migrations
                             Id = 3,
                             Email = "",
                             FirstName = "Luc",
-                            IsAdmin = false,
                             LastName = "Bernard",
                             PhoneNumber = "450-555-1234",
+                            RoleId = 3,
                             SupabaseUserId = "33333333-3333-3333-3333-333333333333"
                         });
                 });
@@ -381,11 +421,26 @@ namespace Models.Migrations
                     b.Navigation("HairStyle");
                 });
 
+            modelBuilder.Entity("Models.Models.User", b =>
+                {
+                    b.HasOne("Models.Models.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("Models.Models.HairStyle", b =>
                 {
                     b.Navigation("Appointments");
 
                     b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("Models.Models.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Models.Models.User", b =>

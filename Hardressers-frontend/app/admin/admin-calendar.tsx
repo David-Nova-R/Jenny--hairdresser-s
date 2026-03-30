@@ -1,343 +1,449 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { addDays, startOfWeek, format } from 'date-fns';
+import {
+    addDays, addMonths, startOfWeek, startOfMonth,
+    format, isSameDay, isSameMonth,
+} from 'date-fns';
 import {
     FetchAdminCalendarAppointments,
     UpdateAppointmentStatusAdmin,
     AcceptAppointmentAdmin,
 } from '@/app/_api/appointment-api';
-import { Loader2, Clock3, User2, Scissors, StickyNote } from 'lucide-react';
+import {
+    Loader2, Clock3, User2, Scissors, StickyNote,
+    ChevronLeft, ChevronRight, X, CalendarDays, DollarSign, CheckCircle2, XCircle,
+} from 'lucide-react';
 import { AdminCalendarAppointmentDTO } from '../_models/models';
 
+// ── Constants ────────────────────────────────────────────────────────────────
 const HOURS = Array.from({ length: 10 }, (_, i) => 8 + i);
 const HOUR_HEIGHT = 96;
 const PX_PER_MINUTE = HOUR_HEIGHT / 60;
+type CalendarView = 'day' | 'week' | 'month';
 
-const formatLocalDateForApi = (date: Date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const h = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    const s = String(date.getSeconds()).padStart(2, '0');
-
-    return `${y}-${m}-${d}T${h}:${min}:${s}`;
+const STATUS_LABEL: Record<number, string> = {
+    0: 'En attente', 1: 'Confirmé', 2: 'Annulé', 3: 'Terminé', 4: 'Externe',
+};
+const STATUS_COLOR: Record<number, string> = {
+    0: 'bg-amber-400',
+    1: 'bg-blue-400',
+    2: 'bg-rose-400',
+    3: 'bg-emerald-400',
+    4: 'bg-violet-400',
 };
 
-const parseLocalDate = (value: string) => {
-    const [datePart, timePart] = value.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute, second] = timePart.split(':').map(Number);
-
-    return new Date(year, month - 1, day, hour, minute, second || 0);
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const fmtApi = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}T00:00:00`;
+};
+const parseLocal = (v: string) => {
+    const [dp, tp] = v.split('T');
+    const [Y, M, D] = dp.split('-').map(Number);
+    const [h, m, s] = tp.split(':').map(Number);
+    return new Date(Y, M - 1, D, h, m, s || 0);
 };
 
+const getTheme = (status: number) => {
+    const map: Record<number, { card: string; pill: string }> = {
+        0: { card: 'bg-amber-500   border-amber-300/40',   pill: 'bg-black/20' },
+        1: { card: 'bg-blue-600    border-blue-300/40',    pill: 'bg-black/20' },
+        2: { card: 'bg-rose-600    border-rose-300/40',    pill: 'bg-black/20' },
+        3: { card: 'bg-emerald-600 border-emerald-300/40', pill: 'bg-black/20' },
+        4: { card: 'bg-violet-600  border-violet-300/40',  pill: 'bg-black/20' },
+    };
+    return map[status] ?? { card: 'bg-slate-600 border-slate-300/40', pill: 'bg-black/20' };
+};
+
+// ── Detail Modal ─────────────────────────────────────────────────────────────
+function DetailModal({
+    appointment,
+    onClose,
+    onConfirm,
+    onComplete,
+    onCancel,
+    loading,
+}: {
+    appointment: AdminCalendarAppointmentDTO;
+    onClose: () => void;
+    onConfirm: () => void;
+    onComplete: () => void;
+    onCancel: () => void;
+    loading: boolean;
+}) {
+    const date = parseLocal(appointment.appointmentDate);
+    const duration = (appointment as any).durationMinutes ?? appointment.externalDurationMinutes ?? 60;
+    const status = Number(appointment.status);
+    const theme = getTheme(status);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-sm rounded-2xl border border-[#D4AF37]/20 bg-[#111] shadow-2xl">
+                {/* Header strip */}
+                <div className={`rounded-t-2xl px-5 py-4 ${theme.card}`}>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            {/* Client — very prominent */}
+                            <div className="flex items-center gap-2">
+                                <User2 className="h-5 w-5 shrink-0 text-white" />
+                                <p className="text-xl font-bold text-white">
+                                    {appointment.userName || 'Client'}
+                                </p>
+                            </div>
+                            {/* Service */}
+                            <div className="mt-1 flex items-center gap-2">
+                                <Scissors className="h-4 w-4 shrink-0 text-white/80" />
+                                <p className="text-sm font-semibold text-white/90">
+                                    {appointment.hairStyleName || 'Appointment'}
+                                </p>
+                            </div>
+                        </div>
+                        <button onClick={onClose} className="mt-0.5 shrink-0 rounded-full bg-black/20 p-1.5 text-white hover:bg-black/40">
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-3 px-5 py-4">
+                    <div className="flex items-center gap-3 text-sm">
+                        <CalendarDays className="h-4 w-4 shrink-0 text-[#D4AF37]" />
+                        <span className="font-semibold capitalize text-white">
+                            {format(date, 'EEEE d MMMM yyyy')}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                        <Clock3 className="h-4 w-4 shrink-0 text-[#D4AF37]" />
+                        <span className="text-white">{format(date, 'HH:mm')} <span className="text-gray-400">({duration} min)</span></span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                        <DollarSign className="h-4 w-4 shrink-0 text-[#D4AF37]" />
+                        <span className="text-white">
+                            {appointment.status === 4
+                                ? appointment.notes || 'External'
+                                : `${appointment.priceMin}${appointment.priceMax != null ? ` – ${appointment.priceMax}` : ''} CAD`}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                        <span className={`h-2.5 w-2.5 rounded-full ${STATUS_COLOR[status] ?? 'bg-gray-400'}`} />
+                        <span className="text-white">{STATUS_LABEL[status] ?? 'Inconnu'}</span>
+                    </div>
+                </div>
+
+                {/* Actions */}
+                {status !== 3 && status !== 2 && (
+                    <div className="flex gap-2 border-t border-white/5 px-5 pb-5 pt-4">
+                        {status === 0 && (
+                            <button
+                                onClick={onConfirm}
+                                disabled={loading}
+                                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                                Confirmer
+                            </button>
+                        )}
+                        {status === 1 && (
+                            <button
+                                onClick={onComplete}
+                                disabled={loading}
+                                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                                Terminer
+                            </button>
+                        )}
+                        <button
+                            onClick={onCancel}
+                            disabled={loading}
+                            className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 px-4 py-2.5 text-sm font-semibold text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
+                        >
+                            <XCircle className="h-4 w-4" />
+                            Annuler
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
 export default function AdminCalendar() {
+    const [view, setView] = useState<CalendarView>('week');
+    const [currentDate, setCurrentDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [appointments, setAppointments] = useState<AdminCalendarAppointmentDTO[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingIds, setLoadingIds] = useState<number[]>([]);
-    const [currentWeek, setCurrentWeek] = useState(
-        startOfWeek(new Date(), { weekStartsOn: 1 })
+    const [selected, setSelected] = useState<AdminCalendarAppointmentDTO | null>(null);
+
+    const switchView = (v: CalendarView) => {
+        if (v === 'week')  setCurrentDate(startOfWeek(currentDate, { weekStartsOn: 1 }));
+        if (v === 'month') setCurrentDate(startOfMonth(currentDate));
+        setView(v);
+    };
+
+    const navigate = (dir: 'prev' | 'next') => {
+        const d = dir === 'prev' ? -1 : 1;
+        if (view === 'day')   setCurrentDate(x => addDays(x, d));
+        if (view === 'week')  setCurrentDate(x => addDays(x, d * 7));
+        if (view === 'month') setCurrentDate(x => addMonths(x, d));
+    };
+
+    useEffect(() => { void load(); }, [currentDate, view]);
+
+    const load = async () => {
+        setLoading(true);
+        try {
+            if (view !== 'month') {
+                const weekStart = view === 'week' ? currentDate : startOfWeek(currentDate, { weekStartsOn: 1 });
+                setAppointments((await FetchAdminCalendarAppointments(fmtApi(weekStart))) ?? []);
+            } else {
+                const first = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+                const weeks = Array.from({ length: 6 }, (_, i) => addDays(first, i * 7));
+                const res = await Promise.all(weeks.map(w => FetchAdminCalendarAppointments(fmtApi(w)).catch(() => [])));
+                const seen = new Set<number>();
+                const merged: AdminCalendarAppointmentDTO[] = [];
+                res.flat().forEach(a => { if (!seen.has(a.id)) { seen.add(a.id); merged.push(a); } });
+                setAppointments(merged);
+            }
+        } catch (e) { console.error(e); setAppointments([]); }
+        finally { setLoading(false); }
+    };
+
+    const getForDay = (day: Date) =>
+        appointments
+            .filter(a => isSameDay(parseLocal(a.appointmentDate), day))
+            .sort((a, b) => parseLocal(a.appointmentDate).getTime() - parseLocal(b.appointmentDate).getTime());
+
+    const isLoadingId = (id: number) => loadingIds.includes(id);
+
+    const handleStatusChange = async (a: AdminCalendarAppointmentDTO, type: 'confirm' | 'complete' | 'cancel') => {
+        const cur = Number(a.status);
+        const next = type === 'confirm' ? 1 : type === 'complete' ? 3 : 2;
+        if (next === cur) return;
+        setLoadingIds(p => [...p, a.id]);
+        try {
+            if (type === 'confirm') await AcceptAppointmentAdmin(a.id);
+            else await UpdateAppointmentStatusAdmin(a.id, next);
+            setAppointments(p => p.map(x => x.id === a.id ? { ...x, status: next } : x));
+            setSelected(prev => prev?.id === a.id ? { ...prev, status: next } : prev);
+        } catch (e) { console.error(e); }
+        finally { setLoadingIds(p => p.filter(id => id !== a.id)); }
+    };
+
+    // ── Appointment card ─────────────────────────────────────────────────────
+    const AppCard = ({ a, height }: { a: AdminCalendarAppointmentDTO; height: number }) => {
+        const date = parseLocal(a.appointmentDate);
+        const ultraCompact = height < 58;
+        const compact = height < 88;
+        const theme = getTheme(Number(a.status));
+
+        return (
+            <div
+                className={`h-full w-full cursor-pointer overflow-hidden rounded-xl border p-2 text-white shadow-md transition-opacity hover:opacity-90 ${theme.card}`}
+                onClick={() => setSelected(a)}
+            >
+                {/* Time badge */}
+                <div className={`mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${theme.pill}`}>
+                    {format(date, 'HH:mm')}
+                </div>
+
+                {/* Client name — big & first */}
+                <p className={`truncate font-extrabold leading-tight text-white ${ultraCompact ? 'text-xs' : 'text-sm'}`}>
+                    {a.userName || 'Client'}
+                </p>
+
+                {/* Service name */}
+                {!ultraCompact && (
+                    <p className="truncate text-[11px] font-semibold text-white/80">
+                        {a.hairStyleName || 'Appointment'}
+                    </p>
+                )}
+
+                {/* Duration */}
+                {!compact && (
+                    <div className="mt-1 flex items-center gap-1 text-[11px] text-white/70">
+                        <Clock3 className="h-3 w-3" />
+                        <span>{(a as any).durationMinutes ?? a.externalDurationMinutes ?? 60} min</span>
+                    </div>
+                )}
+
+                {isLoadingId(a.id) && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/30">
+                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // ── Time grid (day & week) ───────────────────────────────────────────────
+    const TimeGrid = ({ days }: { days: Date[] }) => (
+        <div className="overflow-x-auto">
+            <div className="grid min-w-[500px]" style={{ gridTemplateColumns: `56px repeat(${days.length}, 1fr)` }}>
+                <div className="bg-[#181818]">
+                    <div className="h-12 border-b border-[#D4AF37]/10 bg-[#1b1b1b]" />
+                    {HOURS.map(h => (
+                        <div key={h} className="flex h-24 items-start border-b border-[#D4AF37]/10 px-2 pt-2">
+                            <span className="rounded bg-white/5 px-1.5 py-0.5 text-xs font-medium text-gray-300">{h}:00</span>
+                        </div>
+                    ))}
+                </div>
+
+                {days.map((day, i) => {
+                    const dayApps = getForDay(day);
+                    const isToday = isSameDay(day, new Date());
+                    return (
+                        <div key={i} className="border-l border-[#D4AF37]/10 bg-[#141414]">
+                            <div className={`h-12 border-b border-[#D4AF37]/10 px-2 py-1.5 text-center ${isToday ? 'bg-[#D4AF37]/10' : 'bg-[#181818]'}`}>
+                                <div className="text-[11px] font-medium uppercase tracking-wider text-gray-400">{format(day, 'EEE')}</div>
+                                <div className={`text-sm font-bold ${isToday ? 'text-[#D4AF37]' : 'text-white'}`}>{format(day, 'd')}</div>
+                            </div>
+
+                            <div className="relative" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
+                                {HOURS.map(h => <div key={h} className="h-24 border-b border-[#D4AF37]/10" />)}
+
+                                {dayApps.map(a => {
+                                    const date = parseLocal(a.appointmentDate);
+                                    const duration = (a as any).durationMinutes ?? a.externalDurationMinutes ?? 60;
+                                    const top = ((date.getHours() - HOURS[0]) * 60 + date.getMinutes()) * PX_PER_MINUTE;
+                                    const height = Math.max(duration * PX_PER_MINUTE - 4, 48);
+
+                                    return (
+                                        <div key={a.id} className="absolute left-1 right-1" style={{ top: `${top + 2}px`, height: `${height}px` }}>
+                                            <AppCard a={a} height={height} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
     );
 
-    const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
+    // ── Month grid ───────────────────────────────────────────────────────────
+    const MonthGrid = () => {
+        const first = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+        const allDays = Array.from({ length: 42 }, (_, i) => addDays(first, i));
+        const weeks = Array.from({ length: 6 }, (_, i) => allDays.slice(i * 7, i * 7 + 7));
+        const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-    useEffect(() => {
-        void loadAppointments(currentWeek);
-    }, [currentWeek]);
-
-    const loadAppointments = async (weekStartDate: Date) => {
-        try {
-            setLoading(true);
-            const data = await FetchAdminCalendarAppointments(
-                formatLocalDateForApi(weekStartDate)
-            );
-            setAppointments(data ?? []);
-        } catch (e) {
-            console.error(e);
-            setAppointments([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleStatusChange = async (
-        appointment: AdminCalendarAppointmentDTO,
-        type: 'confirm' | 'complete'
-    ) => {
-        const currentStatus = Number(appointment.status);
-
-        let newStatus = currentStatus;
-        if (type === 'confirm' && currentStatus === 0) newStatus = 1;
-        if (type === 'complete' && currentStatus === 1) newStatus = 3;
-
-        if (newStatus === currentStatus) return;
-
-        setLoadingIds((prev) => [...prev, appointment.id]);
-
-        try {
-            if (type === 'confirm') {
-                await AcceptAppointmentAdmin(appointment.id);
-            } else {
-                await UpdateAppointmentStatusAdmin(appointment.id, newStatus);
-            }
-
-            setAppointments((prev) =>
-                prev.map((a) =>
-                    a.id === appointment.id ? { ...a, status: newStatus } : a
-                )
-            );
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoadingIds((prev) => prev.filter((id) => id !== appointment.id));
-        }
-    };
-
-    const getAppointmentsForDay = (day: Date) => {
-        return appointments
-            .filter((a) => {
-                const date = parseLocalDate(a.appointmentDate);
-
-                return (
-                    date.getFullYear() === day.getFullYear() &&
-                    date.getMonth() === day.getMonth() &&
-                    date.getDate() === day.getDate()
-                );
-            })
-            .sort(
-                (a, b) =>
-                    parseLocalDate(a.appointmentDate).getTime() -
-                    parseLocalDate(b.appointmentDate).getTime()
-            );
-    };
-
-    const getCardTheme = (status: number) => {
-        switch (status) {
-            case 0:
-                return {
-                    card: 'bg-amber-500/95 border-amber-300/60 text-white shadow-amber-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-            case 1:
-                return {
-                    card: 'bg-blue-600/95 border-blue-300/60 text-white shadow-blue-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-            case 2:
-                return {
-                    card: 'bg-rose-600/95 border-rose-300/60 text-white shadow-rose-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-            case 3:
-                return {
-                    card: 'bg-emerald-600/95 border-emerald-300/60 text-white shadow-emerald-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-            case 4:
-                return {
-                    card: 'bg-violet-600/95 border-violet-300/60 text-white shadow-violet-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-            default:
-                return {
-                    card: 'bg-slate-600/95 border-slate-300/60 text-white shadow-slate-900/20',
-                    pill: 'bg-white/20 text-white border-white/20',
-                };
-        }
-    };
-
-    const isLoading = (id: number) => loadingIds.includes(id);
-
-    return (
-        <div className="mt-6 rounded-3xl border border-[#D4AF37]/15 bg-[#111111] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-            <div className="mb-5 flex items-center justify-between rounded-2xl border border-[#D4AF37]/10 bg-white/[0.03] px-4 py-3">
-                <button
-                    onClick={() => setCurrentWeek(addDays(currentWeek, -7))}
-                    className="rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10"
-                >
-                    Prev
-                </button>
-
-                <h2 className="text-lg font-semibold text-white">
-                    {format(currentWeek, 'MMM d')} - {format(addDays(currentWeek, 6), 'MMM d, yyyy')}
-                </h2>
-
-                <button
-                    onClick={() => setCurrentWeek(addDays(currentWeek, 7))}
-                    className="rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10"
-                >
-                    Next
-                </button>
-            </div>
-
-            {loading ? (
-                <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-[#D4AF37]/10 bg-white/[0.02]">
-                    <Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" />
+        return (
+            <div className="overflow-hidden rounded-xl border border-[#D4AF37]/10">
+                <div className="grid grid-cols-7 border-b border-[#D4AF37]/10 bg-[#181818]">
+                    {DAY_NAMES.map(d => (
+                        <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-400">{d}</div>
+                    ))}
                 </div>
-            ) : (
-                <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/10 bg-[#151515]">
-                    <div className="grid grid-cols-8">
-                        <div className="bg-[#181818]">
-                            <div className="h-14 border-b border-[#D4AF37]/10 bg-[#1b1b1b]" />
-                            {HOURS.map((hour) => (
-                                <div
-                                    key={hour}
-                                    className="h-24 border-b border-[#D4AF37]/10 px-3 py-2 text-xs font-medium text-gray-400"
-                                >
-                                    <span className="rounded-full bg-white/[0.04] px-2 py-1">
-                                        {hour}:00
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {days.map((day, i) => {
-                            const dayAppointments = getAppointmentsForDay(day);
-                            const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-
+                {weeks.map((week, wi) => (
+                    <div key={wi} className="grid grid-cols-7 border-b border-[#D4AF37]/10 last:border-0">
+                        {week.map((day, di) => {
+                            const dayApps = getForDay(day);
+                            const isToday = isSameDay(day, new Date());
+                            const inMonth = isSameMonth(day, currentDate);
                             return (
                                 <div
-                                    key={i}
-                                    className="border-l border-[#D4AF37]/10 bg-[#141414]"
+                                    key={di}
+                                    onClick={() => { setCurrentDate(day); switchView('day'); }}
+                                    className={`min-h-[90px] cursor-pointer border-r border-[#D4AF37]/10 p-2 transition-colors last:border-0 hover:bg-[#D4AF37]/5 ${inMonth ? 'bg-[#141414]' : 'bg-[#0f0f0f]'}`}
                                 >
-                                    <div
-                                        className={`h-14 border-b border-[#D4AF37]/10 px-2 py-2 text-center ${isToday ? 'bg-[#D4AF37]/10' : 'bg-[#181818]'
-                                            }`}
-                                    >
-                                        <div className="text-xs uppercase tracking-wide text-gray-400">
-                                            {format(day, 'EEE')}
-                                        </div>
-                                        <div className={`text-sm font-semibold ${isToday ? 'text-[#D4AF37]' : 'text-white'}`}>
-                                            {format(day, 'd')}
-                                        </div>
+                                    <div className={`mb-1.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${isToday ? 'bg-[#D4AF37] text-black' : inMonth ? 'text-white' : 'text-gray-600'}`}>
+                                        {format(day, 'd')}
                                     </div>
-
-                                    <div
-                                        className="relative"
-                                        style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}
-                                    >
-                                        {HOURS.map((hour) => (
+                                    <div className="space-y-1">
+                                        {dayApps.slice(0, 3).map(a => (
                                             <div
-                                                key={hour}
-                                                className="h-24 border-b border-[#D4AF37]/10 bg-[linear-gradient(to_bottom,transparent_95%,rgba(212,175,55,0.06)_100%)]"
-                                            />
+                                                key={a.id}
+                                                onClick={e => { e.stopPropagation(); setSelected(a); }}
+                                                className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-bold text-white ${getTheme(Number(a.status)).card}`}
+                                            >
+                                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full bg-white/60`} />
+                                                <span className="truncate">{format(parseLocal(a.appointmentDate), 'HH:mm')} {a.userName || 'Client'}</span>
+                                            </div>
                                         ))}
-
-                                        {dayAppointments.map((a) => {
-                                            const date = parseLocalDate(a.appointmentDate);
-                                            const duration =
-                                                (a as any).durationMinutes ??
-                                                a.externalDurationMinutes ??
-                                                60;
-
-                                            const top =
-                                                ((date.getHours() - HOURS[0]) * 60 + date.getMinutes()) *
-                                                PX_PER_MINUTE;
-
-                                            const height = Math.max(duration * PX_PER_MINUTE, 60);
-                                            const visualHeight = Math.max(duration * PX_PER_MINUTE - 10, 60);
-                                            const offset = (height - visualHeight) / 2;
-                                            const compact = height < 88;
-                                            const ultraCompact = height < 68;
-                                            const theme = getCardTheme(Number(a.status));
-
-                                            return (
-                                                <div
-                                                    key={a.id}
-                                                    onClick={() => {
-                                                        if (Number(a.status) !== 3 && !isLoading(a.id)) {
-                                                            handleStatusChange(a, 'complete');
-                                                        }
-                                                    }}
-                                                    onDoubleClick={() => {
-                                                        if (Number(a.status) !== 3 && !isLoading(a.id)) {
-                                                            handleStatusChange(a, 'confirm');
-                                                        }
-                                                    }}
-                                                    className={`absolute left-1.5 right-1.5 rounded-2xl border p-3 shadow-lg backdrop-blur-[2px] ${theme.card} ${Number(a.status) === 3 || isLoading(a.id)
-                                                            ? 'cursor-default'
-                                                            : 'cursor-pointer'
-                                                        }`}
-                                                    style={{
-                                                        top: `${top + offset}px`,
-                                                        height: `${visualHeight}px`,
-                                                    }}
-                                                >
-                                                    <div className={`flex h-full flex-col ${height < 90 ? 'justify-center' : 'justify-between'}`}>
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <div className="min-w-0">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Scissors className="h-3.5 w-3.5 shrink-0 opacity-90" />
-                                                                    <p className="truncate text-[11px] font-semibold uppercase tracking-wide opacity-90">
-                                                                        {a.hairStyleName || 'Appointment'}
-                                                                    </p>
-                                                                </div>
-
-                                                                {!ultraCompact && (
-                                                                    <div className="mt-1 flex items-center gap-1.5">
-                                                                        <User2 className="h-3.5 w-3.5 shrink-0 opacity-80" />
-                                                                        <p className="truncate text-sm font-semibold">
-                                                                            {a.userName || 'Client'}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <div
-                                                                className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-semibold ${theme.pill}`}
-                                                            >
-                                                                {format(date, 'HH:mm')}
-                                                            </div>
-                                                        </div>
-
-                                                        {!ultraCompact && (
-                                                            <div className="mt-2 flex items-center gap-1.5 text-[11px] opacity-90">
-                                                                <Clock3 className="h-3.5 w-3.5 shrink-0" />
-                                                                <span>{duration} min</span>
-                                                            </div>
-                                                        )}
-
-                                                        {!compact && (
-                                                            <div className="mt-2 min-h-0 flex-1 overflow-hidden">
-                                                                <div className="rounded-xl bg-black/10 px-2 py-1.5">
-                                                                    <div className="flex items-start gap-1.5">
-                                                                        <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-80" />
-                                                                        <p className="line-clamp-3 text-[11px] leading-relaxed opacity-95">
-                                                                            {a.status === 4
-                                                                                ? a.notes || 'External'
-                                                                                : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} CAD`}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {compact && !ultraCompact && (
-                                                            <div className="mt-auto truncate text-[11px] opacity-90">
-                                                                {a.status === 4
-                                                                    ? a.notes || 'External'
-                                                                    : `${a.priceMin}${a.priceMax != null ? ` - ${a.priceMax}` : ''} CAD`}
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {isLoading(a.id) && (
-                                                        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/25">
-                                                            <Loader2 className="h-5 w-5 animate-spin text-white" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                        {dayApps.length > 3 && <div className="px-1 text-[10px] text-[#D4AF37]">+{dayApps.length - 3}</div>}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
+                ))}
+            </div>
+        );
+    };
+
+    const title = view === 'day'
+        ? format(currentDate, 'EEEE d MMMM yyyy')
+        : view === 'week'
+            ? `${format(currentDate, 'MMM d')} – ${format(addDays(currentDate, 6), 'MMM d, yyyy')}`
+            : format(currentDate, 'MMMM yyyy');
+
+    return (
+        <>
+            <div className="mt-6 rounded-3xl border border-[#D4AF37]/15 bg-[#111111] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+                {/* Header */}
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#D4AF37]/10 bg-white/[0.03] px-4 py-3">
+                    <button onClick={() => navigate('prev')} className="flex items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10">
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    <div className="flex flex-col items-center gap-2">
+                        <h2 className="text-base font-semibold capitalize text-white">{title}</h2>
+                        <div className="flex rounded-full border border-[#D4AF37]/20 bg-black/30 p-0.5">
+                            {(['day', 'week', 'month'] as CalendarView[]).map(v => (
+                                <button key={v} onClick={() => switchView(v)}
+                                    className={`rounded-full px-4 py-1 text-xs font-semibold tracking-wide transition-all duration-200 ${view === v ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-[#D4AF37]'}`}>
+                                    {v === 'day' ? 'Día' : v === 'week' ? 'Semana' : 'Mes'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button onClick={() => navigate('next')} className="flex items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10">
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
                 </div>
+
+                {loading ? (
+                    <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-[#D4AF37]/10 bg-white/[0.02]">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" />
+                    </div>
+                ) : (
+                    <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/10 bg-[#151515]">
+                        {view === 'day'   && <TimeGrid days={[currentDate]} />}
+                        {view === 'week'  && <TimeGrid days={Array.from({ length: 7 }, (_, i) => addDays(currentDate, i))} />}
+                        {view === 'month' && <MonthGrid />}
+                    </div>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-4 px-1">
+                    {Object.entries(STATUS_LABEL).map(([k, label]) => (
+                        <div key={k} className="flex items-center gap-1.5">
+                            <span className={`h-2.5 w-2.5 rounded-full ${STATUS_COLOR[Number(k)] ?? 'bg-gray-400'}`} />
+                            <span className="text-xs text-gray-400">{label}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Detail modal */}
+            {selected && (
+                <DetailModal
+                    appointment={selected}
+                    onClose={() => setSelected(null)}
+                    onConfirm={() => handleStatusChange(selected, 'confirm')}
+                    onComplete={() => handleStatusChange(selected, 'complete')}
+                    onCancel={() => handleStatusChange(selected, 'cancel')}
+                    loading={isLoadingId(selected.id)}
+                />
             )}
-        </div>
+        </>
     );
 }

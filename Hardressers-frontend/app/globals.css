@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes booking-aura {
+  0%   { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.8); }
+  40%  { box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+  60%  { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+  80%  { box-shadow: 0 0 0 16px rgba(212, 175, 55, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+.booking-highlight {
+  animation: booking-aura 1s ease-out 3;
+}

@@ -1,3 +1,14 @@
+export interface HairStyle {
+  id: number;
+  name: string;
+  description?: string;
+  priceMin: number;
+  priceMax?: number;
+  durationMinutes: number;
+  durationMaxMinutes?: number;
+  photoUrls?: string[];
+}
+
 export interface HairStyleSelectModalProps {
   show: boolean;
   HairStyles: HairStyle[];
