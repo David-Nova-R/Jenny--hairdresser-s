@@ -408,53 +408,6 @@ namespace Models.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 20, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3127),
-                            IsVisible = true,
-                            Stars = 5,
-                            Text = "Excellent service, très professionnelle.",
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2026, 3, 22, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3138),
-                            IsVisible = true,
-                            Stars = 5,
-                            Text = "Très bon résultat, je recommande !",
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2026, 3, 25, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3139),
-                            IsVisible = true,
-                            Stars = 4,
-                            Text = "Service rapide et efficace.",
-                            UserId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2026, 3, 27, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3142),
-                            IsVisible = false,
-                            Stars = 4,
-                            Text = "Bonne expérience globale.",
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2026, 3, 29, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3144),
-                            IsVisible = true,
-                            Stars = 5,
-                            Text = "Je reviendrai sûrement !",
-                            UserId = 2
-                        });
                 });
 
             modelBuilder.Entity("Models.Models.Role", b =>

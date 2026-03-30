@@ -1,18 +1,11 @@
 'use client';
 
 import {
-  Scissors,
-  Palette,
-  Calendar,
-  Phone,
+
   MapPin,
   Clock,
-
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Sparkles,
-  Heart,
+  Calendar,
+  Phone,
 } from 'lucide-react';
 
 const COLOR_SERVICES = new Set([
@@ -38,11 +31,6 @@ import { useLang } from './_context/language-context';
 import ServerErrorModal from './_components/ServerErrorModal';
 import { FetchAvailableSlots, FetchHairStyles, FetchVisibleReviews } from './_api/appointment-api';
 import { AvailableDay, HairStyle, HairStyleWithPhotos, ReviewDisplayDTO } from './_models/models';
-import { AvailableDay, HairStyle, PortfolioPhoto } from './_models/models';
-import { FetchAvailableSlots, FetchHairStyles, FetchPortfolioPhotos, FetchAllPortfolioPhotosAdmin } from './_api/appointment-api';
-import PortfolioEditor from './_components/PortfolioEditor';
-import { Pencil, X } from 'lucide-react';
-import { getHairStyleDisplay } from './_config/hairstyle-descriptions';
 import { tr } from './_config/translations';
 import ReviewsSection from './_components/sections/review-section';
 import GallerySection from './_components/sections/gallery-section';
@@ -70,13 +58,6 @@ export default function HomePage() {
   const [pageHairStyles, setPageHairStyles] = useState<HairStyle[]>([]);
   const [pageHairStylesLoading, setPageHairStylesLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
-  const [portfolioLoading, setPortfolioLoading] = useState(true);
-  const [editorMode, setEditorMode] = useState(false);
-  const [editorPhotos, setEditorPhotos] = useState<PortfolioPhoto[]>([]);
-  const [editorLoading, setEditorLoading] = useState(false);
-
-  const isAdmin = !!user?.app_metadata?.isAdmin;
 
   useEffect(() => {
     const handleHighlight = () => {
@@ -146,32 +127,6 @@ export default function HomePage() {
     } finally {
       setReviewsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    FetchPortfolioPhotos()
-      .then(setPortfolioPhotos)
-      .catch(() => setPortfolioPhotos([]))
-      .finally(() => setPortfolioLoading(false));
-  }, []);
-
-  const enterEditorMode = async () => {
-    setEditorLoading(true);
-    setEditorMode(true);
-    try {
-      const all = await FetchAllPortfolioPhotosAdmin();
-      setEditorPhotos(all);
-    } catch {
-      setEditorPhotos(portfolioPhotos);
-    } finally {
-      setEditorLoading(false);
-    }
-  };
-
-  const exitEditorMode = () => {
-    setEditorMode(false);
-    // Re-sync public view with visible photos from editor
-    setPortfolioPhotos(editorPhotos.filter(p => p.isVisible));
   };
 
   const openHairStyleModal = async () => {

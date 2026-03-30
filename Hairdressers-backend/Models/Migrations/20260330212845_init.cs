@@ -9,11 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:Hairdressers-backend/Models/Migrations/20260330185651_init.cs
     public partial class init : Migration
-========
-    public partial class dayoff : Migration
->>>>>>>> origin/Emails:Hairdressers-backend/Models/Migrations/20260330040640_dayoff.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -199,8 +195,6 @@ namespace Models.Migrations
                     { 13, null, 120, 60, "Cepillados", 50m, 30m },
                     { 14, null, 180, 60, "Peinados", 70m, 35m },
                     { 15, null, 420, 300, "Keratina", 250m, 140m }
-<<<<<<<< HEAD:Hairdressers-backend/Models/Migrations/20260330185651_init.cs
-========
                 });
 
             migrationBuilder.InsertData(
@@ -211,7 +205,6 @@ namespace Models.Migrations
                     { 1, new DateTime(2025, 3, 12, 0, 0, 0, 0, DateTimeKind.Utc), true, 1, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg", "Keratina" },
                     { 2, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 2, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg", "Peinados" },
                     { 3, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 3, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg", "Peinados" }
->>>>>>>> origin/Emails:Hairdressers-backend/Models/Migrations/20260330040640_dayoff.cs
                 });
 
             migrationBuilder.InsertData(
@@ -247,18 +240,6 @@ namespace Models.Migrations
                     { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, null, 1, 1 },
                     { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified), null, null, 3, null, 0, 1 },
                     { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 1 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Reviews",
-                columns: new[] { "Id", "CreatedAt", "IsVisible", "Stars", "Text", "UserId" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2026, 3, 20, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3127), true, 5, "Excellent service, très professionnelle.", 1 },
-                    { 2, new DateTime(2026, 3, 22, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3138), true, 5, "Très bon résultat, je recommande !", 2 },
-                    { 3, new DateTime(2026, 3, 25, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3139), true, 4, "Service rapide et efficace.", 3 },
-                    { 4, new DateTime(2026, 3, 27, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3142), false, 4, "Bonne expérience globale.", 1 },
-                    { 5, new DateTime(2026, 3, 29, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3144), true, 5, "Je reviendrai sûrement !", 2 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -312,14 +293,10 @@ namespace Models.Migrations
                 name: "HairStylePhotos");
 
             migrationBuilder.DropTable(
-<<<<<<<< HEAD:Hairdressers-backend/Models/Migrations/20260330185651_init.cs
-                name: "Reviews");
-========
                 name: "PortfolioPhotos");
 
             migrationBuilder.DropTable(
-                name: "Users");
->>>>>>>> origin/Emails:Hairdressers-backend/Models/Migrations/20260330040640_dayoff.cs
+                name: "Reviews");
 
             migrationBuilder.DropTable(
                 name: "HairStyles");

@@ -56,7 +56,6 @@ namespace Models.Data
             builder.Entity<PortfolioPhoto>().HasData(Seed.SeedPortfolioPhotos());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
-            builder.Entity<Review>().HasData(Seed.SeedReviews());
 
         }
     }
