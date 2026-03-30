@@ -113,3 +113,8 @@ export interface ReviewDisplayDTO {
   stars: number;
   createdAt?: string;
 }
+
+export interface ReviewDTO {
+  text: string;
+  stars: number;
+}

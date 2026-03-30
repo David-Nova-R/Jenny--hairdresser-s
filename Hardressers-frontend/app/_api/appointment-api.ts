@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO, ReviewDisplayDTO, PortfolioPhoto, DayOff } from '@/app/_models/models';
+import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO, ReviewDisplayDTO, PortfolioPhoto, DayOff, ReviewDTO } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
 const API_BASE_URL = 'https://localhost:7226';
@@ -389,4 +389,23 @@ export async function FetchVisibleReviews(): Promise<ReviewDisplayDTO[]> {
   );
 
   return response.data;
+}
+
+export async function PostReview(dto: ReviewDTO) {
+    const headers = await getAuthHeaders();
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/api/Reviews/PostReview`,
+      dto,
+      { headers }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw new Error(
+        error.response.data || "Erreur lors de l'envoi de l'avis."
+      );
+    }
+    throw new Error("Erreur réseau.");
+  }
 }
