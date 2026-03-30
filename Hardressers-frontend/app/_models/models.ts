@@ -49,6 +49,22 @@ export type AppointmentDTO = {
   userName?: string;
 };
 
+export interface DayOff {
+  id: number;
+  date: string;
+  reason?: string | null;
+  createdAt: string;
+}
+
+export interface PortfolioPhoto {
+  id: number;
+  photoUrl: string;
+  title?: string | null;
+  order: number;
+  isVisible: boolean;
+  createdAt: string;
+}
+
 export type AdminCalendarAppointmentDTO = {
   id: number;
   appointmentDate: string;

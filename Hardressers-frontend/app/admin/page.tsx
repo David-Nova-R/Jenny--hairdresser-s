@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Loader2, RefreshCw, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, Check, CalendarOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/_context/auth-context';
 import { useLang } from '@/app/_context/language-context';
@@ -10,8 +10,9 @@ import { AppointmentResponseDTO } from '@/app/_models/models';
 import { tr } from '@/app/_config/translations';
 import { getHairStyleDisplay } from '@/app/_config/hairstyle-descriptions';
 import AdminCalendar from './admin-calendar';
+import DaysOffManager from './DaysOffManager';
 
-type AdminTab = 'appointments' | 'calendar';
+type AdminTab = 'appointments' | 'calendar' | 'daysoff';
 type PagedAppointmentsResponse = {
     items: AppointmentResponseDTO[];
     totalCount: number;
@@ -33,12 +34,24 @@ export default function AdminPage() {
     const [totalPages, setTotalPages] = useState(1);
 
     const STATUS_OPTIONS = [
-        { value: 0, label: tr('status_0', lang) },
-        { value: 1, label: tr('status_1', lang) },
-        { value: 2, label: tr('status_2', lang) },
-        { value: 3, label: tr('status_3', lang) },
-        { value: 4, label: tr('status_4', lang) },
+        { value: 0, label: tr('status_0', lang), dot: 'bg-amber-400',   bg: 'hover:bg-amber-400/10'   },
+        { value: 1, label: tr('status_1', lang), dot: 'bg-blue-400',    bg: 'hover:bg-blue-400/10'    },
+        { value: 2, label: tr('status_2', lang), dot: 'bg-rose-400',    bg: 'hover:bg-rose-400/10'    },
+        { value: 3, label: tr('status_3', lang), dot: 'bg-emerald-400', bg: 'hover:bg-emerald-400/10' },
+        { value: 4, label: tr('status_4', lang), dot: 'bg-violet-400',  bg: 'hover:bg-violet-400/10'  },
     ];
+
+    const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const close = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+                setOpenDropdownId(null);
+        };
+        document.addEventListener('mousedown', close);
+        return () => document.removeEventListener('mousedown', close);
+    }, []);
 
     useEffect(() => {
         if (!loading && (!user || !user.app_metadata?.isAdmin)) router.replace('/');
@@ -128,6 +141,10 @@ export default function AdminPage() {
                     <button onClick={() => setActiveTab('calendar')} className={tabClass('calendar')}>
                         {tr('admin_tab_calendar', lang)}
                     </button>
+                    <button onClick={() => setActiveTab('daysoff')} className={tabClass('daysoff')}>
+                        <CalendarOff className="h-4 w-4" />
+                        {tr('admin_tab_daysoff', lang)}
+                    </button>
                 </div>
 
                 {/* Appointments tab */}
@@ -177,27 +194,51 @@ export default function AdminPage() {
                                                         </p>
                                                     </div>
 
-                                                    <div className="w-full lg:w-72">
+                                                    <div className="w-full lg:w-72" ref={dropdownRef}>
                                                         <label className="mb-2 block text-sm text-gray-400">
                                                             {tr('admin_status_label', lang)}
                                                         </label>
-                                                        <select
-                                                            value={appt.status}
-                                                            onChange={e => handleStatusChange(appt.id, Number(e.target.value))}
-                                                            disabled={savingId === appt.id}
-                                                            className="w-full rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] px-4 py-3 text-white outline-none"
-                                                        >
-                                                            {STATUS_OPTIONS.map(opt => (
-                                                                <option key={opt.value} value={opt.value} className="bg-black text-white">
-                                                                    {opt.label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        {savingId === appt.id && (
-                                                            <p className="mt-2 text-sm text-[#D4AF37]">
-                                                                {tr('admin_updating', lang)}
-                                                            </p>
-                                                        )}
+                                                        <div className="relative">
+                                                            {/* Trigger */}
+                                                            <button
+                                                                disabled={savingId === appt.id}
+                                                                onClick={() => setOpenDropdownId(openDropdownId === appt.id ? null : appt.id)}
+                                                                className="flex w-full items-center justify-between rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] px-4 py-3 text-left transition-all hover:border-[#D4AF37]/50 disabled:opacity-50"
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    {savingId === appt.id
+                                                                        ? <Loader2 className="h-3.5 w-3.5 animate-spin text-[#D4AF37]" />
+                                                                        : <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_OPTIONS.find(o => o.value === Number(appt.status))?.dot ?? 'bg-gray-400'}`} />
+                                                                    }
+                                                                    <span className="text-sm text-white">
+                                                                        {STATUS_OPTIONS.find(o => o.value === Number(appt.status))?.label ?? '—'}
+                                                                    </span>
+                                                                </div>
+                                                                <ChevronDown className={`h-4 w-4 text-[#D4AF37] transition-transform duration-200 ${openDropdownId === appt.id ? 'rotate-180' : ''}`} />
+                                                            </button>
+
+                                                            {/* Options */}
+                                                            {openDropdownId === appt.id && (
+                                                                <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#111] shadow-2xl shadow-black/60">
+                                                                    {STATUS_OPTIONS.map(opt => (
+                                                                        <button
+                                                                            key={opt.value}
+                                                                            onClick={() => {
+                                                                                handleStatusChange(appt.id, opt.value);
+                                                                                setOpenDropdownId(null);
+                                                                            }}
+                                                                            className={`flex w-full items-center gap-3 px-4 py-3 text-sm text-white transition-colors ${opt.bg} ${Number(appt.status) === opt.value ? 'bg-white/5' : ''}`}
+                                                                        >
+                                                                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${opt.dot}`} />
+                                                                            <span className="flex-1 text-left">{opt.label}</span>
+                                                                            {Number(appt.status) === opt.value && (
+                                                                                <Check className="h-3.5 w-3.5 text-[#D4AF37]" />
+                                                                            )}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -239,6 +280,7 @@ export default function AdminPage() {
                 )}
 
                 {activeTab === 'calendar' && <AdminCalendar />}
+                {activeTab === 'daysoff'  && <DaysOffManager />}
             </div>
         </div>
     );

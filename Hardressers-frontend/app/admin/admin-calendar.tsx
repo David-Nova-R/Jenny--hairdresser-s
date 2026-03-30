@@ -15,6 +15,8 @@ import {
     ChevronLeft, ChevronRight, X, CalendarDays, DollarSign, CheckCircle2, XCircle,
 } from 'lucide-react';
 import { AdminCalendarAppointmentDTO } from '../_models/models';
+import { useLang } from '@/app/_context/language-context';
+import { tr } from '@/app/_config/translations';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const HOURS = Array.from({ length: 10 }, (_, i) => 8 + i);
@@ -22,9 +24,6 @@ const HOUR_HEIGHT = 96;
 const PX_PER_MINUTE = HOUR_HEIGHT / 60;
 type CalendarView = 'day' | 'week' | 'month';
 
-const STATUS_LABEL: Record<number, string> = {
-    0: 'En attente', 1: 'Confirmé', 2: 'Annulé', 3: 'Terminé', 4: 'Externe',
-};
 const STATUS_COLOR: Record<number, string> = {
     0: 'bg-amber-400',
     1: 'bg-blue-400',
@@ -74,10 +73,15 @@ function DetailModal({
     onCancel: () => void;
     loading: boolean;
 }) {
+    const { lang } = useLang();
     const date = parseLocal(appointment.appointmentDate);
     const duration = (appointment as any).durationMinutes ?? appointment.externalDurationMinutes ?? 60;
     const status = Number(appointment.status);
     const theme = getTheme(status);
+    const statusLabels: Record<number, string> = {
+        0: tr('status_0', lang), 1: tr('status_1', lang), 2: tr('status_2', lang),
+        3: tr('status_3', lang), 4: tr('status_4', lang),
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -91,14 +95,14 @@ function DetailModal({
                             <div className="flex items-center gap-2">
                                 <User2 className="h-5 w-5 shrink-0 text-white" />
                                 <p className="text-xl font-bold text-white">
-                                    {appointment.userName || 'Client'}
+                                    {appointment.userName || tr('admin_client', lang)}
                                 </p>
                             </div>
                             {/* Service */}
                             <div className="mt-1 flex items-center gap-2">
                                 <Scissors className="h-4 w-4 shrink-0 text-white/80" />
                                 <p className="text-sm font-semibold text-white/90">
-                                    {appointment.hairStyleName || 'Appointment'}
+                                    {appointment.hairStyleName || tr('admin_appointment', lang)}
                                 </p>
                             </div>
                         </div>
@@ -113,7 +117,7 @@ function DetailModal({
                     <div className="flex items-center gap-3 text-sm">
                         <CalendarDays className="h-4 w-4 shrink-0 text-[#D4AF37]" />
                         <span className="font-semibold capitalize text-white">
-                            {format(date, 'EEEE d MMMM yyyy')}
+                            {tr(`day_${date.getDay()}`, lang)} {date.getDate()} {tr(`month_${date.getMonth()}`, lang)} {date.getFullYear()}
                         </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
@@ -124,13 +128,13 @@ function DetailModal({
                         <DollarSign className="h-4 w-4 shrink-0 text-[#D4AF37]" />
                         <span className="text-white">
                             {appointment.status === 4
-                                ? appointment.notes || 'External'
+                                ? appointment.notes || tr('admin_external_note', lang)
                                 : `${appointment.priceMin}${appointment.priceMax != null ? ` – ${appointment.priceMax}` : ''} CAD`}
                         </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                         <span className={`h-2.5 w-2.5 rounded-full ${STATUS_COLOR[status] ?? 'bg-gray-400'}`} />
-                        <span className="text-white">{STATUS_LABEL[status] ?? 'Inconnu'}</span>
+                        <span className="text-white">{statusLabels[status] ?? tr('admin_unknown', lang)}</span>
                     </div>
                 </div>
 
@@ -144,7 +148,7 @@ function DetailModal({
                                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
                             >
                                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                                Confirmer
+                                {tr('admin_btn_confirm', lang)}
                             </button>
                         )}
                         {status === 1 && (
@@ -154,7 +158,7 @@ function DetailModal({
                                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
                             >
                                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                                Terminer
+                                {tr('admin_btn_complete', lang)}
                             </button>
                         )}
                         <button
@@ -163,7 +167,7 @@ function DetailModal({
                             className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 px-4 py-2.5 text-sm font-semibold text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
                         >
                             <XCircle className="h-4 w-4" />
-                            Annuler
+                            {tr('admin_btn_cancel', lang)}
                         </button>
                     </div>
                 )}
@@ -174,6 +178,7 @@ function DetailModal({
 
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function AdminCalendar() {
+    const { lang } = useLang();
     const [view, setView] = useState<CalendarView>('week');
     const [currentDate, setCurrentDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [appointments, setAppointments] = useState<AdminCalendarAppointmentDTO[]>([]);
@@ -255,13 +260,13 @@ export default function AdminCalendar() {
 
                 {/* Client name — big & first */}
                 <p className={`truncate font-extrabold leading-tight text-white ${ultraCompact ? 'text-xs' : 'text-sm'}`}>
-                    {a.userName || 'Client'}
+                    {a.userName || tr('admin_client', lang)}
                 </p>
 
                 {/* Service name */}
                 {!ultraCompact && (
                     <p className="truncate text-[11px] font-semibold text-white/80">
-                        {a.hairStyleName || 'Appointment'}
+                        {a.hairStyleName || tr('admin_appointment', lang)}
                     </p>
                 )}
 
@@ -301,7 +306,7 @@ export default function AdminCalendar() {
                     return (
                         <div key={i} className="border-l border-[#D4AF37]/10 bg-[#141414]">
                             <div className={`h-12 border-b border-[#D4AF37]/10 px-2 py-1.5 text-center ${isToday ? 'bg-[#D4AF37]/10' : 'bg-[#181818]'}`}>
-                                <div className="text-[11px] font-medium uppercase tracking-wider text-gray-400">{format(day, 'EEE')}</div>
+                                <div className="text-[11px] font-medium uppercase tracking-wider text-gray-400">{tr(`day_${day.getDay()}`, lang).slice(0, 3)}</div>
                                 <div className={`text-sm font-bold ${isToday ? 'text-[#D4AF37]' : 'text-white'}`}>{format(day, 'd')}</div>
                             </div>
 
@@ -333,7 +338,8 @@ export default function AdminCalendar() {
         const first = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
         const allDays = Array.from({ length: 42 }, (_, i) => addDays(first, i));
         const weeks = Array.from({ length: 6 }, (_, i) => allDays.slice(i * 7, i * 7 + 7));
-        const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        // Lundi → Dimanche (semaine commence lundi)
+        const DAY_NAMES = [1, 2, 3, 4, 5, 6, 0].map(i => tr(`day_${i}`, lang).slice(0, 3));
 
         return (
             <div className="overflow-hidden rounded-xl border border-[#D4AF37]/10">
@@ -365,7 +371,7 @@ export default function AdminCalendar() {
                                                 className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-bold text-white ${getTheme(Number(a.status)).card}`}
                                             >
                                                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full bg-white/60`} />
-                                                <span className="truncate">{format(parseLocal(a.appointmentDate), 'HH:mm')} {a.userName || 'Client'}</span>
+                                                <span className="truncate">{format(parseLocal(a.appointmentDate), 'HH:mm')} {a.userName || tr('admin_client', lang)}</span>
                                             </div>
                                         ))}
                                         {dayApps.length > 3 && <div className="px-1 text-[10px] text-[#D4AF37]">+{dayApps.length - 3}</div>}
@@ -379,11 +385,13 @@ export default function AdminCalendar() {
         );
     };
 
+    const fmtDay  = (d: Date) => `${tr(`day_${d.getDay()}`, lang)} ${d.getDate()} ${tr(`month_${d.getMonth()}`, lang)} ${d.getFullYear()}`;
+    const fmtShort = (d: Date) => `${tr(`month_${d.getMonth()}`, lang).slice(0, 3)} ${d.getDate()}`;
     const title = view === 'day'
-        ? format(currentDate, 'EEEE d MMMM yyyy')
+        ? fmtDay(currentDate)
         : view === 'week'
-            ? `${format(currentDate, 'MMM d')} – ${format(addDays(currentDate, 6), 'MMM d, yyyy')}`
-            : format(currentDate, 'MMMM yyyy');
+            ? `${fmtShort(currentDate)} – ${fmtShort(addDays(currentDate, 6))} ${addDays(currentDate, 6).getFullYear()}`
+            : `${tr(`month_${currentDate.getMonth()}`, lang)} ${currentDate.getFullYear()}`;
 
     return (
         <>
@@ -400,7 +408,7 @@ export default function AdminCalendar() {
                             {(['day', 'week', 'month'] as CalendarView[]).map(v => (
                                 <button key={v} onClick={() => switchView(v)}
                                     className={`rounded-full px-4 py-1 text-xs font-semibold tracking-wide transition-all duration-200 ${view === v ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-[#D4AF37]'}`}>
-                                    {v === 'day' ? 'Día' : v === 'week' ? 'Semana' : 'Mes'}
+                                    {v === 'day' ? tr('admin_view_day', lang) : v === 'week' ? tr('admin_view_week', lang) : tr('admin_view_month', lang)}
                                 </button>
                             ))}
                         </div>
@@ -423,13 +431,19 @@ export default function AdminCalendar() {
                     </div>
                 )}
 
-                <div className="mt-4 flex flex-wrap items-center gap-4 px-1">
-                    {Object.entries(STATUS_LABEL).map(([k, label]) => (
-                        <div key={k} className="flex items-center gap-1.5">
-                            <span className={`h-2.5 w-2.5 rounded-full ${STATUS_COLOR[Number(k)] ?? 'bg-gray-400'}`} />
-                            <span className="text-xs text-gray-400">{label}</span>
-                        </div>
-                    ))}
+                {/* Légende */}
+                <div className="mt-4 rounded-2xl border border-[#D4AF37]/10 bg-white/[0.02] px-4 py-3">
+                    <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#D4AF37]/60">
+                        {tr('admin_legend', lang)}
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        {([0, 1, 2, 3, 4] as const).map(n => (
+                            <div key={n} className="flex items-center gap-2 rounded-full border border-white/5 bg-black/30 px-3 py-1.5">
+                                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_COLOR[n] ?? 'bg-gray-400'}`} />
+                                <span className="text-xs font-medium text-gray-300">{tr(`status_${n}`, lang)}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 

@@ -32,8 +32,10 @@ import { useAuth } from './_context/auth-context';
 import { useModal } from './_context/modal-context';
 import { useLang } from './_context/language-context';
 import ServerErrorModal from './_components/ServerErrorModal';
-import { AvailableDay, HairStyle } from './_models/models';
-import { FetchAvailableSlots, FetchHairStyles } from './_api/appointment-api';
+import { AvailableDay, HairStyle, PortfolioPhoto } from './_models/models';
+import { FetchAvailableSlots, FetchHairStyles, FetchPortfolioPhotos, FetchAllPortfolioPhotosAdmin } from './_api/appointment-api';
+import PortfolioEditor from './_components/PortfolioEditor';
+import { Pencil, X } from 'lucide-react';
 import { getHairStyleDisplay } from './_config/hairstyle-descriptions';
 import { tr } from './_config/translations';
 
@@ -53,6 +55,13 @@ export default function HomePage() {
   const [pageHairStyles, setPageHairStyles] = useState<HairStyle[]>([]);
   const [pageHairStylesLoading, setPageHairStylesLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
+  const [portfolioLoading, setPortfolioLoading] = useState(true);
+  const [editorMode, setEditorMode] = useState(false);
+  const [editorPhotos, setEditorPhotos] = useState<PortfolioPhoto[]>([]);
+  const [editorLoading, setEditorLoading] = useState(false);
+
+  const isAdmin = !!user?.app_metadata?.isAdmin;
 
   useEffect(() => {
     const handleHighlight = () => {
@@ -79,10 +88,31 @@ export default function HomePage() {
       .finally(() => setPageHairStylesLoading(false));
   }, []);
 
-  const galleryImages = [
-    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibG9uZGUlMjBiYWxheWFnZSUyMGhhaXJ8ZW58MXx8fHwxNzczMjM3NzUwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    'https://images.unsplash.com/photo-1703705632900-4cb9361015e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxicnVuZXR0ZSUyMGxheWVycyUyMGhhaXJjdXR8ZW58MXx8fHwxNzczMjM3NzUwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-  ];
+  useEffect(() => {
+    FetchPortfolioPhotos()
+      .then(setPortfolioPhotos)
+      .catch(() => setPortfolioPhotos([]))
+      .finally(() => setPortfolioLoading(false));
+  }, []);
+
+  const enterEditorMode = async () => {
+    setEditorLoading(true);
+    setEditorMode(true);
+    try {
+      const all = await FetchAllPortfolioPhotosAdmin();
+      setEditorPhotos(all);
+    } catch {
+      setEditorPhotos(portfolioPhotos);
+    } finally {
+      setEditorLoading(false);
+    }
+  };
+
+  const exitEditorMode = () => {
+    setEditorMode(false);
+    // Re-sync public view with visible photos from editor
+    setPortfolioPhotos(editorPhotos.filter(p => p.isVisible));
+  };
 
   const openHairStyleModal = async () => {
     openModal('hairstyle');
@@ -294,21 +324,70 @@ export default function HomePage() {
             <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {galleryImages.map((image, index) => (
-              <div
-                key={index}
-                className="group relative aspect-square overflow-hidden rounded-2xl border border-[#D4AF37]/20 transition-all duration-300 hover:border-[#D4AF37]/50"
-              >
-                <ImageWithFallback
-                  src={image}
-                  alt={`Gallery ${index + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* Admin editor toggle */}
+          {isAdmin && (
+            <div className="mb-8 flex justify-end">
+              {!editorMode ? (
+                <button
+                  onClick={enterEditorMode}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-black px-5 py-2.5 text-sm text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37]/10"
+                >
+                  <Pencil className="h-4 w-4" />
+                  {tr('editor_toggle', lang)}
+                </button>
+              ) : (
+                <button
+                  onClick={exitEditorMode}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-5 py-2.5 text-sm font-semibold text-black transition-all hover:bg-[#F4D03F]"
+                >
+                  <X className="h-4 w-4" />
+                  {tr('editor_done', lang)}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Editor mode banner */}
+          {editorMode && (
+            <div className="mb-6 rounded-2xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 px-5 py-3 text-center text-sm text-[#D4AF37]">
+              ✦ {tr('editor_toggle', lang)} — {tr('editor_saving', lang).split('...')[0]}
+            </div>
+          )}
+
+          {editorMode ? (
+            editorLoading ? (
+              <div className="flex min-h-[300px] items-center justify-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
               </div>
-            ))}
-          </div>
+            ) : (
+              <PortfolioEditor
+                photos={editorPhotos}
+                onPhotosChange={setEditorPhotos}
+                lang={lang}
+              />
+            )
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {portfolioPhotos.map((photo, index) => (
+                <div
+                  key={photo.id}
+                  className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-[#D4AF37]/20 transition-all duration-300 hover:border-[#D4AF37]/50"
+                >
+                  <ImageWithFallback
+                    src={photo.photoUrl}
+                    alt={photo.title ?? `Gallery ${index + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  {photo.title && (
+                    <p className="absolute bottom-0 left-0 right-0 translate-y-1 p-4 text-center text-sm text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      {photo.title}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

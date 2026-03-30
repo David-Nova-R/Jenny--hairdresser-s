@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AvailableDay, HairStyle, AppointmentResponseDTO, AdminCalendarAppointmentDTO } from '@/app/_models/models';
+import { AvailableDay, HairStyle, AppointmentResponseDTO, AdminCalendarAppointmentDTO, PortfolioPhoto, DayOff } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
 const API_BASE_URL = 'https://localhost:7226';
@@ -199,6 +199,92 @@ export async function UpdateAppointmentStatusAdmin(
     );
     throw err;
   }
+}
+
+export async function FetchPortfolioPhotos(): Promise<PortfolioPhoto[]> {
+  const response = await axios.get<PortfolioPhoto[]>(
+    `${API_BASE_URL}/api/Portfolio/GetPortfolio`
+  );
+  return response.data;
+}
+
+export async function FetchAllPortfolioPhotosAdmin(): Promise<PortfolioPhoto[]> {
+  const headers = await getAuthHeaders();
+  const response = await axios.get<PortfolioPhoto[]>(
+    `${API_BASE_URL}/api/Portfolio/GetAllPortfolioPhotos`,
+    { headers }
+  );
+  return response.data;
+}
+
+export async function UploadPortfolioPhoto(
+  file: File,
+  title?: string,
+  order = 0
+): Promise<PortfolioPhoto> {
+  const headers = await getAuthHeaders();
+  const form = new FormData();
+  form.append('photo', file);
+  if (title) form.append('title', title);
+  form.append('order', String(order));
+  const response = await axios.post<PortfolioPhoto>(
+    `${API_BASE_URL}/api/Portfolio/UploadPortfolioPhoto`,
+    form,
+    { headers: { ...headers, 'Content-Type': 'multipart/form-data' } }
+  );
+  return response.data;
+}
+
+export async function UpdatePortfolioPhoto(
+  id: number,
+  data: { isVisible?: boolean; order?: number; title?: string }
+): Promise<void> {
+  const headers = await getAuthHeaders();
+  await axios.put(
+    `${API_BASE_URL}/api/Portfolio/UpdatePortfolioPhoto/${id}`,
+    data,
+    { headers }
+  );
+}
+
+export async function UpdatePortfolioPhotoOrder(
+  photos: { id: number; order: number }[]
+): Promise<void> {
+  // No batch endpoint — update each photo individually in parallel
+  await Promise.all(
+    photos.map(p => UpdatePortfolioPhoto(p.id, { order: p.order }))
+  );
+}
+
+export async function DeletePortfolioPhoto(id: number): Promise<void> {
+  const headers = await getAuthHeaders();
+  await axios.delete(
+    `${API_BASE_URL}/api/Portfolio/DeletePortfolioPhoto/${id}`,
+    { headers }
+  );
+}
+
+// ── Days Off ──────────────────────────────────────────────────────────────────
+export async function FetchDaysOff(): Promise<DayOff[]> {
+  const response = await axios.get<DayOff[]>(`${API_BASE_URL}/api/DayOff/GetDaysOff`);
+  return response.data;
+}
+
+export async function AddDayOff(date: string, reason?: string): Promise<DayOff> {
+  const headers = await getAuthHeaders();
+  const body: Record<string, string> = { date: `${date}T00:00:00` };
+  if (reason) body.reason = reason;
+  const response = await axios.post<DayOff>(
+    `${API_BASE_URL}/api/DayOff/AddDayOff`,
+    body,
+    { headers }
+  );
+  return response.data;
+}
+
+export async function RemoveDayOff(id: number): Promise<void> {
+  const headers = await getAuthHeaders();
+  await axios.delete(`${API_BASE_URL}/api/DayOff/RemoveDayOff/${id}`, { headers });
 }
 
 export async function FetchAdminCalendarAppointments(

@@ -9,11 +9,26 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-    public partial class noadmin : Migration
+    public partial class dayoff : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "DaysOff",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Reason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DaysOff", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "HairStyles",
                 columns: table => new
@@ -30,6 +45,23 @@ namespace Models.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_HairStyles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PortfolioPhotos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PhotoUrl = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Order = table.Column<int>(type: "integer", nullable: false),
+                    IsVisible = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PortfolioPhotos", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -135,11 +167,21 @@ namespace Models.Migrations
                     { 8, null, 360, 240, "Californianas", 200m, 100m },
                     { 9, null, 60, 60, "Cortes dama", null, 20m },
                     { 10, null, 60, 180, "Permanente hombres", null, 100m },
-                    { 11, null, 420, 300, "Keratina", 250m, 140m },
-                    { 12, null, 420, 240, "Aminoácido", 300m, 150m },
-                    { 13, null, 240, 180, "Terapia capilar", 200m, 120m },
-                    { 14, null, 120, 60, "Cepillados", 50m, 30m },
-                    { 15, null, 180, 60, "Peinados", 70m, 35m }
+                    { 11, null, 420, 240, "Aminoácido", 300m, 150m },
+                    { 12, null, 240, 180, "Terapia capilar", 200m, 120m },
+                    { 13, null, 120, 60, "Cepillados", 50m, 30m },
+                    { 14, null, 180, 60, "Peinados", 70m, 35m },
+                    { 15, null, 420, 300, "Keratina", 250m, 140m }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PortfolioPhotos",
+                columns: new[] { "Id", "CreatedAt", "IsVisible", "Order", "PhotoUrl", "Title" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 3, 12, 0, 0, 0, 0, DateTimeKind.Utc), true, 1, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg", "Keratina" },
+                    { 2, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 2, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg", "Peinados" },
+                    { 3, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 3, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg", "Peinados" }
                 });
 
             migrationBuilder.InsertData(
@@ -153,14 +195,19 @@ namespace Models.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "Email", "FirstName", "LastName", "PhoneNumber", "RoleId", "SupabaseUserId" },
+                table: "HairStylePhotos",
+                columns: new[] { "Id", "HairStyleId", "PhotoUrl" },
                 values: new object[,]
                 {
-                    { 1, "", "Jean", "Tremblay", "514-123-4567", 3, "11111111-1111-1111-1111-111111111111" },
-                    { 2, "", "Marie", "Dupont", "438-987-6543", 3, "22222222-2222-2222-2222-222222222222" },
-                    { 3, "", "Luc", "Bernard", "450-555-1234", 3, "33333333-3333-3333-3333-333333333333" }
+                    { 1, 11, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
+                    { 2, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" },
+                    { 3, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "FirstName", "LastName", "PhoneNumber", "RoleId", "SupabaseUserId" },
+                values: new object[] { 1, "test@gmail.com", "Test", "Tingtong", "514-000-0000", 1, "280c0a73-c068-485b-a594-e2c1e0917a54" });
 
             migrationBuilder.InsertData(
                 table: "Appointments",
@@ -168,8 +215,8 @@ namespace Models.Migrations
                 values: new object[,]
                 {
                     { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, null, 1, 1 },
-                    { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified), null, null, 3, null, 0, 2 },
-                    { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 3 }
+                    { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified), null, null, 3, null, 0, 1 },
+                    { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 1 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -212,7 +259,13 @@ namespace Models.Migrations
                 name: "Appointments");
 
             migrationBuilder.DropTable(
+                name: "DaysOff");
+
+            migrationBuilder.DropTable(
                 name: "HairStylePhotos");
+
+            migrationBuilder.DropTable(
+                name: "PortfolioPhotos");
 
             migrationBuilder.DropTable(
                 name: "Users");

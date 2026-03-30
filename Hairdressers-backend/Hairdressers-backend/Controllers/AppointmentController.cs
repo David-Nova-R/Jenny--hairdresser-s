@@ -156,6 +156,10 @@ namespace Hairdressers_backend.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = ex.Message, Type = ex.GetType().Name });
+            }
         }
 
         [Authorize]

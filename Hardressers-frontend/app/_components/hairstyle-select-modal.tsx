@@ -13,8 +13,9 @@ const HairStyleSelectModal: React.FC<HairStyleSelectModalProps> = ({
   loading,
 }) => {
   const { lang } = useLang();
-   if (!show) return null;
   const [selected, setSelected] = useState<number | null>(null);
+
+  if (!show) return null;
 
   const handleNext = () => {
     if (selected !== null) {

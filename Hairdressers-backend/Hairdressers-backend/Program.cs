@@ -15,6 +15,8 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 builder.Services.AddScoped<IHairStyleService, HairStyleService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPortfolioService, PortfolioService>();
+builder.Services.AddScoped<IDayOffService, DayOffService>();
 builder.Services.AddHostedService<CalendarSyncBackgroundService>();
 
 // Resend
