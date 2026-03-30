@@ -77,7 +77,7 @@ namespace Models.Migrations
                             AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified),
                             HairStyleId = 3,
                             Status = 0,
-                            UserId = 2
+                            UserId = 1
                         },
                         new
                         {
@@ -85,8 +85,31 @@ namespace Models.Migrations
                             AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified),
                             HairStyleId = 4,
                             Status = 0,
-                            UserId = 3
+                            UserId = 1
                         });
+                });
+
+            modelBuilder.Entity("Models.Models.DayOff", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DaysOff");
                 });
 
             modelBuilder.Entity("Models.Models.HairStyle", b =>
@@ -275,6 +298,85 @@ namespace Models.Migrations
                     b.HasIndex("HairStyleId");
 
                     b.ToTable("HairStylePhotos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            HairStyleId = 11,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            HairStyleId = 15,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            HairStyleId = 15,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg"
+                        });
+                });
+
+            modelBuilder.Entity("Models.Models.PortfolioPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PortfolioPhotos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 3, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsVisible = true,
+                            Order = 1,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg",
+                            Title = "Keratina"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsVisible = true,
+                            Order = 2,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg",
+                            Title = "Peinados"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsVisible = true,
+                            Order = 3,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg",
+                            Title = "Peinados"
+                        });
                 });
 
             modelBuilder.Entity("Models.Models.Review", b =>
@@ -439,32 +541,12 @@ namespace Models.Migrations
                         new
                         {
                             Id = 1,
-                            Email = "",
-                            FirstName = "Jean",
-                            LastName = "Tremblay",
-                            PhoneNumber = "514-123-4567",
-                            RoleId = 3,
-                            SupabaseUserId = "11111111-1111-1111-1111-111111111111"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Email = "",
-                            FirstName = "Marie",
-                            LastName = "Dupont",
-                            PhoneNumber = "438-987-6543",
-                            RoleId = 3,
-                            SupabaseUserId = "22222222-2222-2222-2222-222222222222"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Email = "",
-                            FirstName = "Luc",
-                            LastName = "Bernard",
-                            PhoneNumber = "450-555-1234",
-                            RoleId = 3,
-                            SupabaseUserId = "33333333-3333-3333-3333-333333333333"
+                            Email = "test@gmail.com",
+                            FirstName = "Test",
+                            LastName = "Tingtong",
+                            PhoneNumber = "514-000-0000",
+                            RoleId = 1,
+                            SupabaseUserId = "280c0a73-c068-485b-a594-e2c1e0917a54"
                         });
                 });
 

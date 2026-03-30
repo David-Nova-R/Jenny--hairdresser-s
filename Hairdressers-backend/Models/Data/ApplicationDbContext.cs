@@ -21,6 +21,8 @@ namespace Models.Data
         public DbSet<HairStyle> HairStyles { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<PortfolioPhoto> PortfolioPhotos { get; set; }
+        public DbSet<DayOff> DaysOff { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -50,6 +52,8 @@ namespace Models.Data
             // Seeds
             builder.Entity<Role>().HasData(Seed.SeedRoles());
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());
+            builder.Entity<HairStylePhoto>().HasData(Seed.SeedHairStylePhotos());
+            builder.Entity<PortfolioPhoto>().HasData(Seed.SeedPortfolioPhotos());
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
             builder.Entity<Review>().HasData(Seed.SeedReviews());

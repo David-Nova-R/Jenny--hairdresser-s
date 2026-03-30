@@ -13,12 +13,22 @@ namespace Hairdressers_backend.Services
         private readonly Client _supabase;
         private readonly IGoogleCalendarService _calendarService;
 
-        const int heureDebut = 8;
-        const int heureFin = 17;
         const int slotStepMinutes = 30;
 
         private static readonly TimeZoneInfo _torontoTz =
             TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+
+        // Retourne (heureDebut, heureFin) pour le jour donné, ou null si fermé
+        private static (int debut, int fin)? GetWorkHours(DayOfWeek day) => day switch
+        {
+            DayOfWeek.Monday    => (12, 19),
+            DayOfWeek.Tuesday   => (12, 19),
+            DayOfWeek.Wednesday => (12, 19),
+            DayOfWeek.Thursday  => (12, 19),
+            DayOfWeek.Friday    => (9,  19),
+            DayOfWeek.Saturday  => (8,  16),
+            _                   => null
+        };
 
         public AppointmentService(AppDbContext context, Client supabase, IGoogleCalendarService calendarService)
         {
@@ -76,18 +86,22 @@ namespace Hairdressers_backend.Services
 
             var localAppointmentDate = NormalizeLocalDateTime(appointmentDate);
 
-            if (localAppointmentDate.DayOfWeek == DayOfWeek.Saturday ||
-                localAppointmentDate.DayOfWeek == DayOfWeek.Sunday)
-            {
-                throw new InvalidOperationException("Aucun rendez-vous la fin de semaine.");
-            }
+            var workHours = GetWorkHours(localAppointmentDate.DayOfWeek);
+            if (workHours == null)
+                throw new InvalidOperationException("Aucun rendez-vous ce jour-là.");
+
+            var localDateUtc = DateTime.SpecifyKind(localAppointmentDate.Date, DateTimeKind.Utc);
+            var isDayOff = await _context.DaysOff
+                .AnyAsync(d => d.Date == localDateUtc);
+            if (isDayOff)
+                throw new InvalidOperationException("La styliste n'est pas disponible ce jour-là.");
 
             var duration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
             var localEnd = localAppointmentDate.AddMinutes(duration);
 
             var localDay = localAppointmentDate.Date;
-            var localStartWork = localDay.AddHours(heureDebut);
-            var localEndWork = localDay.AddHours(heureFin);
+            var localStartWork = localDay.AddHours(workHours.Value.debut);
+            var localEndWork = localDay.AddHours(workHours.Value.fin);
 
             if (localAppointmentDate < localStartWork || localEnd > localEndWork)
             {
@@ -180,6 +194,23 @@ namespace Hairdressers_backend.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task CompletePassedAppointmentsAsync()
+        {
+            var nowToronto = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _torontoTz).DateTime;
+
+            var passedAppointments = await _context.Appointments
+                .Where(a =>
+                    a.Status == AppointmentStatus.Confirmed &&
+                    a.AppointmentDate < nowToronto)
+                .ToListAsync();
+
+            foreach (var appointment in passedAppointments)
+                appointment.Status = AppointmentStatus.Completed;
+
+            if (passedAppointments.Any())
+                await _context.SaveChangesAsync();
+        }
+
         public async Task<List<AvailableDayWithSlotsDTO>> GetAvailableMonthAsync(int serviceId)
         {
             var hairStyle = await _context.HairStyles
@@ -192,9 +223,21 @@ namespace Hairdressers_backend.Services
             var lastDay = today.AddDays(30);
             var result = new List<AvailableDayWithSlotsDTO>();
 
+            var todayUtc = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+            var lastDayUtc = DateTime.SpecifyKind(lastDay, DateTimeKind.Utc);
+            var daysOff = (await _context.DaysOff
+                .Where(d => d.Date >= todayUtc && d.Date <= lastDayUtc)
+                .ToListAsync())
+                .Select(d => d.Date.Date)
+                .ToHashSet();
+
             for (var date = today; date <= lastDay; date = date.AddDays(1))
             {
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                var workHours = GetWorkHours(date.DayOfWeek);
+                if (workHours == null)
+                    continue;
+
+                if (daysOff.Contains(date.Date))
                     continue;
 
                 var dayStart = date.Date;
@@ -208,8 +251,8 @@ namespace Hairdressers_backend.Services
                     .ToListAsync();
 
                 var slots = new List<string>();
-                var endOfDay = dayStart.AddHours(heureFin);
-                var currentSlot = dayStart.AddHours(heureDebut);
+                var endOfDay = dayStart.AddHours(workHours.Value.fin);
+                var currentSlot = dayStart.AddHours(workHours.Value.debut);
 
                 var requestedDuration = hairStyle.DurationMaxMinutes ?? hairStyle.DurationMinutes;
 
@@ -273,8 +316,9 @@ namespace Hairdressers_backend.Services
         {
             var salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
 
-            var timeMin = DateTime.Now.AddDays(-1);
-            var timeMax = DateTime.Now.AddDays(60);
+            var todayToronto = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, salonTimeZone).DateTime.Date;
+            var timeMin = todayToronto;
+            var timeMax = todayToronto.AddDays(60);
 
             var googleEvents = await _calendarService.GetAppointmentsAsync(timeMin, timeMax);
 

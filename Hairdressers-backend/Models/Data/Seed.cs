@@ -14,6 +14,26 @@ namespace Hairdressers_backend.Data
             };
         }
 
+        public static PortfolioPhoto[] SeedPortfolioPhotos()
+        {
+            return new PortfolioPhoto[]
+            {
+                new PortfolioPhoto { Id = 1, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg", Title = "Keratina", Order = 1, IsVisible = true, CreatedAt = new DateTime(2025, 3, 12, 0, 0, 0, DateTimeKind.Utc) },
+                new PortfolioPhoto { Id = 2, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg", Title = "Peinados", Order = 2, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
+                new PortfolioPhoto { Id = 3, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg", Title = "Peinados", Order = 3, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
+            };
+        }
+
+        public static HairStylePhoto[] SeedHairStylePhotos()
+        {
+            return new HairStylePhoto[]
+            {
+                new HairStylePhoto { Id = 1, HairStyleId = 11, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
+                new HairStylePhoto { Id = 2, HairStyleId = 15, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" },
+                new HairStylePhoto { Id = 3, HairStyleId = 15, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg" },
+            };
+        }
+
         public static HairStyle[] SeedServices()
         {
             return new HairStyle[]
@@ -38,34 +58,18 @@ namespace Hairdressers_backend.Data
 
         public static User[] SeedUsers()
         {
+            // test@gmail.com / Passw0rd! — À retirer en production
             return new User[]
             {
                 new User
                 {
                     Id = 1,
-                    SupabaseUserId = "11111111-1111-1111-1111-111111111111",
-                    FirstName = "Jean",
-                    LastName = "Tremblay",
-                    PhoneNumber = "514-123-4567",
-                    RoleId = 3
-                },
-                new User
-                {
-                    Id = 2,
-                    SupabaseUserId = "22222222-2222-2222-2222-222222222222",
-                    FirstName = "Marie",
-                    LastName = "Dupont",
-                    PhoneNumber = "438-987-6543",
-                    RoleId = 3
-                },
-                new User
-                {
-                    Id = 3,
-                    SupabaseUserId = "33333333-3333-3333-3333-333333333333",
-                    FirstName = "Luc",
-                    LastName = "Bernard",
-                    PhoneNumber = "450-555-1234",
-                    RoleId = 3
+                    SupabaseUserId = "280c0a73-c068-485b-a594-e2c1e0917a54",
+                    FirstName = "Test",
+                    LastName = "Tingtong",
+                    PhoneNumber = "514-000-0000",
+                    Email = "test@gmail.com",
+                    RoleId = 1
                 }
             };
         }
@@ -85,7 +89,7 @@ namespace Hairdressers_backend.Data
                 new Appointment
                 {
                     Id = 2,
-                    UserId = 2,
+                    UserId = 1,
                     HairStyleId = 3,
                     AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, DateTimeKind.Unspecified),
                     Status = AppointmentStatus.Pending
@@ -93,7 +97,7 @@ namespace Hairdressers_backend.Data
                 new Appointment
                 {
                     Id = 3,
-                    UserId = 3,
+                    UserId = 1,
                     HairStyleId = 4,
                     AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, DateTimeKind.Unspecified),
                     Status = AppointmentStatus.Pending
