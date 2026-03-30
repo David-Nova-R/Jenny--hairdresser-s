@@ -7,6 +7,7 @@ import {
   Phone,
   MapPin,
   Clock,
+
   ChevronLeft,
   ChevronRight,
   Star,
@@ -39,6 +40,9 @@ import { FetchAvailableSlots, FetchHairStyles, FetchVisibleReviews } from './_ap
 import { AvailableDay, HairStyle, HairStyleWithPhotos, ReviewDisplayDTO } from './_models/models';
 import { getHairStyleDisplay } from './_config/hairstyle-descriptions';
 import { tr } from './_config/translations';
+import ReviewsSection from './_components/sections/review-section';
+import GallerySection from './_components/sections/gallery-section';
+import ServicesSection from './_components/sections/service-section';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -95,30 +99,6 @@ export default function HomePage() {
     void loadReviews();
   }, []);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const uiHairStyles = useMemo(() => [{
-    icon: Scissors,
-    title: 'Haircuts',
-    description: 'Precision cuts tailored to your unique style and personality.',
-    price: 'From $80',
-  },
-  {
-    icon: Palette,
-    title: 'Coloring',
-    description: 'Expert color services including highlights, balayage, and full color.',
-    price: 'From $150',
-  },
-  {
-    icon: Sparkles, title: 'Styling',
-    description: 'Professional styling for special occasions and everyday elegance.',
-    price: 'From $60',
-  },
-  {
-    icon: Heart,
-    title: 'Treatments',
-    description: 'Luxurious treatments to restore and nourish your hair.',
-    price: 'From $100',
-  },], []);
 
   const loadGallery = async () => {
     try {
@@ -213,7 +193,22 @@ export default function HomePage() {
       setSlotsLoading(false);
     }
   };
+  const servicesScrollRef = useRef<HTMLDivElement>(null);
 
+  const scrollServices = (direction: 'left' | 'right') => {
+    if (!servicesScrollRef.current) return;
+
+    const firstCard = servicesScrollRef.current.querySelector('[data-service-card]') as HTMLElement | null;
+    if (!firstCard) return;
+
+    const gap = 16;
+    const amount = firstCard.offsetWidth + gap;
+
+    servicesScrollRef.current.scrollBy({
+      left: direction === 'left' ? -amount : amount,
+      behavior: 'smooth',
+    });
+  };
   const handleHairStyleSelect = async (hairStyle: HairStyle) => {
     if (!user) {
       setSelectedHairStyle(hairStyle);
@@ -279,184 +274,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="HairStyles" className="bg-black px-6 py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-20 text-center">
-            <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              {tr('services_badge', lang)}
-            </span>
-            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-              {tr('services_title', lang)}
-            </h2>
-            <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
-          </div>
+      <ServicesSection
+        lang={lang}
+        loading={pageHairStylesLoading}
+        pageHairStyles={pageHairStyles}
+        onSelect={handleHairStyleSelect}
+      />
 
-          {/* Carrousel */}
-          <div className="relative">
-            {/* Flèches */}
-            {!pageHairStylesLoading && pageHairStyles.length > 1 && (
-              <>
-                <button
-                  onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))}
-                  disabled={carouselIndex === 0}
-                  className="absolute -left-14 top-1/2 z-10 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:opacity-20 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="h-7 w-7" />
-                </button>
-                <button
-                  onClick={() => setCarouselIndex((i) => Math.min(Math.max(0, pageHairStyles.length - 3), i + 1))}
-                  disabled={carouselIndex === Math.max(0, pageHairStyles.length - 3)}
-                  className="absolute -right-14 top-1/2 z-10 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:opacity-20 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="h-7 w-7" />
-                </button>
-              </>
-            )}
-
-            {/* Track */}
-            <div className="overflow-hidden">
-              <div
-                className="flex gap-8 transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(calc(-${carouselIndex} * (100% / 3 + 11px)))` }}
-              >
-                {pageHairStylesLoading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="w-full shrink-0 basis-full md:basis-[calc(50%-16px)] lg:basis-[calc(33.333%-22px)] flex flex-col rounded-2xl border border-[#D4AF37]/10 bg-gradient-to-b from-[#0a0a0a] to-black p-8 animate-pulse">
-                        <div className="mb-6 h-16 w-16 rounded-full bg-[#D4AF37]/10" />
-                        <div className="mb-3 h-6 w-3/4 rounded bg-white/10" />
-                        <div className="mb-2 h-4 w-full rounded bg-white/5" />
-                        <div className="mb-6 h-4 w-5/6 rounded bg-white/5" />
-                        <div className="h-5 w-1/3 rounded bg-[#D4AF37]/20" />
-                      </div>
-                    ))
-                  : pageHairStyles.map((hairStyle) => (
-                      <button
-                        key={hairStyle.id}
-                        onClick={() => handleHairStyleSelect(hairStyle)}
-                        className="w-full shrink-0 basis-full md:basis-[calc(50%-16px)] lg:basis-[calc(33.333%-22px)] group flex flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 text-left transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10 cursor-pointer"
-                      >
-                        <div className="mb-6">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37] bg-black transition-all duration-300 group-hover:bg-[#D4AF37]">
-                            {COLOR_SERVICES.has(hairStyle.name)
-                              ? <Palette className="h-7 w-7 text-[#D4AF37] transition-colors duration-300 group-hover:text-black" />
-                              : <Scissors className="h-7 w-7 text-[#D4AF37] transition-colors duration-300 group-hover:text-black" />
-                            }
-                          </div>
-                        </div>
-                        <h3 className="mb-3 text-2xl font-normal">
-                          {getHairStyleDisplay(hairStyle.name, lang).title}
-                        </h3>
-                        <p className="mb-6 grow leading-relaxed text-gray-400">
-                          {getHairStyleDisplay(hairStyle.name, lang).description}
-                        </p>
-                        <p className="text-lg text-[#D4AF37]">
-                          {tr('services_from', lang)} {hairStyle.priceMin} CAD
-                        </p>
-                      </button>
-                    ))}
-              </div>
-            </div>
-
-            {/* Points de navigation */}
-            {!pageHairStylesLoading && pageHairStyles.length > 1 && (
-              <div className="mt-8 flex justify-center gap-2">
-                {Array.from({ length: Math.max(0, pageHairStyles.length - 2) }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCarouselIndex(i)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === carouselIndex ? 'w-6 bg-[#D4AF37]' : 'w-2 bg-[#D4AF37]/30 hover:bg-[#D4AF37]/60'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section id="gallery" className="bg-black px-6 py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-20 text-center">
-            <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              {tr('gallery_badge', lang)}
-            </span>
-            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">{tr('gallery_title', lang)}</h2>
-            <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
-          </div>
-
-          {galleryLoading ? (
-            <div className="flex min-h-[200px] items-center justify-center">
-              <span className="text-gray-400">Loading gallery...</span>
-            </div>
-          ) : allGalleryPhotos.length <= 4 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {allGalleryPhotos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
-                >
-                  <ImageWithFallback
-                    src={photo.photoUrl}
-                    alt={photo.hairStyleName}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <p className="text-sm font-medium text-white">{photo.hairStyleName}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="relative">
-              <button
-                onClick={() => scroll('left')}
-                className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-
-              <button
-                onClick={() => scroll('right')}
-                className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-16 bg-gradient-to-r from-black to-transparent md:block" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-16 bg-gradient-to-l from-black to-transparent md:block" />
-
-              <div
-                ref={scrollRef}
-                className="flex gap-6 overflow-x-auto scroll-smooth px-2 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {allGalleryPhotos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className="group relative aspect-[4/5] w-[280px] min-w-[280px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
-                  >
-                    <ImageWithFallback
-                      src={photo.photoUrl}
-                      alt={photo.hairStyleName}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <p className="text-sm font-medium text-white">{photo.hairStyleName}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
+      <GallerySection
+        lang={lang}
+        loading={galleryLoading}
+        photos={allGalleryPhotos}
+      />
       <section id="booking" className="relative overflow-hidden bg-black px-6 py-24">
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
@@ -533,88 +362,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="reviews" className="bg-black px-6 py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-20 text-center">
-            <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
-              Testimonials
-            </span>
-            <h2 className="mt-4 mb-6 text-5xl font-light md:text-6xl">
-              Client Reviews
-            </h2>
-            <div className="mx-auto h-[1px] w-24 bg-[#D4AF37]" />
-          </div>
-
-          {reviewsLoading ? (
-            <div className="flex min-h-[200px] items-center justify-center">
-              <span className="text-gray-400">Loading reviews...</span>
-            </div>
-          ) : reviews.length === 0 ? (
-            <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-[#D4AF37]/20 bg-[#0a0a0a] text-gray-400">
-              No reviews available yet.
-            </div>
-          ) : (
-            <div className="relative">
-              <button
-                onClick={() => scrollReviews('left')}
-                className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-
-              <button
-                onClick={() => scrollReviews('right')}
-                className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-[#D4AF37]/20 bg-black/80 p-3 text-white transition hover:border-[#D4AF37]/50 hover:bg-black md:flex"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-16 bg-gradient-to-r from-black to-transparent md:block" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-16 bg-gradient-to-l from-black to-transparent md:block" />
-
-              <div
-                ref={reviewScrollRef}
-                className="flex gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {reviews.map((review, index) => (
-                  <div
-                    key={`${review.authorName ?? 'review'}-${index}`}
-                    className="min-w-[320px] max-w-[320px] rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-8 transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10"
-                  >
-                    <div className="mb-4 flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, starIndex) => (
-                        <Star
-                          key={starIndex}
-                          className={`h-4 w-4 ${starIndex < review.stars
-                              ? 'fill-[#D4AF37] text-[#D4AF37]'
-                              : 'text-gray-600'
-                            }`}
-                        />
-                      ))}
-                    </div>
-
-                    <p className="mb-6 min-h-[96px] leading-relaxed text-gray-300">
-                      “{review.text}”
-                    </p>
-
-                    <div className="border-t border-[#D4AF37]/10 pt-4">
-                      <p className="text-sm font-medium text-white">
-                        {review.authorName || 'Anonymous'}
-                      </p>
-
-                      {review.createdAt && (
-                        <p className="mt-1 text-xs text-gray-500">
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+      <ReviewsSection
+        reviews={reviews}
+        loading={reviewsLoading}
+      />
 
       <HairStyleSelectModal
         show={activeModal === 'hairstyle'}

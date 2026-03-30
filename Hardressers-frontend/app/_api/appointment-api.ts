@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO } from '@/app/_models/models';
+import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO, ReviewDisplayDTO } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
 const API_BASE_URL = 'https://localhost:7226';
