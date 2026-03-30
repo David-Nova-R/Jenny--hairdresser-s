@@ -171,6 +171,26 @@ export default function SiteHeader() {
                   {tr('nav_book_now', lang)}
                 </button>
               )}
+              {langOpen && (
+                  <div className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl border border-[#D4AF37]/20 bg-[#111] shadow-xl shadow-black/50">
+                    {LANGS.map(({ code, label }) => (
+                      <button
+                        key={code}
+                        onClick={() => {
+                          setLang(code);
+                          setLangOpen(false);
+                        }}
+                        className={`flex w-full items-center px-5 py-2.5 text-xs font-semibold tracking-wider transition-colors hover:cursor-pointer ${
+                          lang === code
+                            ? 'bg-[#D4AF37] text-black'
+                            : 'text-gray-300 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
             </div>
 
             {/* lg */}
