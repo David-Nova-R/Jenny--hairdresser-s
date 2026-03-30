@@ -7,10 +7,11 @@ import {
   Phone,
   MapPin,
   Clock,
-  Scissors,
   ChevronLeft,
   ChevronRight,
   Star,
+  Sparkles,
+  Heart,
 } from 'lucide-react';
 
 const COLOR_SERVICES = new Set([
@@ -23,7 +24,7 @@ const COLOR_SERVICES = new Set([
   'Ombré',
   'Californianas',
 ]);
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ImageWithFallback } from './ImageWithFallBack';
 import AppointmentModal from './_components/appointment-modal';

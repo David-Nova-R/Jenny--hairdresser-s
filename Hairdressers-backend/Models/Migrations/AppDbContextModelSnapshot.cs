@@ -34,7 +34,7 @@ namespace Models.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("ExternalDurationMinutes")
                         .HasColumnType("integer");
@@ -212,15 +212,6 @@ namespace Models.Migrations
                         {
                             Id = 11,
                             DurationMaxMinutes = 420,
-                            DurationMinutes = 300,
-                            Name = "Keratina",
-                            PriceMax = 250m,
-                            PriceMin = 140m
-                        },
-                        new
-                        {
-                            Id = 12,
-                            DurationMaxMinutes = 420,
                             DurationMinutes = 240,
                             Name = "Aminoácido",
                             PriceMax = 300m,
@@ -228,7 +219,7 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 13,
+                            Id = 12,
                             DurationMaxMinutes = 240,
                             DurationMinutes = 180,
                             Name = "Terapia capilar",
@@ -237,7 +228,7 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 13,
                             DurationMaxMinutes = 120,
                             DurationMinutes = 60,
                             Name = "Cepillados",
@@ -246,12 +237,21 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 14,
                             DurationMaxMinutes = 180,
                             DurationMinutes = 60,
                             Name = "Peinados",
                             PriceMax = 70m,
                             PriceMin = 35m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DurationMaxMinutes = 420,
+                            DurationMinutes = 300,
+                            Name = "Keratina",
+                            PriceMax = 250m,
+                            PriceMin = 140m
                         });
                 });
 
@@ -301,14 +301,9 @@ namespace Models.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Reviews");
 
@@ -316,7 +311,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 16, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1107),
+                            CreatedAt = new DateTime(2026, 3, 20, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3127),
                             IsVisible = true,
                             Stars = 5,
                             Text = "Excellent service, très professionnelle.",
@@ -325,7 +320,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 3, 18, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1116),
+                            CreatedAt = new DateTime(2026, 3, 22, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3138),
                             IsVisible = true,
                             Stars = 5,
                             Text = "Très bon résultat, je recommande !",
@@ -334,7 +329,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 3, 21, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1118),
+                            CreatedAt = new DateTime(2026, 3, 25, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3139),
                             IsVisible = true,
                             Stars = 4,
                             Text = "Service rapide et efficace.",
@@ -343,7 +338,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 3, 23, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1120),
+                            CreatedAt = new DateTime(2026, 3, 27, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3142),
                             IsVisible = false,
                             Stars = 4,
                             Text = "Bonne expérience globale.",
@@ -352,7 +347,7 @@ namespace Models.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 3, 25, 19, 52, 52, 905, DateTimeKind.Utc).AddTicks(1122),
+                            CreatedAt = new DateTime(2026, 3, 29, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3144),
                             IsVisible = true,
                             Stars = 5,
                             Text = "Je reviendrai sûrement !",
@@ -504,14 +499,10 @@ namespace Models.Migrations
             modelBuilder.Entity("Models.Models.Review", b =>
                 {
                     b.HasOne("Models.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Models.Models.User", null)
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });

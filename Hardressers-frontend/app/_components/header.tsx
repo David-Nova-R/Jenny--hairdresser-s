@@ -89,6 +89,14 @@ export default function SiteHeader() {
                             Admin
                         </button>
                     )}
+                    {!user?.app_metadata?.isAdmin && user && (
+                        <button
+                            onClick={() => router.push('/my-appointments')}
+                            className="border border-[#D4AF37]/30 text-[#D4AF37] px-5 py-2 rounded-full hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
+                        >
+                            {tr('nav_appointments', lang)}
+                        </button>
+                    )}
                     <button
                         onClick={() => scrollToSection('HairStyles', pathname, router)}
                         className="text-gray-300 hover:text-[#D4AF37] transition-colors duration-300 tracking-wide"
@@ -114,17 +122,7 @@ export default function SiteHeader() {
                         {tr('nav_contact', lang)}
                     </button>
                 </nav>
-
-                {/* Actions à droite */}
                 <div className="hidden md:flex items-center gap-3">
-                    {!user?.app_metadata?.isAdmin && user && (
-                        <button
-                            onClick={() => router.push('/my-appointments')}
-                            className="border border-[#D4AF37]/30 text-[#D4AF37] px-5 py-2 rounded-full hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
-                        >
-                            {tr('nav_appointments', lang)}
-                        </button>
-                    )}
 
                     <div className="flex items-center gap-3">
                         {user ? (
@@ -168,11 +166,10 @@ export default function SiteHeader() {
                                         <button
                                             key={code}
                                             onClick={() => { setLang(code); setLangOpen(false); }}
-                                            className={`flex w-full items-center px-5 py-2.5 text-xs font-semibold tracking-wider transition-colors ${
-                                                lang === code
+                                            className={`flex w-full items-center px-5 py-2.5 text-xs font-semibold tracking-wider transition-colors ${lang === code
                                                     ? 'bg-[#D4AF37] text-black'
                                                     : 'text-gray-300 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
-                                            }`}
+                                                }`}
                                         >
                                             {label}
                                         </button>

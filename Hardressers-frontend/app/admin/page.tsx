@@ -5,8 +5,6 @@ import { Loader2, RefreshCw, Calendar, ChevronLeft, ChevronRight } from 'lucide-
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/_context/auth-context';
 import { useLang } from '@/app/_context/language-context';
-import { FetchAllAppointmentsAdmin, UpdateAppointmentStatusAdmin } from '@/app/_api/appointment-api';
-import { AppointmentResponseDTO } from '@/app/_models/models';
 import { tr } from '@/app/_config/translations';
 import { getHairStyleDisplay } from '@/app/_config/hairstyle-descriptions';
 import {

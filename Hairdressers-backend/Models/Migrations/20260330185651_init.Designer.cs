@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260329055851_noadmin")]
-    partial class noadmin
+    [Migration("20260330185651_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -215,15 +215,6 @@ namespace Models.Migrations
                         {
                             Id = 11,
                             DurationMaxMinutes = 420,
-                            DurationMinutes = 300,
-                            Name = "Keratina",
-                            PriceMax = 250m,
-                            PriceMin = 140m
-                        },
-                        new
-                        {
-                            Id = 12,
-                            DurationMaxMinutes = 420,
                             DurationMinutes = 240,
                             Name = "Aminoácido",
                             PriceMax = 300m,
@@ -231,7 +222,7 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 13,
+                            Id = 12,
                             DurationMaxMinutes = 240,
                             DurationMinutes = 180,
                             Name = "Terapia capilar",
@@ -240,7 +231,7 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 13,
                             DurationMaxMinutes = 120,
                             DurationMinutes = 60,
                             Name = "Cepillados",
@@ -249,12 +240,21 @@ namespace Models.Migrations
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 14,
                             DurationMaxMinutes = 180,
                             DurationMinutes = 60,
                             Name = "Peinados",
                             PriceMax = 70m,
                             PriceMin = 35m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DurationMaxMinutes = 420,
+                            DurationMinutes = 300,
+                            Name = "Keratina",
+                            PriceMax = 250m,
+                            PriceMin = 140m
                         });
                 });
 
@@ -278,6 +278,84 @@ namespace Models.Migrations
                     b.HasIndex("HairStyleId");
 
                     b.ToTable("HairStylePhotos");
+                });
+
+            modelBuilder.Entity("Models.Models.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Stars")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 3, 20, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3127),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Excellent service, très professionnelle.",
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 3, 22, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3138),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Très bon résultat, je recommande !",
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2026, 3, 25, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3139),
+                            IsVisible = true,
+                            Stars = 4,
+                            Text = "Service rapide et efficace.",
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 3, 27, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3142),
+                            IsVisible = false,
+                            Stars = 4,
+                            Text = "Bonne expérience globale.",
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2026, 3, 29, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3144),
+                            IsVisible = true,
+                            Stars = 5,
+                            Text = "Je reviendrai sûrement !",
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("Models.Models.Role", b =>
@@ -421,6 +499,17 @@ namespace Models.Migrations
                     b.Navigation("HairStyle");
                 });
 
+            modelBuilder.Entity("Models.Models.Review", b =>
+                {
+                    b.HasOne("Models.Models.User", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Models.Models.User", b =>
                 {
                     b.HasOne("Models.Models.Role", "Role")
@@ -446,6 +535,8 @@ namespace Models.Migrations
             modelBuilder.Entity("Models.Models.User", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

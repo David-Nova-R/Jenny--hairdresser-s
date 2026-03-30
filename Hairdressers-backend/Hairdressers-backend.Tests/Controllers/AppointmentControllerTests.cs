@@ -13,11 +13,9 @@ namespace Hairdressers_backend.Tests.Controllers
     public class AppointmentControllerTests
     {
         private readonly Mock<IAppointmentService> _serviceMock;
-        private readonly Mock<IGoogleCalendarService> _googleCalendarMock;
         public AppointmentControllerTests()
         {
             _serviceMock = new Mock<IAppointmentService>();
-            _googleCalendarMock = new Mock<IGoogleCalendarService>();
         }
 
         // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -25,8 +23,7 @@ namespace Hairdressers_backend.Tests.Controllers
         private AppointmentController BuildController(string? supabaseUserId = "user-abc",bool isAdmin = false)
         {
             var controller = new AppointmentController(
-                _serviceMock.Object,
-                _googleCalendarMock.Object
+                _serviceMock.Object
             );
 
             var claims = new List<Claim>();

@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Models.Migrations
 {
     /// <inheritdoc />
-    public partial class noadmin : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -120,6 +120,29 @@ namespace Models.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Reviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    Stars = table.Column<int>(type: "integer", nullable: false),
+                    IsVisible = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "HairStyles",
                 columns: new[] { "Id", "Description", "DurationMaxMinutes", "DurationMinutes", "Name", "PriceMax", "PriceMin" },
@@ -135,11 +158,11 @@ namespace Models.Migrations
                     { 8, null, 360, 240, "Californianas", 200m, 100m },
                     { 9, null, 60, 60, "Cortes dama", null, 20m },
                     { 10, null, 60, 180, "Permanente hombres", null, 100m },
-                    { 11, null, 420, 300, "Keratina", 250m, 140m },
-                    { 12, null, 420, 240, "Aminoácido", 300m, 150m },
-                    { 13, null, 240, 180, "Terapia capilar", 200m, 120m },
-                    { 14, null, 120, 60, "Cepillados", 50m, 30m },
-                    { 15, null, 180, 60, "Peinados", 70m, 35m }
+                    { 11, null, 420, 240, "Aminoácido", 300m, 150m },
+                    { 12, null, 240, 180, "Terapia capilar", 200m, 120m },
+                    { 13, null, 120, 60, "Cepillados", 50m, 30m },
+                    { 14, null, 180, 60, "Peinados", 70m, 35m },
+                    { 15, null, 420, 300, "Keratina", 250m, 140m }
                 });
 
             migrationBuilder.InsertData(
@@ -172,6 +195,18 @@ namespace Models.Migrations
                     { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 3 }
                 });
 
+            migrationBuilder.InsertData(
+                table: "Reviews",
+                columns: new[] { "Id", "CreatedAt", "IsVisible", "Stars", "Text", "UserId" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 3, 20, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3127), true, 5, "Excellent service, très professionnelle.", 1 },
+                    { 2, new DateTime(2026, 3, 22, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3138), true, 5, "Très bon résultat, je recommande !", 2 },
+                    { 3, new DateTime(2026, 3, 25, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3139), true, 4, "Service rapide et efficace.", 3 },
+                    { 4, new DateTime(2026, 3, 27, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3142), false, 4, "Bonne expérience globale.", 1 },
+                    { 5, new DateTime(2026, 3, 29, 18, 56, 50, 825, DateTimeKind.Utc).AddTicks(3144), true, 5, "Je reviendrai sûrement !", 2 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_HairStyleId",
                 table: "Appointments",
@@ -186,6 +221,11 @@ namespace Models.Migrations
                 name: "IX_HairStylePhotos_HairStyleId",
                 table: "HairStylePhotos",
                 column: "HairStyleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_UserId",
+                table: "Reviews",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_Name",
@@ -215,10 +255,13 @@ namespace Models.Migrations
                 name: "HairStylePhotos");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Reviews");
 
             migrationBuilder.DropTable(
                 name: "HairStyles");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Roles");
