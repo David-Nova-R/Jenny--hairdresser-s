@@ -1,6 +1,8 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import { tr } from '@/app/_config/translations';
+import { useLang } from '@/app/_context/language-context';
 
 type Review = {
   authorName?: string | null;
@@ -15,6 +17,8 @@ type ReviewCardProps = {
 };
 
 export default function ReviewCard({ review, index }: ReviewCardProps) {
+  const { lang } = useLang();
+
   return (
     <div
       data-card
@@ -34,17 +38,19 @@ export default function ReviewCard({ review, index }: ReviewCardProps) {
       </div>
 
       <p className="mb-6 min-h-[96px] leading-relaxed text-gray-300">
-        “{review.text}”
+        "{review.text}"
       </p>
 
       <div className="border-t border-[#D4AF37]/10 pt-4">
         <p className="text-sm font-medium text-white">
-          {review.authorName || 'Anonymous'}
+          {review.authorName || tr('reviews_anonymous', lang)}
         </p>
 
         {review.createdAt && (
           <p className="mt-1 text-xs text-gray-500">
-            {new Date(review.createdAt).toLocaleDateString()}
+            {new Date(review.createdAt).toLocaleDateString(
+              lang === 'es' ? 'es-MX' : lang === 'fr' ? 'fr-CA' : 'en-CA'
+            )}
           </p>
         )}
       </div>

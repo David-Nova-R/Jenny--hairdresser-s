@@ -1,6 +1,7 @@
 'use client';
 
-import { Scissors, ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
+import LogoBrand from './LogoBrand';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/app/_context/auth-context';
@@ -69,7 +70,8 @@ export default function SiteHeader() {
       }`}
     >
       <div className="mx-auto max-w-7xl px-6">
-        <div className="flex w-full items-center justify-between">
+        <div className="relative flex w-full items-center justify-between">
+
           {/* LEFT */}
           <div className="flex items-center">
             <button
@@ -81,19 +83,14 @@ export default function SiteHeader() {
                 }
                 scrollToSection('hero', pathname, router);
               }}
-              className="group flex items-center gap-3 hover:cursor-pointer"
+              className="group hover:cursor-pointer hover:opacity-80 transition-opacity duration-200"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#D4AF37]">
-                <Scissors className="h-5 w-5 text-[#D4AF37]" />
-              </div>
-              <span className="text-xl font-light tracking-wider text-white">
-                LUXURY <span className="text-[#D4AF37]">HAIR</span>
-              </span>
+              <LogoBrand />
             </button>
           </div>
 
-          {/* CENTER lg */}
-          <div className="hidden flex-1 justify-center lg:flex">
+          {/* LEFT NAV lg */}
+          <div className="hidden lg:flex ml-12">
             <nav className="flex items-center gap-10">
               <button
                 onClick={() => scrollToSection('HairStyles', pathname, router)}
@@ -171,26 +168,6 @@ export default function SiteHeader() {
                   {tr('nav_book_now', lang)}
                 </button>
               )}
-              {langOpen && (
-                  <div className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl border border-[#D4AF37]/20 bg-[#111] shadow-xl shadow-black/50">
-                    {LANGS.map(({ code, label }) => (
-                      <button
-                        key={code}
-                        onClick={() => {
-                          setLang(code);
-                          setLangOpen(false);
-                        }}
-                        className={`flex w-full items-center px-5 py-2.5 text-xs font-semibold tracking-wider transition-colors hover:cursor-pointer ${
-                          lang === code
-                            ? 'bg-[#D4AF37] text-black'
-                            : 'text-gray-300 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                )}
             </div>
 
             {/* lg */}
@@ -241,11 +218,11 @@ export default function SiteHeader() {
               <div className="relative">
                 <button
                   onClick={() => setLangOpen((o) => !o)}
-                  className="flex items-center gap-1 rounded-full border border-[#D4AF37]/30 px-3 py-2 text-xs font-semibold tracking-wider text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-full border border-[#D4AF37]/30 px-5 py-2 text-sm font-medium text-[#D4AF37] transition-all duration-300 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 hover:cursor-pointer"
                 >
                   {lang.toUpperCase()}
                   <ChevronDown
-                    className={`h-3 w-3 transition-transform duration-200 ${
+                    className={`h-4 w-4 transition-transform duration-200 ${
                       langOpen ? 'rotate-180' : ''
                     }`}
                   />
@@ -368,25 +345,13 @@ export default function SiteHeader() {
               </button>
             )}
 
-            {!user?.app_metadata?.isAdmin && (
-              <button
-                onClick={() => {
-                  scrollToSection('booking', pathname, router);
-                  closeMobileMenu();
-                }}
-                className="rounded-full bg-[#D4AF37] px-6 py-3 text-black transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
-              >
-                {tr('nav_book_now', lang)}
-              </button>
-            )}
-
             {user?.app_metadata?.isAdmin && (
               <button
                 onClick={() => {
                   router.push('/admin');
                   closeMobileMenu();
                 }}
-                className="mt-2 rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
+                className="rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
               >
                 Admin
               </button>
@@ -398,9 +363,21 @@ export default function SiteHeader() {
                   router.push('/my-appointments');
                   closeMobileMenu();
                 }}
-                className="mt-2 rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
+                className="rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
               >
                 {tr('nav_appointments', lang)}
+              </button>
+            )}
+
+            {!user?.app_metadata?.isAdmin && (
+              <button
+                onClick={() => {
+                  scrollToSection('booking', pathname, router);
+                  closeMobileMenu();
+                }}
+                className="rounded-full bg-[#D4AF37] px-6 py-3 text-black transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
+              >
+                {tr('nav_book_now', lang)}
               </button>
             )}
           </div>

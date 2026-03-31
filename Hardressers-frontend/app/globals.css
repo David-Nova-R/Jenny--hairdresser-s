@@ -36,3 +36,56 @@ body {
 .booking-highlight {
   animation: booking-aura 1s ease-out 3;
 }
+
+/* ── Light mode ────────────────────────────────────────────── */
+html.light { color-scheme: light; }
+
+html.light body {
+  background-color: #faf8f4;
+  color: #1a1a1a;
+}
+
+/* --- Solid backgrounds --- */
+html.light .bg-black                          { background-color: #faf8f4 !important; }
+html.light [class*="bg-[#0a0a0a]"]           { background-color: #f0ede6 !important; }
+html.light [class*="bg-[#111]"]              { background-color: #e8e3d9 !important; }
+
+/* --- Gradient stops (Tailwind CSS vars) --- */
+html.light .from-black                        { --tw-gradient-from: #faf8f4 !important; }
+html.light .to-black                          { --tw-gradient-to:   #faf8f4 !important; }
+html.light [class*="from-[#0a0a0a]"]         { --tw-gradient-from: #f0ede6 !important; }
+html.light [class*="to-[#0a0a0a]"]           { --tw-gradient-to:   #f0ede6 !important; }
+
+/* --- Navbar --- */
+html.light header                             { background-color: #faf8f4 !important; }
+html.light [class*="bg-black/85"]            { background-color: rgba(250,248,244,.93) !important; }
+html.light [class*="bg-black/90"]            { background-color: rgba(250,248,244,.96) !important; }
+
+/* --- Modal / overlay backdrops --- */
+html.light [class*="bg-black/50"]            { background-color: rgba(0,0,0,.25) !important; }
+html.light [class*="bg-black/70"]            { background-color: rgba(0,0,0,.35) !important; }
+
+/* --- Photo overlays --- */
+html.light [class*="bg-black/45"]            { background-color: rgba(0,0,0,.20) !important; }
+html.light [class*="bg-black/60"]            { background-color: rgba(0,0,0,.25) !important; }
+
+/* --- Text --- */
+html.light .text-white                        { color: #1a1a1a !important; }
+html.light [class*="text-white/"]            { color: rgba(26,26,26,.65) !important; }
+html.light .text-gray-300                     { color: #374151 !important; }
+html.light .text-gray-400                     { color: #6b7280 !important; }
+html.light .text-gray-500                     { color: #9ca3af !important; }
+html.light .text-gray-600                     { color: #6b7280 !important; }
+
+/* --- Borders --- */
+html.light [class*="border-white/"]          { border-color: rgba(0,0,0,.12) !important; }
+
+/* --- Inputs --- */
+html.light input:not([type="file"]),
+html.light textarea {
+  background-color: #f0ede6 !important;
+  color: #1a1a1a !important;
+}
+
+/* --- Grayscale bench photos — keep effect --- */
+html.light .grayscale { filter: grayscale(1) brightness(1.1); }

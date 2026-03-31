@@ -90,7 +90,7 @@ function DatePickerCalendar({
 
             {/* Popup */}
             {open && (
-                <div className="absolute left-0 top-full z-50 mt-2 w-[340px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#111] shadow-2xl shadow-black/60">
+                <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#111] shadow-2xl shadow-black/60 sm:w-[340px]">
                     {/* Month navigation */}
                     <div className="flex items-center justify-between border-b border-[#D4AF37]/10 px-4 py-3">
                         <button onClick={prevMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-[#D4AF37] transition hover:bg-[#D4AF37]/10">
@@ -218,28 +218,23 @@ export default function DaysOffManager() {
     const DayOffCard = ({ day }: { day: DayOff }) => {
         const isPast = new Date(day.date) < today;
         return (
-            <div className={`flex items-center justify-between gap-4 rounded-2xl border px-5 py-4 transition-all ${
+            <div className={`flex items-start justify-between gap-3 rounded-2xl border px-4 py-4 transition-all sm:items-center sm:gap-4 sm:px-5 ${
                 isPast ? 'border-white/5 bg-[#0a0a0a] opacity-50' : 'border-[#D4AF37]/15 bg-gradient-to-r from-[#0a0a0a] to-black'
             }`}>
-                <div className="flex items-center gap-4">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${
+                <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+                    <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border sm:mt-0 sm:h-10 sm:w-10 ${
                         isPast ? 'border-gray-700 bg-black' : 'border-[#D4AF37]/30 bg-black'
                     }`}>
                         <CalendarOff className={`h-4 w-4 ${isPast ? 'text-gray-600' : 'text-[#D4AF37]'}`} />
                     </div>
-                    <div>
-                        <p className={`font-medium capitalize ${isPast ? 'text-gray-500' : 'text-white'}`}>
-                            {formatDate(day.date)}
-                        </p>
-                        {day.reason && (
-                            <p className="mt-0.5 text-sm text-gray-500">{day.reason}</p>
-                        )}
-                    </div>
+                    <p className={`min-w-0 break-words text-sm font-medium sm:text-base ${isPast ? 'text-gray-500' : 'text-white'}`}>
+                        {day.reason || formatDate(day.date)}
+                    </p>
                 </div>
                 <button
                     onClick={() => setConfirmDelete(day)}
                     disabled={deletingId === day.id}
-                    className="shrink-0 rounded-xl border border-rose-500/20 p-2 text-rose-400 transition hover:border-rose-500/50 hover:bg-rose-500/10 disabled:opacity-40"
+                    className="mt-0.5 shrink-0 rounded-xl border border-rose-500/20 p-2 text-rose-400 transition hover:border-rose-500/50 hover:bg-rose-500/10 disabled:opacity-40 sm:mt-0"
                 >
                     {deletingId === day.id
                         ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -252,15 +247,15 @@ export default function DaysOffManager() {
 
     return (
         <>
-        <div className="mt-6 space-y-8">
+        <div className="mt-6 space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-6">
-                <h2 className="text-2xl font-light text-white">{tr('daysoff_title', lang)}</h2>
+            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-4 sm:p-6">
+                <h2 className="text-xl font-light text-white sm:text-2xl">{tr('daysoff_title', lang)}</h2>
                 <p className="mt-1 text-sm text-gray-400">{tr('daysoff_subtitle', lang)}</p>
             </div>
 
             {/* Add form */}
-            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-6">
+            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-4 sm:p-6">
                 <h3 className="mb-5 flex items-center gap-2 text-lg font-light text-white">
                     <Plus className="h-5 w-5 text-[#D4AF37]" />
                     {tr('daysoff_add_title', lang)}
@@ -298,7 +293,7 @@ export default function DaysOffManager() {
             </div>
 
             {/* List */}
-            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-6">
+            <div className="rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-4 sm:p-6">
                 {loading ? (
                     <div className="flex min-h-[150px] items-center justify-center">
                         <Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" />

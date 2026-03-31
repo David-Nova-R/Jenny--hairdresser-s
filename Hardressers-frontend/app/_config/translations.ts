@@ -30,6 +30,8 @@ export const t: Record<string, Record<Lang, string>> = {
   // ── Gallery section ─────────────────────────────────────
   gallery_badge:      { es: 'Portafolio',       fr: 'Portfolio',        en: 'Portfolio' },
   gallery_title:      { es: 'Mi Trabajo',       fr: 'Mon Travail',      en: 'My Work' },
+  gallery_loading:    { es: 'Cargando galería...', fr: 'Chargement galerie...', en: 'Loading gallery...' },
+  gallery_empty:      { es: 'Aún no hay fotos disponibles.', fr: 'Aucune photo disponible pour l\'instant.', en: 'No photos available yet.' },
 
   // ── Booking section ─────────────────────────────────────
   booking_badge:      { es: 'Reservar',         fr: 'Réserver',         en: 'Book Now' },
@@ -52,6 +54,7 @@ export const t: Record<string, Record<Lang, string>> = {
   contact_hours:      { es: 'Horarios',         fr: 'Horaires',         en: 'Hours' },
   contact_hours_1:    { es: 'Mar - Sáb: 9AM - 6PM', fr: 'Mar - Sam: 9h - 18h', en: 'Tue - Sat: 9AM - 6PM' },
   contact_hours_2:    { es: 'Solo con cita previa', fr: 'Sur rendez-vous uniquement', en: 'By Appointment Only' },
+  contact_social:     { es: 'Síguenos',             fr: 'Suivez-nous',              en: 'Follow Us' },
 
   // ── Footer ───────────────────────────────────────────────
   footer_rights:      {
@@ -103,6 +106,43 @@ export const t: Record<string, Record<Lang, string>> = {
   modal_confirm:          { es: 'Confirmar', fr: 'Confirmer', en: 'Confirm' },
   modal_close:            { es: 'Cerrar',   fr: 'Fermer',   en: 'Close' },
 
+  // ── Login modal ──────────────────────────────────────────
+  login_title:                { es: 'Iniciar sesión',      fr: 'Connexion',              en: 'Sign In' },
+  login_email_label:          { es: 'Correo electrónico',  fr: 'Adresse e-mail',         en: 'Email' },
+  login_email_ph:             { es: 'tu@email.com',        fr: 'votre@email.com',        en: 'your@email.com' },
+  login_password_label:       { es: 'Contraseña',          fr: 'Mot de passe',           en: 'Password' },
+  login_btn:                  { es: 'Iniciar sesión',      fr: 'Se connecter',           en: 'Sign In' },
+  login_btn_loading:          { es: 'Conectando...',       fr: 'Connexion...',           en: 'Signing in...' },
+  login_error_not_confirmed:  { es: 'Tu dirección de correo no está confirmada. Haz clic en el enlace enviado a tu bandeja de entrada.', fr: "Votre adresse e-mail n'est pas encore confirmée. Veuillez cliquer sur le lien reçu dans votre boîte mail.", en: 'Your email address is not confirmed yet. Please click the link sent to your inbox.' },
+  login_error_credentials:    { es: 'Correo o contraseña incorrectos.', fr: 'Email ou mot de passe incorrect.', en: 'Incorrect email or password.' },
+  login_error_generic:        { es: 'Ocurrió un error al iniciar sesión.', fr: 'Une erreur est survenue lors de la connexion.', en: 'An error occurred while signing in.' },
+  login_resend_missing_email: { es: 'Por favor ingresa tu correo electrónico.', fr: 'Veuillez entrer votre adresse e-mail.', en: 'Please enter your email address.' },
+  login_resend_success:       { es: 'Se envió un nuevo correo de confirmación. Revisa tu carpeta de spam.', fr: 'Un nouvel e-mail de confirmation a été envoyé. Pensez à vérifier vos indésirables.', en: 'A new confirmation email has been sent. Check your spam folder.' },
+  login_resend_error:         { es: 'No se pudo reenviar el correo de confirmación.', fr: "Impossible de renvoyer l'e-mail de confirmation.", en: 'Could not resend the confirmation email.' },
+  login_resend_btn:           { es: 'Reenviar correo de confirmación', fr: "Renvoyer l'e-mail de confirmation", en: 'Resend confirmation email' },
+  login_resend_btn_loading:   { es: 'Enviando...', fr: "Envoi de l'e-mail...", en: 'Sending...' },
+  login_no_account:           { es: '¿Aún no tienes cuenta?', fr: 'Pas encore de compte ?', en: 'No account yet?' },
+  login_switch_register:      { es: 'Registrarse',         fr: "S'inscrire",             en: 'Sign Up' },
+
+  // ── Register modal ───────────────────────────────────────
+  register_title:             { es: 'Crear una cuenta',    fr: 'Créer un compte',        en: 'Create an Account' },
+  register_firstname_label:   { es: 'Nombre',              fr: 'Prénom',                 en: 'First Name' },
+  register_firstname_ph:      { es: 'Tu nombre',           fr: 'Votre prénom',           en: 'Your first name' },
+  register_lastname_label:    { es: 'Apellido',            fr: 'Nom',                    en: 'Last Name' },
+  register_lastname_ph:       { es: 'Tu apellido',         fr: 'Votre nom',              en: 'Your last name' },
+  register_phone_label:       { es: 'Teléfono',            fr: 'Téléphone',              en: 'Phone' },
+  register_password_label:    { es: 'Contraseña',          fr: 'Mot de passe',           en: 'Password' },
+  register_confirm_label:     { es: 'Confirmar contraseña', fr: 'Confirmer le mot de passe', en: 'Confirm Password' },
+  register_btn:               { es: 'Registrarse',         fr: "S'inscrire",             en: 'Sign Up' },
+  register_btn_loading:       { es: 'Registrando...',      fr: 'Inscription...',         en: 'Signing up...' },
+  register_error_passwords:   { es: 'Las contraseñas no coinciden.', fr: 'Les mots de passe ne correspondent pas.', en: 'Passwords do not match.' },
+  register_error_generic:     { es: 'Ocurrió un error al registrarse.', fr: "Une erreur est survenue lors de l'inscription.", en: 'An error occurred while signing up.' },
+  register_success_title:     { es: '¡Registro exitoso!', fr: 'Inscription réussie',    en: 'Registration Successful' },
+  register_success_body:      { es: 'Tu cuenta fue creada. Confirma tu correo electrónico haciendo clic en el enlace enviado antes de iniciar sesión.', fr: 'Votre compte a été créé. Veuillez confirmer votre adresse e-mail en cliquant sur le lien envoyé avant de vous connecter.', en: 'Your account has been created. Please confirm your email address by clicking the link sent to your inbox before signing in.' },
+  register_go_login:          { es: 'Ir a iniciar sesión', fr: 'Aller à la connexion',   en: 'Go to Sign In' },
+  register_has_account:       { es: '¿Ya tienes cuenta?', fr: 'Déjà inscrit ?',          en: 'Already have an account?' },
+  register_switch_login:      { es: 'Iniciar sesión',      fr: 'Se connecter',           en: 'Sign In' },
+
   // Mois
   month_0:  { es: 'Enero',      fr: 'Janvier',   en: 'January' },
   month_1:  { es: 'Febrero',    fr: 'Février',   en: 'February' },
@@ -151,8 +191,68 @@ export const t: Record<string, Record<Lang, string>> = {
   admin_client:        { es: 'Cliente',                  fr: 'Client',                 en: 'Client' },
   admin_appointment:   { es: 'Cita',                     fr: 'Rendez-vous',            en: 'Appointment' },
   admin_external_note: { es: 'Externo',                  fr: 'Externe',                en: 'External' },
+  appt_style_notes:        { es: 'Notas de estilo',           fr: 'Notes de style',          en: 'Style notes' },
+  appt_style_notes_add:    { es: 'Añadir notas',              fr: 'Ajouter des notes',       en: 'Add notes' },
+  appt_style_notes_edit:   { es: 'Editar notas',              fr: 'Modifier les notes',      en: 'Edit notes' },
+  appt_style_notes_ph:     { es: 'Ej: Keratina 2 partes Olaplex...', fr: 'Ex: Kératine 2 parts Olaplex...', en: 'E.g.: Keratin 2 parts Olaplex...' },
+  appt_style_notes_save:   { es: 'Guardar',                   fr: 'Sauvegarder',             en: 'Save' },
+  appt_style_notes_cancel: { es: 'Cancelar',                  fr: 'Annuler',                 en: 'Cancel' },
+  appt_style_notes_saved:  { es: 'Notas guardadas ✓',         fr: 'Notes sauvegardées ✓',    en: 'Notes saved ✓' },
+  appt_style_notes_error:  { es: 'Error al guardar',          fr: 'Erreur de sauvegarde',    en: 'Error saving' },
+
+  // ── Appointment search / filters ─────────────────────────
+  search_placeholder:   { es: 'Buscar cliente...',          fr: 'Rechercher un client...', en: 'Search client...' },
+  search_clear:         { es: 'Limpiar filtros',            fr: 'Effacer les filtres',     en: 'Clear filters' },
+  search_period_all:    { es: 'Todo',                       fr: 'Tout',                    en: 'All' },
+  search_period_today:  { es: 'Hoy',                        fr: "Aujourd'hui",             en: 'Today' },
+  search_period_week:   { es: 'Esta semana',                fr: 'Cette semaine',           en: 'This week' },
+  search_period_month:  { es: 'Este mes',                   fr: 'Ce mois',                 en: 'This month' },
+  search_period_custom: { es: 'Personalizado',              fr: 'Personnalisé',            en: 'Custom' },
+  search_date_from:     { es: 'Desde',                      fr: 'Du',                      en: 'From' },
+  search_date_to:       { es: 'Hasta',                      fr: 'Au',                      en: 'To' },
+  search_status_all:    { es: 'Todos los estados',          fr: 'Tous les statuts',        en: 'All statuses' },
+  search_results_one:   { es: '1 cita encontrada',          fr: '1 rendez-vous trouvé',    en: '1 appointment found' },
+  search_results_many:  { es: '{n} citas encontradas',      fr: '{n} rendez-vous trouvés', en: '{n} appointments found' },
+  search_results_none:  { es: 'Sin resultados',             fr: 'Aucun résultat',          en: 'No results' },
+
+  // ── User management ──────────────────────────────────────
+  admin_tab_users:       { es: 'Usuarios',                   fr: 'Utilisateurs',            en: 'Users' },
+  users_title:           { es: 'Gestión de usuarios',        fr: 'Gestion des utilisateurs',en: 'User management' },
+  users_subtitle:        { es: 'Busca clientes y consulta sus citas.', fr: 'Recherchez des clients et consultez leurs rendez-vous.', en: 'Search clients and view their appointments.' },
+  users_search_ph:       { es: 'Buscar por nombre o email...', fr: 'Rechercher par nom ou email...', en: 'Search by name or email...' },
+  users_role_all:        { es: 'Todos los roles',            fr: 'Tous les rôles',          en: 'All roles' },
+  users_role_admin:      { es: 'Admin',                      fr: 'Admin',                   en: 'Admin' },
+  users_role_styliste:   { es: 'Estilista',                  fr: 'Styliste',                en: 'Stylist' },
+  users_role_client:     { es: 'Cliente',                    fr: 'Client',                  en: 'Client' },
+  users_empty:           { es: 'No se encontraron usuarios.', fr: 'Aucun utilisateur trouvé.', en: 'No users found.' },
+  users_no_appts:        { es: 'Sin citas',                  fr: 'Aucun rendez-vous',       en: 'No appointments' },
+  users_appts_count_one: { es: '1 cita',                     fr: '1 rendez-vous',           en: '1 appt' },
+  users_appts_count:     { es: '{n} citas',                  fr: '{n} rendez-vous',         en: '{n} appts' },
+  users_see_appts:       { es: 'Ver citas',                  fr: 'Voir les RDV',            en: 'View appts' },
+  users_hide_appts:      { es: 'Ocultar',                    fr: 'Masquer',                 en: 'Hide' },
+  users_refresh_user:    { es: 'Actualizar',                 fr: 'Actualiser',              en: 'Refresh' },
+  users_total:           { es: '{n} usuarios',               fr: '{n} utilisateurs',        en: '{n} users' },
 
   // ── Days off ─────────────────────────────────────────────
+  admin_tab_photos:        { es: 'Fotos',                  fr: 'Photos',                 en: 'Photos' },
+  admin_tab_reviews:       { es: 'Reseñas',               fr: 'Avis',                   en: 'Reviews' },
+
+  // ── Reviews (public + admin) ──────────────────────────────
+  reviews_badge:           { es: 'Testimonios',           fr: 'Témoignages',            en: 'Testimonials' },
+  reviews_title:           { es: 'Reseñas de clientes',  fr: 'Avis clients',            en: 'Client Reviews' },
+  reviews_loading:         { es: 'Cargando reseñas...',   fr: 'Chargement des avis...',  en: 'Loading reviews...' },
+  reviews_empty:           { es: 'Aún no hay reseñas.',   fr: 'Aucun avis disponible.',  en: 'No reviews available yet.' },
+  reviews_anonymous:       { es: 'Anónimo',               fr: 'Anonyme',                 en: 'Anonymous' },
+  reviews_admin_subtitle:  { es: 'Gestiona la visibilidad y elimina reseñas.', fr: 'Gérez la visibilité et supprimez les avis.', en: 'Manage visibility and delete reviews.' },
+  reviews_admin_empty:     { es: 'No se encontraron reseñas.', fr: 'Aucun avis trouvé.', en: 'No reviews found.' },
+  reviews_visible:         { es: 'Visible',               fr: 'Visible',                 en: 'Visible' },
+  reviews_hidden:          { es: 'Oculta',                fr: 'Masqué',                  en: 'Hidden' },
+  reviews_hide:            { es: 'Ocultar',               fr: 'Masquer',                 en: 'Hide' },
+  reviews_show:            { es: 'Mostrar',               fr: 'Afficher',                en: 'Show' },
+  reviews_error_load:      { es: 'Error al cargar reseñas.', fr: 'Erreur de chargement des avis.', en: 'Failed to load reviews.' },
+  reviews_error_visibility:{ es: 'Error al actualizar visibilidad.', fr: 'Erreur lors de la mise à jour.', en: 'Failed to update review visibility.' },
+  reviews_error_delete:    { es: 'Error al eliminar la reseña.', fr: 'Erreur lors de la suppression.', en: 'Failed to delete review.' },
+
   admin_tab_daysoff:       { es: 'Días libres',           fr: 'Jours off',              en: 'Days Off' },
   daysoff_title:           { es: 'Días de indisponibilidad', fr: 'Jours d\'indisponibilité', en: 'Unavailable Days' },
   daysoff_subtitle:        { es: 'Gestiona los días en que no estás disponible para citas.', fr: 'Gérez les jours où vous n\'êtes pas disponible pour des rendez-vous.', en: 'Manage days when you are not available for appointments.' },
@@ -184,6 +284,12 @@ export const t: Record<string, Record<Lang, string>> = {
   editor_delete_title:       { es: '¿Eliminar esta foto?',     fr: 'Supprimer cette photo ?',  en: 'Delete this photo?' },
   editor_delete_body:        { es: 'Esta acción es permanente y no se puede deshacer.', fr: 'Cette action est permanente et irréversible.', en: 'This action is permanent and cannot be undone.' },
   editor_delete_confirm_btn: { es: 'Eliminar',                 fr: 'Supprimer',                en: 'Delete' },
+
+  // ── Portfolio admin manager ──────────────────────────────
+  portfolio_admin_title:    { es: 'Portafolio',               fr: 'Portfolio',                 en: 'Portfolio' },
+  portfolio_admin_subtitle: { es: 'Arrastra para reordenar · oculta fotos al banco · elimina permanentemente', fr: 'Glissez pour réordonner · masquez vers le banc · supprimez définitivement', en: 'Drag to reorder · hide to bench · permanently delete' },
+  portfolio_admin_error:    { es: 'No se pudo cargar el portafolio.', fr: 'Impossible de charger le portfolio.', en: 'Could not load portfolio.' },
+  admin_tab_portfolio:      { es: 'Portafolio',               fr: 'Portfolio',                 en: 'Portfolio' },
 
   // ── Server error modal ───────────────────────────────────
   error_title:        { es: 'Ocurrió un problema',   fr: 'Un problème est survenu',   en: 'A problem occurred' },
