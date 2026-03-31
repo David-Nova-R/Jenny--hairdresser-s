@@ -2,7 +2,7 @@
 
 import { ChevronDown, Menu, X } from 'lucide-react';
 import LogoBrand from './LogoBrand';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/app/_context/auth-context';
 import { useModal } from '@/app/_context/modal-context';
@@ -22,6 +22,7 @@ const scrollToSection = (
   const element = document.getElementById(id);
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' });
+
     if (id === 'booking') {
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('highlightBookingBtn'));
@@ -36,6 +37,13 @@ const LANGS: { code: Lang; label: string }[] = [
   { code: 'en', label: 'EN' },
 ];
 
+const NAV_ITEMS = [
+  { id: 'HairStyles', key: 'nav_services' },
+  { id: 'gallery', key: 'nav_gallery' },
+  { id: 'about', key: 'nav_about' },
+  { id: 'contact', key: 'nav_contact' },
+] as const;
+
 export default function SiteHeader() {
   const { user, logout } = useAuth();
   const { openModal } = useModal();
@@ -43,182 +51,136 @@ export default function SiteHeader() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [screen, setScreen] = useState<'sm' | 'md' | 'lg'>('lg');
   const [scrolled, setScrolled] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+    const handleResize = () => {
+      const width = window.innerWidth;
+
+      if (width < 600) {
+        setScreen('sm');
+      } else if (width <= 955) {
+        setScreen('md');
+      } else {
+        setScreen('lg');
+      }
     };
 
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    handleResize();
+    handleScroll();
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  const closeMobileMenu = () => {
+  useEffect(() => {
+    setLangOpen(false);
+    setMobileOpen(false);
+  }, [pathname, screen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(event.target as Node)
+      ) {
+        setLangOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const closeMenus = () => {
     setMobileOpen(false);
     setLangOpen(false);
   };
 
+  const handleNavClick = (id: string) => {
+    scrollToSection(id, pathname, router);
+    closeMenus();
+  };
+
+  const secondaryBtn =
+    'inline-flex items-center justify-center rounded-full border border-[#D4AF37]/25 px-4 py-2 text-sm font-medium text-[#D4AF37] transition-all duration-300 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 hover:text-[#F4D03F] hover:cursor-pointer';
+
+  const primaryBtn =
+    'inline-flex items-center justify-center rounded-full bg-[#D4AF37] px-5 py-2.5 text-sm font-semibold text-black shadow-lg shadow-[#D4AF37]/20 transition-all duration-300 hover:bg-[#F4D03F] hover:cursor-pointer';
+
+  const dangerBtn =
+    'inline-flex items-center justify-center rounded-full border border-red-500/35 px-4 py-2 text-sm font-medium text-red-400 transition-all duration-300 hover:bg-red-500/10 hover:text-red-300 hover:cursor-pointer';
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'border-b border-[#D4AF37]/20 bg-black/85 py-4 backdrop-blur-md'
-          : 'bg-black py-6'
+          ? 'border-b border-[#D4AF37]/15 bg-black/80 backdrop-blur-xl'
+          : 'bg-black/95'
       }`}
     >
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="relative flex w-full items-center justify-between">
-
-          {/* LEFT */}
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid h-16 grid-cols-[auto_1fr_auto] items-center gap-3 h-20">
+          {/* LEFT / BRAND */}
           <div className="flex items-center">
             <button
               onClick={() => {
-                closeMobileMenu();
+                closeMenus();
                 if (pathname !== '/') {
                   router.push('/');
                   return;
                 }
                 scrollToSection('hero', pathname, router);
               }}
-              className="group hover:cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              className="group flex items-center transition-opacity duration-200 hover:cursor-pointer hover:opacity-80"
+              aria-label="Go to homepage"
             >
               <LogoBrand />
             </button>
           </div>
 
-          {/* LEFT NAV lg */}
-          <div className="hidden lg:flex ml-12">
-            <nav className="flex items-center gap-10">
-              <button
-                onClick={() => scrollToSection('HairStyles', pathname, router)}
-                className="tracking-wide text-gray-300 transition-colors duration-300 hover:text-[#D4AF37] hover:cursor-pointer"
-              >
-                {tr('nav_services', lang)}
-              </button>
-              <button
-                onClick={() => scrollToSection('gallery', pathname, router)}
-                className="tracking-wide text-gray-300 transition-colors duration-300 hover:text-[#D4AF37] hover:cursor-pointer"
-              >
-                {tr('nav_gallery', lang)}
-              </button>
-              <button
-                onClick={() => scrollToSection('about', pathname, router)}
-                className="tracking-wide text-gray-300 transition-colors duration-300 hover:text-[#D4AF37] hover:cursor-pointer"
-              >
-                {tr('nav_about', lang)}
-              </button>
-              <button
-                onClick={() => scrollToSection('contact', pathname, router)}
-                className="tracking-wide text-gray-300 transition-colors duration-300 hover:text-[#D4AF37] hover:cursor-pointer"
-              >
-                {tr('nav_contact', lang)}
-              </button>
-            </nav>
-          </div>
-
-          {/* RIGHT md / lg */}
-          <div className="hidden items-center gap-3 md:flex lg:gap-6">
-            {/* md seulement */}
-            <div className="flex items-center gap-3 lg:hidden">
-              {user?.app_metadata?.isAdmin && (
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="rounded-full border border-[#D4AF37]/30 px-5 py-2 text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-                >
-                  Admin
-                </button>
-              )}
-
-              {!user?.app_metadata?.isAdmin && user && (
-                <button
-                  onClick={() => router.push('/my-appointments')}
-                  className="rounded-full border border-[#D4AF37]/30 px-5 py-2 text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-                >
-                  {tr('nav_appointments', lang)}
-                </button>
-              )}
-
-              {user ? (
-                <button
-                  onClick={() => logout()}
-                  className="rounded-full bg-red-600 px-6 py-2 text-white transition-all duration-300 hover:bg-red-700 hover:cursor-pointer"
-                >
-                  {tr('nav_logout', lang)}
-                </button>
-              ) : (
-                <button
-                  onClick={() => openModal('login')}
-                  className="rounded-full bg-[#D4AF37] px-6 py-2 text-black shadow-lg shadow-[#D4AF37]/20 transition-all duration-300 hover:bg-[#F4D03F] hover:cursor-pointer"
-                >
-                  {tr('nav_login', lang)}
-                </button>
-              )}
-
-              {!user?.app_metadata?.isAdmin && (
-                <button
-                  onClick={() => {
-                    scrollToSection('booking', pathname, router);
-                    closeMobileMenu();
-                  }}
-                  className="rounded-full bg-[#D4AF37] px-6 py-3 text-black transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
-                >
-                  {tr('nav_book_now', lang)}
-                </button>
-              )}
+          {/* CENTER / NAV - LG ONLY */}
+          {screen === 'lg' ? (
+            <div className="flex justify-center px-4">
+              <nav className="flex items-center gap-5">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className="group relative text-sm font-medium tracking-wide text-gray-300 transition-colors duration-300 hover:text-[#D4AF37]"
+                  >
+                    {tr(item.key, lang)}
+                    <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
+                  </button>
+                ))}
+              </nav>
             </div>
+          ) : (
+            <div />
+          )}
 
-            {/* lg */}
-            <div className="hidden items-center gap-6 lg:flex">
-              {user?.app_metadata?.isAdmin && (
+          {/* RIGHT / ACTIONS */}
+          <div className="flex items-center justify-end gap-2">
+            {/* LANGUAGE - MD + LG */}
+            {(screen === 'md' || screen === 'lg') && (
+              <div ref={langMenuRef} className="relative">
                 <button
-                  onClick={() => router.push('/admin')}
-                  className="rounded-full border border-[#D4AF37]/30 px-5 py-2 text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-                >
-                  Admin
-                </button>
-              )}
-
-              {!user?.app_metadata?.isAdmin && user && (
-                <button
-                  onClick={() => router.push('/my-appointments')}
-                  className="rounded-full border border-[#D4AF37]/30 px-5 py-2 text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-                >
-                  {tr('nav_appointments', lang)}
-                </button>
-              )}
-
-              {user ? (
-                <button
-                  onClick={() => logout()}
-                  className="rounded-full bg-red-600 px-6 py-2 text-white transition-all duration-300 hover:bg-red-700 hover:cursor-pointer"
-                >
-                  {tr('nav_logout', lang)}
-                </button>
-              ) : (
-                <button
-                  onClick={() => openModal('login')}
-                  className="rounded-full bg-[#D4AF37] px-6 py-2 text-black shadow-lg shadow-[#D4AF37]/20 transition-all duration-300 hover:bg-[#F4D03F] hover:cursor-pointer"
-                >
-                  {tr('nav_login', lang)}
-                </button>
-              )}
-
-              {!user?.app_metadata?.isAdmin && (
-                <button
-                  onClick={() => scrollToSection('booking', pathname, router)}
-                  className="rounded-full bg-[#D4AF37] px-6 py-2 text-black shadow-lg shadow-[#D4AF37]/20 transition-all duration-300 hover:bg-[#F4D03F] hover:cursor-pointer"
-                >
-                  {tr('nav_book_now', lang)}
-                </button>
-              )}
-
-              <div className="relative">
-                <button
-                  onClick={() => setLangOpen((o) => !o)}
-                  className="flex items-center gap-1.5 rounded-full border border-[#D4AF37]/30 px-5 py-2 text-sm font-medium text-[#D4AF37] transition-all duration-300 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                  onClick={() => setLangOpen((prev) => !prev)}
+                  className="flex h-10 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 text-xs font-medium text-[#D4AF37] transition-all duration-300 hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/10 hover:cursor-pointer"
                 >
                   {lang.toUpperCase()}
                   <ChevronDown
@@ -229,7 +191,7 @@ export default function SiteHeader() {
                 </button>
 
                 {langOpen && (
-                  <div className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl border border-[#D4AF37]/20 bg-[#111] shadow-xl shadow-black/50">
+                  <div className="absolute right-0 top-full mt-2 min-w-[84px] overflow-hidden rounded-2xl border border-[#D4AF37]/15 bg-[#0F0F0F] shadow-2xl shadow-black/40">
                     {LANGS.map(({ code, label }) => (
                       <button
                         key={code}
@@ -237,7 +199,7 @@ export default function SiteHeader() {
                           setLang(code);
                           setLangOpen(false);
                         }}
-                        className={`flex w-full items-center px-5 py-2.5 text-xs font-semibold tracking-wider transition-colors hover:cursor-pointer ${
+                        className={`flex w-full items-center justify-center px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors hover:cursor-pointer ${
                           lang === code
                             ? 'bg-[#D4AF37] text-black'
                             : 'text-gray-300 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
@@ -249,137 +211,224 @@ export default function SiteHeader() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Mobile burger */}
-          <button
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className="flex items-center justify-center rounded-full border border-[#D4AF37]/30 p-2 text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 hover:cursor-pointer md:hidden"
-            aria-label="Open menu"
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+            {/* divider only on lg */}
+            {screen === 'lg' && (
+              <div className="h-6 w-px bg-[#D4AF37]/15" />
+            )}
+
+            {/* MD ACTIONS */}
+            {screen === 'md' && (
+              <div className="flex items-center gap-2">
+                {user?.app_metadata?.isAdmin && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className={secondaryBtn}
+                  >
+                    Admin
+                  </button>
+                )}
+
+                {!user?.app_metadata?.isAdmin && user && (
+                  <button
+                    onClick={() => router.push('/my-appointments')}
+                    className={secondaryBtn}
+                  >
+                    {tr('nav_appointments', lang)}
+                  </button>
+                )}
+
+                {user ? (
+                  <button onClick={() => logout()} className={dangerBtn}>
+                    {tr('nav_logout', lang)}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openModal('login')}
+                    className={secondaryBtn}
+                  >
+                    {tr('nav_login', lang)}
+                  </button>
+                )}
+
+                {!user?.app_metadata?.isAdmin && (
+                  <button
+                    onClick={() => handleNavClick('booking')}
+                    className={primaryBtn}
+                  >
+                    {tr('nav_book_now', lang)}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* LG ACTIONS */}
+            {screen === 'lg' && (
+              <div className="flex items-center gap-2">
+                {user?.app_metadata?.isAdmin && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className={secondaryBtn}
+                  >
+                    Admin
+                  </button>
+                )}
+
+                {!user?.app_metadata?.isAdmin && user && (
+                  <button
+                    onClick={() => router.push('/my-appointments')}
+                    className={secondaryBtn}
+                  >
+                    {tr('nav_appointments', lang)}
+                  </button>
+                )}
+
+                {user ? (
+                  <button onClick={() => logout()} className={dangerBtn}>
+                    {tr('nav_logout', lang)}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openModal('login')}
+                    className={secondaryBtn}
+                  >
+                    {tr('nav_login', lang)}
+                  </button>
+                )}
+
+                {!user?.app_metadata?.isAdmin && (
+                  <button
+                    onClick={() => handleNavClick('booking')}
+                    className={primaryBtn}
+                  >
+                    {tr('nav_book_now', lang)}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* BURGER - SM ONLY */}
+            {screen === 'sm' && (
+              <button
+                onClick={() => {
+                  setMobileOpen((prev) => !prev);
+                  setLangOpen(false);
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/25 text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              >
+                {mobileOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="mt-4 border-t border-[#D4AF37]/20 bg-black md:hidden">
-          <div className="flex flex-col gap-3 px-6 py-5">
-            <button
-              onClick={() => {
-                scrollToSection('HairStyles', pathname, router);
-                closeMobileMenu();
-              }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
-            >
-              {tr('nav_services', lang)}
-            </button>
+      {/* MOBILE PANEL - SM ONLY */}
+      {screen === 'sm' && mobileOpen && (
+        <div className="border-t border-[#D4AF37]/10 bg-black/95 backdrop-blur-xl">
+          <div className="mx-auto max-w-7xl px-4 py-4">
+            <div className="overflow-hidden rounded-3xl border border-[#D4AF37]/15 bg-[#0B0B0B] shadow-2xl shadow-black/40">
+              {/* nav */}
+              <div className="flex flex-col p-4">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className="rounded-2xl px-3 py-3 text-left text-base font-medium text-gray-300 transition-all duration-300 hover:bg-[#D4AF37]/8 hover:text-[#D4AF37] hover:cursor-pointer"
+                  >
+                    {tr(item.key, lang)}
+                  </button>
+                ))}
+              </div>
 
-            <button
-              onClick={() => {
-                scrollToSection('gallery', pathname, router);
-                closeMobileMenu();
-              }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
-            >
-              {tr('nav_gallery', lang)}
-            </button>
+              {/* langs */}
+              <div className="border-t border-[#D4AF37]/10 px-4 py-4">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  Language
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {LANGS.map(({ code, label }) => (
+                    <button
+                      key={code}
+                      onClick={() => setLang(code)}
+                      className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all hover:cursor-pointer ${
+                        lang === code
+                          ? 'border-[#D4AF37] bg-[#D4AF37] text-black'
+                          : 'border-[#D4AF37]/25 text-[#D4AF37] hover:bg-[#D4AF37]/10'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <button
-              onClick={() => {
-                scrollToSection('about', pathname, router);
-                closeMobileMenu();
-              }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
-            >
-              {tr('nav_about', lang)}
-            </button>
+              {/* actions */}
+              <div className="border-t border-[#D4AF37]/10 p-4">
+                <div className="grid gap-3">
+                  {user ? (
+                    <button
+                      onClick={() => {
+                        logout();
+                        closeMenus();
+                      }}
+                      className="inline-flex items-center justify-center rounded-full border border-red-500/35 px-5 py-3 text-sm font-medium text-red-400 transition-all hover:bg-red-500/10 hover:cursor-pointer"
+                    >
+                      {tr('nav_logout', lang)}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        openModal('login');
+                        closeMenus();
+                      }}
+                      className="inline-flex items-center justify-center rounded-full border border-[#D4AF37]/25 px-5 py-3 text-sm font-medium text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                    >
+                      {tr('nav_login', lang)}
+                    </button>
+                  )}
 
-            <button
-              onClick={() => {
-                scrollToSection('contact', pathname, router);
-                closeMobileMenu();
-              }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
-            >
-              {tr('nav_contact', lang)}
-            </button>
+                  {user?.app_metadata?.isAdmin && (
+                    <button
+                      onClick={() => {
+                        router.push('/admin');
+                        closeMenus();
+                      }}
+                      className="inline-flex items-center justify-center rounded-full border border-[#D4AF37]/25 px-5 py-3 text-sm font-medium text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                    >
+                      Admin
+                    </button>
+                  )}
 
-            <div className="mt-2 flex gap-2">
-              {LANGS.map(({ code, label }) => (
-                <button
-                  key={code}
-                  onClick={() => setLang(code)}
-                  className={`rounded-full border px-4 py-2 text-xs font-semibold hover:cursor-pointer ${
-                    lang === code
-                      ? 'border-[#D4AF37] bg-[#D4AF37] text-black'
-                      : 'border-[#D4AF37]/30 text-[#D4AF37]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+                  {!user?.app_metadata?.isAdmin && user && (
+                    <button
+                      onClick={() => {
+                        router.push('/my-appointments');
+                        closeMenus();
+                      }}
+                      className="inline-flex items-center justify-center rounded-full border border-[#D4AF37]/25 px-5 py-3 text-sm font-medium text-[#D4AF37] transition-all hover:bg-[#D4AF37]/10 hover:cursor-pointer"
+                    >
+                      {tr('nav_appointments', lang)}
+                    </button>
+                  )}
+
+                  {!user?.app_metadata?.isAdmin && (
+                    <button
+                      onClick={() => handleNavClick('booking')}
+                      className="inline-flex items-center justify-center rounded-full bg-[#D4AF37] px-5 py-3 text-sm font-semibold text-black shadow-lg shadow-[#D4AF37]/20 transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
+                    >
+                      {tr('nav_book_now', lang)}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-
-            {user ? (
-              <button
-                onClick={() => {
-                  logout();
-                  closeMobileMenu();
-                }}
-                className="mt-3 rounded-full bg-red-600 px-6 py-3 text-white transition-all hover:bg-red-700 hover:cursor-pointer"
-              >
-                {tr('nav_logout', lang)}
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  openModal('login');
-                  closeMobileMenu();
-                }}
-                className="mt-3 rounded-full bg-[#D4AF37] px-6 py-3 text-black transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
-              >
-                {tr('nav_login', lang)}
-              </button>
-            )}
-
-            {user?.app_metadata?.isAdmin && (
-              <button
-                onClick={() => {
-                  router.push('/admin');
-                  closeMobileMenu();
-                }}
-                className="rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-              >
-                Admin
-              </button>
-            )}
-
-            {!user?.app_metadata?.isAdmin && user && (
-              <button
-                onClick={() => {
-                  router.push('/my-appointments');
-                  closeMobileMenu();
-                }}
-                className="rounded-full border border-[#D4AF37]/30 px-5 py-3 text-center text-[#D4AF37] transition-all hover:bg-[#D4AF37] hover:text-black hover:cursor-pointer"
-              >
-                {tr('nav_appointments', lang)}
-              </button>
-            )}
-
-            {!user?.app_metadata?.isAdmin && (
-              <button
-                onClick={() => {
-                  scrollToSection('booking', pathname, router);
-                  closeMobileMenu();
-                }}
-                className="rounded-full bg-[#D4AF37] px-6 py-3 text-black transition-all hover:bg-[#F4D03F] hover:cursor-pointer"
-              >
-                {tr('nav_book_now', lang)}
-              </button>
-            )}
           </div>
         </div>
       )}
