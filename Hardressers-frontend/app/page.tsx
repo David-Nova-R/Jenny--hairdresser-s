@@ -132,13 +132,6 @@ export default function HomePage() {
     }
   };
 
-  const allGalleryPhotos = galleryHairStyles.flatMap((hairStyle) =>
-    (hairStyle.photos ?? []).map((photo) => ({
-      ...photo,
-      hairStyleName: hairStyle.name,
-    }))
-  );
-
   const openCalendarModal = async (hairStyle: HairStyle) => {
     setSelectedHairStyle(hairStyle);
     openModal('calendar');
