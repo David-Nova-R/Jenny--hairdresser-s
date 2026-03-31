@@ -409,12 +409,33 @@ namespace Hairdressers_backend.Services
             return true;
         }
 
-        public async Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize)
+        public async Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize, string? searchQuery, int? status, DateTime? dateFrom, DateTime? dateTo)
         {
             var query = _context.Appointments
                 .Include(a => a.User)
                 .Include(a => a.HairStyle)
-                .OrderByDescending(a => a.AppointmentDate);
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var q = searchQuery.Trim().ToLower();
+                query = query.Where(a =>
+                    a.User != null &&
+                    (a.User.FirstName.ToLower().Contains(q) ||
+                     a.User.LastName.ToLower().Contains(q) ||
+                     (a.User.FirstName + " " + a.User.LastName).ToLower().Contains(q)));
+            }
+
+            if (status.HasValue)
+                query = query.Where(a => (int)a.Status == status.Value);
+
+            if (dateFrom.HasValue)
+                query = query.Where(a => a.AppointmentDate >= dateFrom.Value);
+
+            if (dateTo.HasValue)
+                query = query.Where(a => a.AppointmentDate < dateTo.Value.AddDays(1));
+
+            query = query.OrderByDescending(a => a.AppointmentDate);
 
             var totalCount = await query.CountAsync();
 
@@ -428,7 +449,8 @@ namespace Hairdressers_backend.Services
                     Status = a.Status,
                     UserName = a.User != null ? a.User.FirstName + " " + a.User.LastName : null,
                     UserEmail = a.User != null ? a.User.Email : null,
-                    HairStyleName = a.HairStyle != null ? a.HairStyle.Name : null
+                    HairStyleName = a.HairStyle != null ? a.HairStyle.Name : null,
+                    StyleNotes = a.StyleNotes
                 })
                 .ToListAsync();
 
@@ -439,6 +461,15 @@ namespace Hairdressers_backend.Services
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
+        }
+
+        public async Task UpdateStyleNotesAsync(int appointmentId, string? styleNotes)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId)
+                ?? throw new KeyNotFoundException("Rendez-vous introuvable.");
+
+            appointment.StyleNotes = styleNotes;
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<AdminCalendarAppointmentDTO>> GetAdminCalendarAppointmentsAsync(DateTime weekStart)
@@ -472,6 +503,7 @@ namespace Hairdressers_backend.Services
                     PriceMin = a.HairStyle != null ? a.HairStyle.PriceMin : 0,
                     PriceMax = a.HairStyle != null ? a.HairStyle.PriceMax : null,
                     Notes = a.Notes,
+                    StyleNotes = a.StyleNotes,
                     ExternalDurationMinutes = a.Status == AppointmentStatus.External
                         ? a.ExternalDurationMinutes
                         : a.HairStyle != null

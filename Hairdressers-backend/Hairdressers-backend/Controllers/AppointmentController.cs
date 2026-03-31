@@ -213,9 +213,43 @@ namespace Hairdressers_backend.Controllers
 
             const int pageSize = 10;
 
-            var result = await _appointmentService.GetAllAppointmentsAsync(dto.PageNumber, pageSize);
+            var result = await _appointmentService.GetAllAppointmentsAsync(
+                dto.PageNumber,
+                pageSize,
+                dto.SearchQuery,
+                dto.Status,
+                dto.DateFrom,
+                dto.DateTo
+            );
 
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("{appointmentId}")]
+        public async Task<IActionResult> GetAppointmentById(int appointmentId)
+        {
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(appointmentId);
+
+            if (appointment == null)
+                return NotFound(new { Message = "Rendez-vous introuvable." });
+
+            return Ok(appointment);
+        }
+
+        [Authorize]
+        [HttpPut("{appointmentId}")]
+        public async Task<IActionResult> UpdateStyleNotes(int appointmentId, [FromBody] UpdateStyleNotesDTO dto)
+        {
+            try
+            {
+                await _appointmentService.UpdateStyleNotesAsync(appointmentId, dto.StyleNotes);
+                return Ok(new { Message = "Notes mises à jour avec succès." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [Authorize]

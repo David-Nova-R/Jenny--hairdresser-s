@@ -131,6 +131,7 @@ namespace Models.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     GoogleEventId = table.Column<string>(type: "text", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true),
+                    StyleNotes = table.Column<string>(type: "text", nullable: true),
                     ExternalDurationMinutes = table.Column<int>(type: "integer", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: true),
                     HairStyleId = table.Column<int>(type: "integer", nullable: true)
@@ -225,21 +226,6 @@ namespace Models.Migrations
                     { 1, 11, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
                     { 2, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" },
                     { 3, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "Email", "FirstName", "LastName", "PhoneNumber", "RoleId", "SupabaseUserId" },
-                values: new object[] { 1, "test@gmail.com", "Test", "Tingtong", "514-000-0000", 1, "280c0a73-c068-485b-a594-e2c1e0917a54" });
-
-            migrationBuilder.InsertData(
-                table: "Appointments",
-                columns: new[] { "Id", "AppointmentDate", "ExternalDurationMinutes", "GoogleEventId", "HairStyleId", "Notes", "Status", "UserId" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, null, 1, 1 },
-                    { 2, new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified), null, null, 3, null, 0, 1 },
-                    { 3, new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified), null, null, 4, null, 0, 1 }
                 });
 
             migrationBuilder.CreateIndex(

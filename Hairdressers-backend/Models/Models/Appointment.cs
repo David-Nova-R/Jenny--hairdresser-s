@@ -23,6 +23,7 @@ namespace Models.Models
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
         public string? GoogleEventId { get; set; }
         public string? Notes { get; set; }
+        public string? StyleNotes { get; set; }
         public int? ExternalDurationMinutes { get; set; }
 
         // Clés étrangères (nullable pour les rendez-vous externes)

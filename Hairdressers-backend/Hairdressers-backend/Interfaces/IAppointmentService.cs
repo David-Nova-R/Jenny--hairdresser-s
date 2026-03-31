@@ -13,11 +13,12 @@ namespace Hairdressers_backend.Interfaces
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
         Task<List<AppointmentResponseDTO>?> GetMyAppointmentsAsync(int userId);
         Task<bool> UpdateAppointmentStatusAsync(int appointmentId, int status);
-        Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize);
+        Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize, string? searchQuery, int? status, DateTime? dateFrom, DateTime? dateTo);
         Task AcceptAppointmentAsync(int appointmentId);
         Task<List<PendingAppointmentDTO>> GetPendingAppointmentsAsync();
         Task SyncFromGoogleCalendarAsync();
         Task CompletePassedAppointmentsAsync();
         Task<List<AdminCalendarAppointmentDTO>> GetAdminCalendarAppointmentsAsync(DateTime weekStart);
+        Task UpdateStyleNotesAsync(int appointmentId, string? styleNotes);
     }
 }

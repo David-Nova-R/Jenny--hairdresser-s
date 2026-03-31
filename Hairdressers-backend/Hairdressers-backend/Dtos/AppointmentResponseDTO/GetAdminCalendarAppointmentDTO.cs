@@ -14,6 +14,7 @@
         public decimal PriceMin { get; set; }
         public decimal? PriceMax { get; set; }
         public string? Notes { get; set; }
+        public string? StyleNotes { get; set; }
         public int? ExternalDurationMinutes { get; set; }
     }
 }
