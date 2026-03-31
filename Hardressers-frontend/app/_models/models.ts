@@ -134,6 +134,7 @@ export interface AdminUserDTO {
   firstName: string;
   lastName?: string | null;
   email: string;
+  phoneNumber?: string | null;
   roleName: string;         // "Admin" | "Styliste" | "Client"
   roleId?: number | null;
   appointments: AdminUserAppointmentDTO[];

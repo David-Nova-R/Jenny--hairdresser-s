@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Loader2, RefreshCw, Search, X, ChevronDown, ChevronLeft, ChevronRight,
     User2, Mail, CalendarDays, NotebookPen, RotateCcw,
+    Phone,
 } from 'lucide-react';
 import { AdminUserDTO, AdminUserAppointmentDTO, PagedUsersResponse } from '@/app/_models/models';
 import { FetchUsersAdmin, FetchUserAdmin, UserFilters, DEFAULT_USER_FILTERS } from '@/app/_api/user-api';
@@ -127,6 +128,9 @@ function UserCard({
                     <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                         <Mail className="h-3 w-3 shrink-0" />
                         <span className="truncate">{user.email}</span>
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{user.phoneNumber}</span>
+
                     </div>
                     {/* Appointment count pill */}
                     <div className="mt-2">

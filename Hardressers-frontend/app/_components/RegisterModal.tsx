@@ -107,7 +107,7 @@ export default function RegisterModal({
       confirmPassword: confirmPasswordRef,
     };
 
-    refMap[field]?.current?.focus();
+    refMap[field!]?.current?.focus();
   };
 
   const clearFieldError = (field: FieldName, value?: string) => {
