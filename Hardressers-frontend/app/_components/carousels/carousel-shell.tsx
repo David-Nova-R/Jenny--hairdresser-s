@@ -39,100 +39,93 @@ export default function CarouselShell({
 
   const getScrollAmount = () => {
     if (!scrollRef.current) return 0;
-
     const firstCard = scrollRef.current.querySelector('[data-card]') as HTMLElement | null;
     if (!firstCard) return 0;
-
     const styles = window.getComputedStyle(scrollRef.current);
     const gap = parseInt(styles.gap || '16', 10) || 16;
-
     return firstCard.offsetWidth + gap;
-  };
-
-  const scrollToIndex = (nextIndex: number) => {
-    if (!scrollRef.current) return;
-
-    const amount = getScrollAmount();
-
-    scrollRef.current.scrollTo({
-      left: nextIndex * amount,
-      behavior: 'smooth',
-    });
-
-    setIndex(nextIndex);
   };
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     const maxIndex = getMaxIndex();
-
     setIndex((prev) => {
       const next =
         direction === 'left'
           ? Math.max(0, prev - 1)
           : Math.min(maxIndex, prev + 1);
-
-      const amount = getScrollAmount();
-
       scrollRef.current?.scrollTo({
-        left: next * amount,
+        left: next * getScrollAmount(),
         behavior: 'smooth',
       });
-
       return next;
     });
   };
 
+  const scrollToIndex = (nextIndex: number) => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTo({
+      left: nextIndex * getScrollAmount(),
+      behavior: 'smooth',
+    });
+    setIndex(nextIndex);
+  };
+
   const syncIndex = () => {
     if (!scrollRef.current) return;
-
     const amount = getScrollAmount();
     if (!amount) return;
-
     setIndex(Math.round(scrollRef.current.scrollLeft / amount));
   };
 
   useEffect(() => {
     if (!mounted) return;
-
     const handleResizeReset = () => {
       setIndex(0);
       scrollRef.current?.scrollTo({ left: 0, behavior: 'auto' });
     };
-
     window.addEventListener('resize', handleResizeReset);
     return () => window.removeEventListener('resize', handleResizeReset);
   }, [mounted]);
 
+  const atStart = index === 0;
+  const atEnd   = index >= getMaxIndex();
+
   return (
-    <div className="relative">
-      {itemsLength > 1 && (
-        <>
-          <button
-            onClick={() => scrollCarousel('left')}
-            className="absolute left-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black/90 text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black lg:flex"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
+    <div className="flex flex-col gap-6">
+      {/* Row: left arrow + scroll area + right arrow */}
+      <div className="flex items-center gap-3 lg:gap-4">
 
-          <button
-            onClick={() => scrollCarousel('right')}
-            className="absolute right-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black/90 text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black lg:flex"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </>
-      )}
+        {/* Left arrow */}
+        <button
+          onClick={() => scrollCarousel('left')}
+          disabled={atStart}
+          className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[#D4AF37]/30 disabled:hover:bg-black disabled:hover:text-[#D4AF37] lg:flex"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
 
-      <div
-        ref={scrollRef}
-        onScroll={syncIndex}
-        className="flex gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory px-[7.5%] pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden sm:px-0 lg:gap-6"
-      >
-        {children}
+        {/* Scroll container */}
+        <div
+          ref={scrollRef}
+          onScroll={syncIndex}
+          className="flex flex-1 gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory px-[7.5%] py-4 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden sm:px-0 lg:gap-6"
+        >
+          {children}
+        </div>
+
+        {/* Right arrow */}
+        <button
+          onClick={() => scrollCarousel('right')}
+          disabled={atEnd}
+          className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black text-[#D4AF37] transition-all hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-black disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[#D4AF37]/30 disabled:hover:bg-black disabled:hover:text-[#D4AF37] lg:flex"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
       </div>
 
+      {/* Dot indicators */}
       {mounted && itemsLength > 1 && (
-        <div className="mt-8 flex justify-center gap-2">
+        <div className="flex justify-center gap-2">
           {Array.from({ length: getMaxIndex() + 1 }).map((_, i) => (
             <button
               key={i}

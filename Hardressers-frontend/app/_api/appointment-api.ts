@@ -147,14 +147,43 @@ export async function FetchMyAppointments(): Promise<AppointmentResponseDTO[]> {
         throw err;
     }
 }
+export interface AppointmentFilters {
+    query:    string;
+    status:   number | null;   // null = all
+    period:   'all' | 'today' | 'week' | 'month' | 'custom';
+    dateFrom: string;          // YYYY-MM-DD, empty = unset
+    dateTo:   string;          // YYYY-MM-DD, empty = unset
+}
+
+export const DEFAULT_FILTERS: AppointmentFilters = {
+    query:    '',
+    status:   null,
+    period:   'all',
+    dateFrom: '',
+    dateTo:   '',
+};
+
+/** Convert a YYYY-MM-DD string to an ISO datetime (start of day). */
+function toIsoStart(d: string) { return d ? `${d}T00:00:00` : undefined; }
+/** Convert a YYYY-MM-DD string to an ISO datetime (end of day). */
+function toIsoEnd(d: string)   { return d ? `${d}T23:59:59` : undefined; }
+
 export async function FetchAllAppointmentsAdmin(
-    pageNumber: number
+    pageNumber: number,
+    filters: AppointmentFilters = DEFAULT_FILTERS
 ): Promise<PagedAppointmentsResponse> {
     const headers = await getAuthHeaders();
-    console.log('Fetching all appointments with headers:', pageNumber);
+
+    const body: Record<string, unknown> = { pageNumber };
+
+    if (filters.query.trim())          body.searchQuery = filters.query.trim();
+    if (filters.status !== null)       body.status      = filters.status;
+    if (filters.dateFrom)              body.dateFrom    = toIsoStart(filters.dateFrom);
+    if (filters.dateTo)                body.dateTo      = toIsoEnd(filters.dateTo);
+
     const response = await axios.post<PagedAppointmentsResponse>(
         `${API_BASE_URL}/api/Appointment/GetAllAppointments`,
-        { pageNumber },
+        body,
         { headers }
     );
 
@@ -248,11 +277,10 @@ export async function UpdatePortfolioPhoto(
 }
 
 export async function UpdatePortfolioPhotoOrder(
-  photos: { id: number; order: number }[]
+  photos: { id: number; order: number; isVisible: boolean }[]
 ): Promise<void> {
-  // No batch endpoint — update each photo individually in parallel
   await Promise.all(
-    photos.map(p => UpdatePortfolioPhoto(p.id, { order: p.order }))
+    photos.map(p => UpdatePortfolioPhoto(p.id, { order: p.order, isVisible: p.isVisible }))
   );
 }
 
@@ -383,6 +411,18 @@ export async function DeleteReview(reviewId: number): Promise<void> {
     { headers }
   );
 }
+export async function UpdateStyleNotes(
+  appointmentId: number,
+  styleNotes: string
+): Promise<void> {
+  const headers = await getAuthHeaders();
+  await axios.put(
+    `${API_BASE_URL}/api/Appointment/UpdateStyleNotes/${appointmentId}`,
+    { styleNotes },
+    { headers: { ...headers, 'Content-Type': 'application/json' } }
+  );
+}
+
 export async function FetchVisibleReviews(): Promise<ReviewDisplayDTO[]> {
   const response = await axios.get<ReviewDisplayDTO[]>(
     `${API_BASE_URL}/api/Reviews/GetVisibleReviews`

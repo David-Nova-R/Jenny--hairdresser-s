@@ -39,6 +39,7 @@ export interface AppointmentResponseDTO {
   hairStyleName: string;
   priceMin: number;
   priceMax?: number | null;
+  styleNotes?: string | null;
 }
 
 export type AppointmentDTO = {
@@ -117,4 +118,31 @@ export interface ReviewDisplayDTO {
 export interface ReviewDTO {
   text: string;
   stars: number;
+}
+
+// ── User management ────────────────────────────────────────────────────────────
+export interface AdminUserAppointmentDTO {
+  id: number;
+  appointmentDate: string;
+  status: string;           // e.g. "Confirmed", "Pending", …
+  hairStyleName: string;
+  styleNotes?: string | null;
+}
+
+export interface AdminUserDTO {
+  id: number;
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  roleName: string;         // "Admin" | "Styliste" | "Client"
+  roleId?: number | null;
+  appointments: AdminUserAppointmentDTO[];
+}
+
+export interface PagedUsersResponse {
+  items: AdminUserDTO[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }

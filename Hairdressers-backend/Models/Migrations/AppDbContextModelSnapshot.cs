@@ -51,6 +51,9 @@ namespace Models.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<string>("StyleNotes")
+                        .HasColumnType("text");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
@@ -61,32 +64,6 @@ namespace Models.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Appointments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, 0, DateTimeKind.Unspecified),
-                            HairStyleId = 1,
-                            Status = 1,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, 0, DateTimeKind.Unspecified),
-                            HairStyleId = 3,
-                            Status = 0,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, 0, DateTimeKind.Unspecified),
-                            HairStyleId = 4,
-                            Status = 0,
-                            UserId = 1
-                        });
                 });
 
             modelBuilder.Entity("Models.Models.DayOff", b =>
@@ -489,18 +466,6 @@ namespace Models.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Email = "test@gmail.com",
-                            FirstName = "Test",
-                            LastName = "Tingtong",
-                            PhoneNumber = "514-000-0000",
-                            RoleId = 1,
-                            SupabaseUserId = "280c0a73-c068-485b-a594-e2c1e0917a54"
-                        });
                 });
 
             modelBuilder.Entity("Models.Models.Appointment", b =>

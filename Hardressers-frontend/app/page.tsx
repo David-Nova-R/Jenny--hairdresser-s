@@ -1,12 +1,6 @@
 'use client';
 
-import {
-
-  MapPin,
-  Clock,
-  Calendar,
-  Phone,
-} from 'lucide-react';
+import { MapPin, Clock, Calendar, Phone, Instagram } from 'lucide-react';
 
 const COLOR_SERVICES = new Set([
   'Tinte permanente',
@@ -18,7 +12,7 @@ const COLOR_SERVICES = new Set([
   'Ombré',
   'Californianas',
 ]);
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ImageWithFallback } from './ImageWithFallBack';
 import AppointmentModal from './_components/appointment-modal';
@@ -29,8 +23,8 @@ import { useAuth } from './_context/auth-context';
 import { useModal } from './_context/modal-context';
 import { useLang } from './_context/language-context';
 import ServerErrorModal from './_components/ServerErrorModal';
-import { FetchAvailableSlots, FetchHairStyles, FetchVisibleReviews } from './_api/appointment-api';
-import { AvailableDay, HairStyle, HairStyleWithPhotos, ReviewDisplayDTO } from './_models/models';
+import { FetchAvailableSlots, FetchHairStyles, FetchPortfolioPhotos, FetchAllPortfolioPhotosAdmin, FetchVisibleReviews } from './_api/appointment-api';
+import { AvailableDay, HairStyle, PortfolioPhoto, ReviewDisplayDTO } from './_models/models';
 import { tr } from './_config/translations';
 import ReviewsSection from './_components/sections/review-section';
 import GallerySection from './_components/sections/gallery-section';
@@ -38,7 +32,7 @@ import ServicesSection from './_components/sections/service-section';
 import ReviewModal from './_components/review-modal';
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { activeModal, openModal, closeModal } = useModal();
   const { lang } = useLang();
 
@@ -47,7 +41,7 @@ export default function HomePage() {
   const [hairStylesLoading, setHairStylesLoading] = useState(false);
   const [slots, setSlots] = useState<AvailableDay[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [galleryHairStyles, setGalleryHairStyles] = useState<HairStyleWithPhotos[]>([]);
+  const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(false);
   const [reviews, setReviews] = useState<ReviewDisplayDTO[]>([]);
@@ -84,36 +78,25 @@ export default function HomePage() {
       .finally(() => setPageHairStylesLoading(false));
   }, []);
   useEffect(() => {
-    void loadGallery();
-  }, []);
-  useEffect(() => {
-    void loadGallery();
     void loadReviews();
   }, []);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
+  useEffect(() => {
+    if (!authLoading) void loadGallery();
+  }, [authLoading]);
   const loadGallery = async () => {
     try {
       setGalleryLoading(true);
-      const data = await FetchHairStyles();
-      setGalleryHairStyles(data);
+      const isAdmin = !!user?.app_metadata?.isAdmin;
+      const data = isAdmin
+        ? await FetchAllPortfolioPhotosAdmin()
+        : await FetchPortfolioPhotos();
+      setPortfolioPhotos([...data].sort((a, b) => a.order - b.order));
     } catch (err) {
       console.error('Failed to load gallery:', err);
-      setGalleryHairStyles([]);
+      setPortfolioPhotos([]);
     } finally {
       setGalleryLoading(false);
     }
-  };
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-
-    const { clientWidth } = scrollRef.current;
-
-    scrollRef.current.scrollBy({
-      left: direction === 'left' ? -clientWidth : clientWidth,
-      behavior: 'smooth',
-    });
   };
 
   const loadReviews = async () => {
@@ -265,7 +248,9 @@ export default function HomePage() {
       <GallerySection
         lang={lang}
         loading={galleryLoading}
-        photos={allGalleryPhotos}
+        photos={portfolioPhotos}
+        onPhotosChange={setPortfolioPhotos}
+        isAdmin={!!user?.app_metadata?.isAdmin}
       />
       <section id="booking" className="relative overflow-hidden bg-black px-6 py-24">
         <div className="relative z-10 mx-auto max-w-4xl text-center">
@@ -339,6 +324,27 @@ export default function HomePage() {
                 {tr('contact_hours_2', lang)}
               </p>
             </div>
+          </div>
+
+          {/* Social media */}
+          <div className="mt-16 flex flex-col items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="h-[1px] w-16 bg-[#D4AF37]/30" />
+              <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">
+                {tr('contact_social', lang)}
+              </span>
+              <div className="h-[1px] w-16 bg-[#D4AF37]/30" />
+            </div>
+
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="group flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-black transition-all duration-300 hover:border-[#D4AF37] hover:bg-[#D4AF37]"
+            >
+              <Instagram className="h-6 w-6 text-[#D4AF37] transition-colors group-hover:text-black" />
+            </a>
           </div>
         </div>
       </section>

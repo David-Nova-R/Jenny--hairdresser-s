@@ -57,7 +57,7 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
 
     setSavingOrder(true);
     try {
-      await UpdatePortfolioPhotoOrder(withOrder.map(p => ({ id: p.id, order: p.order })));
+      await UpdatePortfolioPhotoOrder(withOrder.map(p => ({ id: p.id, order: p.order, isVisible: p.isVisible })));
     } catch (e) { console.error(e); }
     finally { setSavingOrder(false); }
   };
@@ -272,12 +272,12 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
                 />
                 <div className="absolute inset-0 bg-black/50" />
 
-                {/* Restore button */}
+                {/* Restore button — always visible on mobile, hover-only on sm+ */}
                 <button
                   onClick={() => toggleVisibility(photo)}
                   disabled={savingIds.includes(photo.id)}
                   title={tr('editor_restore', lang)}
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-white opacity-100 transition-opacity disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   {savingIds.includes(photo.id)
                     ? <Loader2 className="h-6 w-6 animate-spin" />
@@ -288,11 +288,11 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
                   }
                 </button>
 
-                {/* Delete */}
+                {/* Delete — always visible on mobile, hover-only on sm+ */}
                 <button
                   onClick={() => handleDelete(photo)}
                   disabled={deletingIds.includes(photo.id)}
-                  className="absolute right-1.5 top-1.5 rounded-lg bg-black/60 p-1.5 text-rose-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-500/30 disabled:opacity-50"
+                  className="absolute right-1.5 top-1.5 rounded-lg bg-black/60 p-1.5 text-rose-400 opacity-100 transition hover:bg-rose-500/30 disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   {deletingIds.includes(photo.id)
                     ? <Loader2 className="h-3.5 w-3.5 animate-spin" />

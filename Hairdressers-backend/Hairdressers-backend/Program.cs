@@ -19,6 +19,7 @@ builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 builder.Services.AddScoped<IDayOffService, DayOffService>();
 builder.Services.AddHostedService<CalendarSyncBackgroundService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Resend
 builder.Services.AddOptions();

@@ -179,7 +179,9 @@ function DetailModal({
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function AdminCalendar() {
     const { lang } = useLang();
-    const [view, setView] = useState<CalendarView>('week');
+    const [view, setView] = useState<CalendarView>(
+        typeof window !== 'undefined' && window.innerWidth < 640 ? 'day' : 'week'
+    );
     const [currentDate, setCurrentDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [appointments, setAppointments] = useState<AdminCalendarAppointmentDTO[]>([]);
     const [loading, setLoading] = useState(false);
@@ -358,7 +360,7 @@ export default function AdminCalendar() {
                                 <div
                                     key={di}
                                     onClick={() => { setCurrentDate(day); switchView('day'); }}
-                                    className={`min-h-[90px] cursor-pointer border-r border-[#D4AF37]/10 p-2 transition-colors last:border-0 hover:bg-[#D4AF37]/5 ${inMonth ? 'bg-[#141414]' : 'bg-[#0f0f0f]'}`}
+                                    className={`min-h-[60px] cursor-pointer border-r border-[#D4AF37]/10 p-1 transition-colors last:border-0 hover:bg-[#D4AF37]/5 sm:min-h-[90px] sm:p-2 ${inMonth ? 'bg-[#141414]' : 'bg-[#0f0f0f]'}`}
                                 >
                                     <div className={`mb-1.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${isToday ? 'bg-[#D4AF37] text-black' : inMonth ? 'text-white' : 'text-gray-600'}`}>
                                         {format(day, 'd')}
@@ -395,26 +397,26 @@ export default function AdminCalendar() {
 
     return (
         <>
-            <div className="mt-6 rounded-3xl border border-[#D4AF37]/15 bg-[#111111] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+            <div className="mt-6 rounded-3xl border border-[#D4AF37]/15 bg-[#111111] p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:p-4">
                 {/* Header */}
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#D4AF37]/10 bg-white/[0.03] px-4 py-3">
-                    <button onClick={() => navigate('prev')} className="flex items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10">
+                <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl border border-[#D4AF37]/10 bg-white/[0.03] px-3 py-2.5 sm:mb-5 sm:gap-3 sm:px-4 sm:py-3">
+                    <button onClick={() => navigate('prev')} className="flex shrink-0 items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] p-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10 sm:px-4 sm:py-2">
                         <ChevronLeft className="h-4 w-4" />
                     </button>
 
-                    <div className="flex flex-col items-center gap-2">
-                        <h2 className="text-base font-semibold capitalize text-white">{title}</h2>
+                    <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                        <h2 className="w-full truncate text-center text-sm font-semibold capitalize text-white sm:text-base">{title}</h2>
                         <div className="flex rounded-full border border-[#D4AF37]/20 bg-black/30 p-0.5">
                             {(['day', 'week', 'month'] as CalendarView[]).map(v => (
                                 <button key={v} onClick={() => switchView(v)}
-                                    className={`rounded-full px-4 py-1 text-xs font-semibold tracking-wide transition-all duration-200 ${view === v ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-[#D4AF37]'}`}>
+                                    className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide transition-all duration-200 sm:px-4 sm:text-xs ${view === v ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-[#D4AF37]'}`}>
                                     {v === 'day' ? tr('admin_view_day', lang) : v === 'week' ? tr('admin_view_week', lang) : tr('admin_view_month', lang)}
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    <button onClick={() => navigate('next')} className="flex items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] px-4 py-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10">
+                    <button onClick={() => navigate('next')} className="flex shrink-0 items-center rounded-full border border-[#D4AF37]/20 bg-white/[0.03] p-2 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/10 sm:px-4 sm:py-2">
                         <ChevronRight className="h-4 w-4" />
                     </button>
                 </div>

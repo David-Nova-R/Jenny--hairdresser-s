@@ -30,7 +30,7 @@ export default function ServiceCard({ hairStyle, lang, onSelect }: Props) {
     >
       <button
         onClick={() => onSelect(hairStyle)}
-        className="group flex w-full flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-6 text-left transition-all duration-300 hover:cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-xl hover:shadow-[#D4AF37]/10 lg:p-8"
+        className="group flex w-full flex-col rounded-2xl border border-[#D4AF37]/20 bg-gradient-to-b from-[#0a0a0a] to-black p-6 text-left transition-all duration-300 hover:cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-[0_0_30px_4px_rgba(212,175,55,0.12)] lg:p-8"
       >
         <div className="mb-6">
           <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37] bg-black transition-all duration-300 group-hover:bg-[#D4AF37]">

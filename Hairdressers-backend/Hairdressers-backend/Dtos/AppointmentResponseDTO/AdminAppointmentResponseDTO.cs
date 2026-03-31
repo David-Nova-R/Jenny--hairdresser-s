@@ -11,5 +11,6 @@ namespace Hairdressers_backend.Dtos
         public string? UserName { get; set; }
         public string? UserEmail { get; set; }
         public string? HairStyleName { get; set; }
+        public string? StyleNotes { get; set; }
     }
 }

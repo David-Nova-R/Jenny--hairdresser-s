@@ -56,53 +56,9 @@ namespace Hairdressers_backend.Data
             };
         }
 
-        public static User[] SeedUsers()
-        {
-            // test@gmail.com / Passw0rd! — À retirer en production
-            return new User[]
-            {
-                new User
-                {
-                    Id = 1,
-                    SupabaseUserId = "280c0a73-c068-485b-a594-e2c1e0917a54",
-                    FirstName = "Test",
-                    LastName = "Tingtong",
-                    PhoneNumber = "514-000-0000",
-                    Email = "test@gmail.com",
-                    RoleId = 1
-                }
-            };
-        }
-
         public static Appointment[] SeedAppointments()
         {
-            return new Appointment[]
-            {
-                new Appointment
-                {
-                    Id = 1,
-                    UserId = 1,
-                    HairStyleId = 1,
-                    AppointmentDate = new DateTime(2025, 3, 10, 10, 0, 0, DateTimeKind.Unspecified),
-                    Status = AppointmentStatus.Confirmed
-                },
-                new Appointment
-                {
-                    Id = 2,
-                    UserId = 1,
-                    HairStyleId = 3,
-                    AppointmentDate = new DateTime(2025, 3, 11, 14, 0, 0, DateTimeKind.Unspecified),
-                    Status = AppointmentStatus.Pending
-                },
-                new Appointment
-                {
-                    Id = 3,
-                    UserId = 1,
-                    HairStyleId = 4,
-                    AppointmentDate = new DateTime(2025, 3, 12, 9, 0, 0, DateTimeKind.Unspecified),
-                    Status = AppointmentStatus.Pending
-                }
-            };
+            return Array.Empty<Appointment>();
         }
     }
 }

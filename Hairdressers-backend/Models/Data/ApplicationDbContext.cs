@@ -54,7 +54,6 @@ namespace Models.Data
             builder.Entity<HairStyle>().HasData(Seed.SeedServices());
             builder.Entity<HairStylePhoto>().HasData(Seed.SeedHairStylePhotos());
             builder.Entity<PortfolioPhoto>().HasData(Seed.SeedPortfolioPhotos());
-            builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<Appointment>().HasData(Seed.SeedAppointments());
 
         }
