@@ -26,8 +26,8 @@ builder.Services.AddOptions();
 builder.Services.AddHttpClient<ResendClient>();
 builder.Services.Configure<ResendClientOptions>(options =>
 {
-    options.ApiToken = builder.Configuration["Resend:ApiKey"]
-        ?? throw new InvalidOperationException("Resend:ApiKey non configuré.");
+    //options.ApiToken = builder.Configuration["Resend:ApiKey"]
+        //?? throw new InvalidOperationException("Resend:ApiKey non configuré.");
 });
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddEndpointsApiExplorer();
