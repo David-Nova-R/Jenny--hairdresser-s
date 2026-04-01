@@ -12,6 +12,7 @@ namespace Hairdressers_backend.Services
         private readonly AppDbContext _context;
         private readonly Client _supabase;
         private readonly IGoogleCalendarService _calendarService;
+        private readonly IEmailService _emailService;
 
         const int slotStepMinutes = 30;
 
@@ -30,11 +31,12 @@ namespace Hairdressers_backend.Services
             _                   => null
         };
 
-        public AppointmentService(AppDbContext context, Client supabase, IGoogleCalendarService calendarService)
+        public AppointmentService(AppDbContext context, Client supabase, IGoogleCalendarService calendarService, IEmailService emailService)
         {
             _context = context;
             _supabase = supabase;
             _calendarService = calendarService;
+            _emailService = emailService;
         }
 
         private static DateTime NormalizeLocalDateTime(DateTime value)
@@ -149,6 +151,8 @@ namespace Hairdressers_backend.Services
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
+            await _emailService.SendAppointmentPendingAsync(user.Email, user.FirstName, hairStyle.Name, localAppointmentDate);
+
             return appointment;
         }
 
@@ -177,11 +181,15 @@ namespace Hairdressers_backend.Services
             appointment.Status = AppointmentStatus.Confirmed;
 
             await _context.SaveChangesAsync();
+
+            await _emailService.SendAppointmentAcceptedAsync(appointment.User!.Email, appointment.User.FirstName, appointment.HairStyle!.Name, appointment.AppointmentDate);
         }
 
         public async Task CancelAppointmentAsync(int appointmentId)
         {
             var appointment = await _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.HairStyle)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId)
                 ?? throw new KeyNotFoundException("Rendez-vous introuvable.");
 
@@ -192,6 +200,9 @@ namespace Hairdressers_backend.Services
 
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
+
+            if (appointment.User != null && appointment.HairStyle != null)
+                await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
         }
 
         public async Task CompletePassedAppointmentsAsync()

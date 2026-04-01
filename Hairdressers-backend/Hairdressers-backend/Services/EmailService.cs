@@ -23,7 +23,7 @@ namespace Hairdressers_backend.Services
             var message = new EmailMessage
             {
                 From = _fromEmail,
-                Subject = "Votre demande de rendez-vous a été reçue ✂️"
+                Subject = "Votre demande de rendez-vous a été reçue"
             };
             message.To.Add(toEmail);
             message.HtmlBody = BuildPendingHtml(firstName, serviceName, appointmentDate);
@@ -37,7 +37,7 @@ namespace Hairdressers_backend.Services
             var message = new EmailMessage
             {
                 From = _fromEmail,
-                Subject = "Votre rendez-vous est confirmé ✅"
+                Subject = "Votre rendez-vous est confirmé"
             };
             message.To.Add(toEmail);
             message.HtmlBody = BuildAcceptedHtml(firstName, serviceName, appointmentDate);
@@ -67,7 +67,7 @@ namespace Hairdressers_backend.Services
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
               <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div style="background-color: #c0a080; padding: 30px; text-align: center;">
-                  <h1 style="color: white; margin: 0; font-size: 24px;">✂️ {_salonName}</h1>
+                  <h1 style="color: white; margin: 0; font-size: 24px;">{_salonName}</h1>
                 </div>
                 <div style="padding: 30px;">
                   <h2 style="color: #333;">Bonjour {firstName} !</h2>
@@ -85,6 +85,7 @@ namespace Hairdressers_backend.Services
                 </div>
                 <div style="background-color: #f0f0f0; padding: 16px; text-align: center;">
                   <p style="color: #999; font-size: 12px; margin: 0;">{_salonName} — Merci de votre confiance 💛</p>
+                  <p style="color: #999; font-size: 12px; margin: 4px 0 0;">Pour toute question, contactez-nous au 514 233-4466</p>
                 </div>
               </div>
             </body>
@@ -97,7 +98,7 @@ namespace Hairdressers_backend.Services
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
               <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div style="background-color: #6aaa64; padding: 30px; text-align: center;">
-                  <h1 style="color: white; margin: 0; font-size: 24px;">✅ Rendez-vous confirmé</h1>
+                  <h1 style="color: white; margin: 0; font-size: 24px;"> Rendez-vous confirmé</h1>
                 </div>
                 <div style="padding: 30px;">
                   <h2 style="color: #333;">Bonjour {firstName} !</h2>
@@ -115,6 +116,7 @@ namespace Hairdressers_backend.Services
                 </div>
                 <div style="background-color: #f0f0f0; padding: 16px; text-align: center;">
                   <p style="color: #999; font-size: 12px; margin: 0;">{_salonName} — Merci de votre confiance 💛</p>
+                  <p style="color: #999; font-size: 12px; margin: 4px 0 0;">Pour toute question, contactez-nous au 514 233-4466</p>
                 </div>
               </div>
             </body>
@@ -142,9 +144,15 @@ namespace Hairdressers_backend.Services
                   <p style="color: #555; font-size: 14px;">
                     N'hésitez pas à reprendre un rendez-vous à une date qui vous convient mieux.
                   </p>
+                  <div style="text-align: center; margin: 24px 0;">
+                    <a href="https://jennystyliste.com" style="background-color: #e05a5a; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: bold;">
+                      Prendre un nouveau rendez-vous
+                    </a>
+                  </div>
                 </div>
                 <div style="background-color: #f0f0f0; padding: 16px; text-align: center;">
                   <p style="color: #999; font-size: 12px; margin: 0;">{_salonName} — Merci de votre confiance 💛</p>
+                  <p style="color: #999; font-size: 12px; margin: 4px 0 0;">Pour toute question, contactez-nous au 514 233-4466</p>
                 </div>
               </div>
             </body>

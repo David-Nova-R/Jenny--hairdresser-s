@@ -13,6 +13,7 @@ namespace Hairdressers_backend.Tests.Services
     {
         private readonly AppDbContext _context;
         private readonly Mock<IGoogleCalendarService> _calendarMock;
+        private readonly Mock<IEmailService> _emailMock;
         private readonly AppointmentService _service;
 
         public AppointmentServiceTests()
@@ -26,9 +27,10 @@ namespace Hairdressers_backend.Tests.Services
             _context.Database.EnsureCreated(); // applique les seeds (HairStyles, Users, Appointments)
 
             _calendarMock = new Mock<IGoogleCalendarService>();
+            _emailMock = new Mock<IEmailService>();
 
             // Supabase.Client n'est pas utilisé dans les méthodes testées → null
-            _service = new AppointmentService(_context, null!, _calendarMock.Object);
+            _service = new AppointmentService(_context, null!, _calendarMock.Object, _emailMock.Object);
         }
 
         public void Dispose()

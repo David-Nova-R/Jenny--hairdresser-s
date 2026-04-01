@@ -57,7 +57,8 @@ namespace Hairdressers_backend.Controllers
                     SupabaseUserId = session.User.Id!,
                     FirstName = registerDTO.FirstName,
                     LastName = registerDTO.LastName,
-                    PhoneNumber = registerDTO.PhoneNumber
+                    PhoneNumber = registerDTO.PhoneNumber,
+                    Email = registerDTO.Email
                 };
 
                 _context.Users.Add(user);
