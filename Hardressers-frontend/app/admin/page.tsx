@@ -222,6 +222,9 @@ export default function AdminPage() {
                         <CalendarOff className="h-4 w-4" />
                         {tr('admin_tab_daysoff', lang)}
                     </button>
+                    <button onClick={() => setActiveTab('users')} className={tabClass('users')}>
+                        {tr('admin_tab_users', lang)}
+                    </button>
                     <button onClick={() => setActiveTab('photos')} className={tabClass('photos')}>
                         {tr('admin_tab_photos', lang)}
                     </button>
@@ -230,9 +233,6 @@ export default function AdminPage() {
                     </button>
                     <button onClick={() => setActiveTab('reviews')} className={tabClass('reviews')}>
                         {tr('admin_tab_reviews', lang)}
-                    </button>
-                    <button onClick={() => setActiveTab('users')} className={tabClass('users')}>
-                        {tr('admin_tab_users', lang)}
                     </button>
                 </div>
 

@@ -148,25 +148,22 @@ export async function FetchMyAppointments(): Promise<AppointmentResponseDTO[]> {
     }
 }
 export interface AppointmentFilters {
-    query:    string;
-    status:   number | null;   // null = all
-    period:   'all' | 'today' | 'week' | 'month' | 'custom';
-    dateFrom: string;          // YYYY-MM-DD, empty = unset
-    dateTo:   string;          // YYYY-MM-DD, empty = unset
+    query:          string;
+    status:         number | null;                              // null = all
+    dateFilterMode: 'exact' | 'week' | 'month' | 'range' | null; // null = no date filter
+    filterDate:     string;   // YYYY-MM-DD — reference date for exact/week/month presets
+    dateFrom:       string;   // YYYY-MM-DD — start of custom range
+    dateTo:         string;   // YYYY-MM-DD — end of custom range
 }
 
 export const DEFAULT_FILTERS: AppointmentFilters = {
-    query:    '',
-    status:   null,
-    period:   'all',
-    dateFrom: '',
-    dateTo:   '',
+    query:          '',
+    status:         null,
+    dateFilterMode: null,
+    filterDate:     '',
+    dateFrom:       '',
+    dateTo:         '',
 };
-
-/** Convert a YYYY-MM-DD string to an ISO datetime (start of day). */
-function toIsoStart(d: string) { return d ? `${d}T00:00:00` : undefined; }
-/** Convert a YYYY-MM-DD string to an ISO datetime (end of day). */
-function toIsoEnd(d: string)   { return d ? `${d}T23:59:59` : undefined; }
 
 export async function FetchAllAppointmentsAdmin(
     pageNumber: number,
@@ -176,10 +173,18 @@ export async function FetchAllAppointmentsAdmin(
 
     const body: Record<string, unknown> = { pageNumber };
 
-    if (filters.query.trim())          body.searchQuery = filters.query.trim();
-    if (filters.status !== null)       body.status      = filters.status;
-    if (filters.dateFrom)              body.dateFrom    = toIsoStart(filters.dateFrom);
-    if (filters.dateTo)                body.dateTo      = toIsoEnd(filters.dateTo);
+    if (filters.query.trim())    body.searchQuery    = filters.query.trim();
+    if (filters.status !== null) body.status         = filters.status;
+
+    if (filters.dateFilterMode) {
+        body.dateFilterMode = filters.dateFilterMode;
+        if (filters.dateFilterMode === 'range') {
+            if (filters.dateFrom) body.dateFrom = filters.dateFrom;
+            if (filters.dateTo)   body.dateTo   = filters.dateTo;
+        } else {
+            if (filters.filterDate) body.filterDate = filters.filterDate;
+        }
+    }
 
     const response = await axios.post<PagedAppointmentsResponse>(
         `${API_BASE_URL}/api/Appointment/GetAllAppointments`,

@@ -11,21 +11,6 @@ function toYmd(d: Date) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function getWeekBounds() {
-    const today = new Date();
-    const day   = (today.getDay() + 6) % 7; // Mon = 0
-    const mon   = new Date(today); mon.setDate(today.getDate() - day);
-    const sun   = new Date(mon);   sun.setDate(mon.getDate() + 6);
-    return { from: toYmd(mon), to: toYmd(sun) };
-}
-
-function getMonthBounds() {
-    const today = new Date();
-    const first = new Date(today.getFullYear(), today.getMonth(), 1);
-    const last  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return { from: toYmd(first), to: toYmd(last) };
-}
-
 // ── Types & constants ─────────────────────────────────────────────────────────
 export type { AppointmentFilters };
 export { DEFAULT_FILTERS };
@@ -65,20 +50,23 @@ export default function AppointmentSearchBar({ filters, onChange, resultCount, l
         }, 450);
     };
 
-    const handlePeriod = (period: AppointmentFilters['period']) => {
-        let dateFrom = '';
-        let dateTo   = '';
-        if (period === 'today') {
-            dateFrom = dateTo = toYmd(new Date());
+    // Map UI period pill keys to dateFilterMode values
+    type PeriodKey = 'all' | 'today' | 'week' | 'month' | 'range';
+
+    const handlePeriod = (period: PeriodKey) => {
+        const today = toYmd(new Date());
+        if (period === 'all') {
+            onChange({ ...filters, dateFilterMode: null, filterDate: '', dateFrom: '', dateTo: '' });
+        } else if (period === 'today') {
+            onChange({ ...filters, dateFilterMode: 'exact', filterDate: today, dateFrom: '', dateTo: '' });
         } else if (period === 'week') {
-            const b = getWeekBounds();
-            dateFrom = b.from; dateTo = b.to;
+            onChange({ ...filters, dateFilterMode: 'week',  filterDate: today, dateFrom: '', dateTo: '' });
         } else if (period === 'month') {
-            const b = getMonthBounds();
-            dateFrom = b.from; dateTo = b.to;
+            onChange({ ...filters, dateFilterMode: 'month', filterDate: today, dateFrom: '', dateTo: '' });
+        } else {
+            // range — keep existing dateFrom/dateTo, just switch mode
+            onChange({ ...filters, dateFilterMode: 'range', filterDate: '' });
         }
-        // 'custom' keeps whatever dates are already set
-        onChange({ ...filters, period, dateFrom, dateTo });
     };
 
     const handleStatus = (val: number | null) => {
@@ -86,7 +74,7 @@ export default function AppointmentSearchBar({ filters, onChange, resultCount, l
     };
 
     const handleCustomDate = (key: 'dateFrom' | 'dateTo', val: string) => {
-        onChange({ ...filters, [key]: val, period: 'custom' });
+        onChange({ ...filters, [key]: val, dateFilterMode: 'range', filterDate: '' });
     };
 
     const clearAll = () => {
@@ -94,19 +82,28 @@ export default function AppointmentSearchBar({ filters, onChange, resultCount, l
         onChange({ ...DEFAULT_FILTERS });
     };
 
+    // Derive which period pill should appear active
+    const activePeriod: PeriodKey = (() => {
+        if (!filters.dateFilterMode) return 'all';
+        if (filters.dateFilterMode === 'exact') return 'today';
+        if (filters.dateFilterMode === 'week')  return 'week';
+        if (filters.dateFilterMode === 'month') return 'month';
+        return 'range';
+    })();
+
     // Count active filters for badge
     const activeCount = [
         filters.query.trim() !== '',
         filters.status !== null,
-        filters.period !== 'all',
+        filters.dateFilterMode !== null,
     ].filter(Boolean).length;
 
-    const PERIODS: { key: AppointmentFilters['period']; label: string }[] = [
-        { key: 'all',    label: tr('search_period_all',    lang) },
-        { key: 'today',  label: tr('search_period_today',  lang) },
-        { key: 'week',   label: tr('search_period_week',   lang) },
-        { key: 'month',  label: tr('search_period_month',  lang) },
-        { key: 'custom', label: tr('search_period_custom', lang) },
+    const PERIODS: { key: PeriodKey; label: string }[] = [
+        { key: 'all',   label: tr('search_period_all',    lang) },
+        { key: 'today', label: tr('search_period_today',  lang) },
+        { key: 'week',  label: tr('search_period_week',   lang) },
+        { key: 'month', label: tr('search_period_month',  lang) },
+        { key: 'range', label: tr('search_period_custom', lang) },
     ];
 
     const STATUS_OPTIONS: { value: number | null; label: string }[] = [
@@ -197,7 +194,7 @@ export default function AppointmentSearchBar({ filters, onChange, resultCount, l
                                     key={p.key}
                                     onClick={() => handlePeriod(p.key)}
                                     className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                                        filters.period === p.key
+                                        activePeriod === p.key
                                             ? 'border-[#D4AF37] bg-[#D4AF37] text-black'
                                             : 'border-[#D4AF37]/20 text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]'
                                     }`}
@@ -209,7 +206,7 @@ export default function AppointmentSearchBar({ filters, onChange, resultCount, l
                     </div>
 
                     {/* Custom date inputs */}
-                    {filters.period === 'custom' && (
+                    {activePeriod === 'range' && (
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                             <div className="flex flex-1 items-center gap-2">
                                 <label className="w-10 shrink-0 text-xs text-gray-500">{tr('search_date_from', lang)}</label>

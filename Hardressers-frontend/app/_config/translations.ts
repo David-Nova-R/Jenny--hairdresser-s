@@ -52,8 +52,8 @@ export const t: Record<string, Record<Lang, string>> = {
   contact_location_2: { es: 'Solo con cita previa', fr: 'Sur rendez-vous uniquement', en: 'By Appointment Only' },
   contact_contact:    { es: 'Contacto',         fr: 'Contact',          en: 'Contact' },
   contact_hours:      { es: 'Horarios',         fr: 'Horaires',         en: 'Hours' },
-  contact_hours_1:    { es: 'Mar - Sáb: 9AM - 6PM', fr: 'Mar - Sam: 9h - 18h', en: 'Tue - Sat: 9AM - 6PM' },
-  contact_hours_2:    { es: 'Solo con cita previa', fr: 'Sur rendez-vous uniquement', en: 'By Appointment Only' },
+  contact_hours_1:    { es: 'Lun - Jue: 12PM - 7PM', fr: 'Lun - Jeu: 12h - 19h',   en: 'Mon - Thu: 12PM - 7PM' },
+  contact_hours_2:    { es: 'Vie: 9AM - 7PM  •  Sáb: 8AM - 4PM', fr: 'Ven: 9h - 19h  •  Sam: 8h - 16h', en: 'Fri: 9AM - 7PM  •  Sat: 8AM - 4PM' },
   contact_social:     { es: 'Síguenos',             fr: 'Suivez-nous',              en: 'Follow Us' },
 
   // ── Footer ───────────────────────────────────────────────
@@ -232,6 +232,13 @@ export const t: Record<string, Record<Lang, string>> = {
   users_hide_appts:      { es: 'Ocultar',                    fr: 'Masquer',                 en: 'Hide' },
   users_refresh_user:    { es: 'Actualizar',                 fr: 'Actualiser',              en: 'Refresh' },
   users_total:           { es: '{n} usuarios',               fr: '{n} utilisateurs',        en: '{n} users' },
+  users_date_label:      { es: 'Filtrar por fecha de cita',  fr: 'Filtrer par date de RDV', en: 'Filter by appt date' },
+  users_date_exact:      { es: 'Día exacto',                 fr: 'Jour exact',              en: 'Exact day' },
+  users_date_week:       { es: 'Semana',                     fr: 'Semaine',                 en: 'Week' },
+  users_date_month:      { es: 'Mes',                        fr: 'Mois',                    en: 'Month' },
+  users_sort_label:      { es: 'Ordenar por citas',          fr: 'Trier par rendez-vous',   en: 'Sort by appts' },
+  users_sort_asc:        { es: 'Menos primero',              fr: 'Moins d\'abord',          en: 'Fewest first' },
+  users_sort_desc:       { es: 'Más primero',                fr: 'Plus d\'abord',           en: 'Most first' },
 
   // ── Days off ─────────────────────────────────────────────
   admin_tab_photos:        { es: 'Fotos',                  fr: 'Photos',                 en: 'Photos' },

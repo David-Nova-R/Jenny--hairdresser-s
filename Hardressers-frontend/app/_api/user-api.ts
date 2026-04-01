@@ -13,13 +13,19 @@ async function getAuthHeaders() {
 
 // ── Filters ───────────────────────────────────────────────────────────────────
 export interface UserFilters {
-    query:  string;
-    roleId: number | null;   // null = all  |  1 = Admin  |  2 = Styliste  |  3 = Client
+    query:              string;
+    roleId:             number | null;   // null = all  |  1 = Admin  |  2 = Styliste  |  3 = Client
+    filterDate:         string | null;   // ISO date string  e.g. "2025-04-01"
+    dateFilterMode:     'exact' | 'week' | 'month' | null;
+    sortByAppointments: 'asc' | 'desc' | null;
 }
 
 export const DEFAULT_USER_FILTERS: UserFilters = {
-    query:  '',
-    roleId: null,
+    query:              '',
+    roleId:             null,
+    filterDate:         null,
+    dateFilterMode:     null,
+    sortByAppointments: null,
 };
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -30,8 +36,13 @@ export async function FetchUsersAdmin(
     const headers = await getAuthHeaders();
 
     const body: Record<string, unknown> = { pageNumber };
-    if (filters.query.trim()) body.searchQuery = filters.query.trim();
-    if (filters.roleId !== null) body.roleId = filters.roleId;
+    if (filters.query.trim())            body.searchQuery        = filters.query.trim();
+    if (filters.roleId !== null)         body.roleId             = filters.roleId;
+    if (filters.filterDate && filters.dateFilterMode) {
+                                         body.filterDate         = filters.filterDate;
+                                         body.dateFilterMode     = filters.dateFilterMode;
+    }
+    if (filters.sortByAppointments)      body.sortByAppointments = filters.sortByAppointments;
 
     const response = await axios.post<PagedUsersResponse>(
         `${API_BASE_URL}/api/UserManagement/GetUsers`,

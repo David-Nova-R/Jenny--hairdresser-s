@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     Loader2, RefreshCw, Search, X, ChevronDown, ChevronLeft, ChevronRight,
-    User2, Mail, CalendarDays, NotebookPen, RotateCcw,
+    User2, Mail, CalendarDays, NotebookPen, RotateCcw, ArrowUpDown,
 } from 'lucide-react';
 import { AdminUserDTO, AdminUserAppointmentDTO, PagedUsersResponse } from '@/app/_models/models';
 import { FetchUsersAdmin, FetchUserAdmin, UserFilters, DEFAULT_USER_FILTERS } from '@/app/_api/user-api';
@@ -244,6 +244,28 @@ export default function UserManagement() {
         setFilters(f => ({ ...f, roleId }));
     };
 
+    const handleDateMode = (mode: 'exact' | 'week' | 'month' | null) => {
+        setFilters(f => ({
+            ...f,
+            dateFilterMode: f.dateFilterMode === mode ? null : mode,
+            // clear date when mode is cleared
+            filterDate: f.dateFilterMode === mode ? null : f.filterDate,
+        }));
+    };
+
+    const handleDateChange = (val: string) => {
+        setFilters(f => ({
+            ...f,
+            filterDate: val || null,
+            // default to exact if user picks a date without a mode
+            dateFilterMode: val ? (f.dateFilterMode ?? 'exact') : null,
+        }));
+    };
+
+    const handleSort = (dir: 'asc' | 'desc' | null) => {
+        setFilters(f => ({ ...f, sortByAppointments: f.sortByAppointments === dir ? null : dir }));
+    };
+
     const clearAll = () => {
         setInputValue('');
         setFilters(DEFAULT_USER_FILTERS);
@@ -256,7 +278,12 @@ export default function UserManagement() {
         { id: 3,    label: tr('users_role_client',  lang) },
     ];
 
-    const activeFilters = [filters.query.trim() !== '', filters.roleId !== null].filter(Boolean).length;
+    const activeFilters = [
+        filters.query.trim() !== '',
+        filters.roleId !== null,
+        filters.filterDate !== null,
+        filters.sortByAppointments !== null,
+    ].filter(Boolean).length;
 
     const renderPageNumbers = () => {
         const pages: number[] = [];
@@ -347,6 +374,49 @@ export default function UserManagement() {
                             {tr('users_total', lang).replace('{n}', String(totalCount))}
                         </span>
                     )}
+                </div>
+
+                {/* Date filter row */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-[#D4AF37]/10 px-3 py-2.5 pb-3 sm:px-4">
+                    <CalendarDays className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+                    <input
+                        type="date"
+                        value={filters.filterDate ?? ''}
+                        onChange={e => handleDateChange(e.target.value)}
+                        className="rounded-xl border border-[#D4AF37]/15 bg-black px-3 py-1.5 text-xs text-white outline-none transition focus:border-[#D4AF37]/50 [color-scheme:dark]"
+                    />
+                    {(['exact', 'week', 'month'] as const).map(mode => (
+                        <button
+                            key={mode}
+                            onClick={() => handleDateMode(mode)}
+                            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                                filters.dateFilterMode === mode
+                                    ? 'border-[#D4AF37] bg-[#D4AF37] text-black'
+                                    : 'border-[#D4AF37]/20 text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]'
+                            }`}
+                        >
+                            {tr(`users_date_${mode}` as any, lang)}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Sort row */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-[#D4AF37]/10 px-3 py-2.5 pb-3 sm:px-4">
+                    <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+                    <span className="text-xs text-gray-600">{tr('users_sort_label', lang)}</span>
+                    {(['asc', 'desc'] as const).map(dir => (
+                        <button
+                            key={dir}
+                            onClick={() => handleSort(dir)}
+                            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                                filters.sortByAppointments === dir
+                                    ? 'border-[#D4AF37] bg-[#D4AF37] text-black'
+                                    : 'border-[#D4AF37]/20 text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]'
+                            }`}
+                        >
+                            {tr(`users_sort_${dir}` as any, lang)}
+                        </button>
+                    ))}
                 </div>
             </div>
 
