@@ -315,9 +315,9 @@ export const t: Record<string, Record<Lang, string>> = {
     en: 'Share your experience',
   },
   review_subtitle: {
-    es: 'Deja una nota de 5 estrellas con posibilidad de medias estrellas, y un mensaje.',
-    fr: 'Laisse une note sur 5 étoiles avec demi-étoiles possibles, ainsi qu’un message.',
-    en: 'Leave a 5-star rating with half-stars and a message.',
+    es: 'Deja una nota y un mensaje.',
+    fr: 'Laisse une note ainsi qu’un message.',
+    en: 'Leave a rating and a message.',
   },
   review_btn: {
     es: 'Dejar una opinión',

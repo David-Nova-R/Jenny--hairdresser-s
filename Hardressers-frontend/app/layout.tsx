@@ -14,6 +14,13 @@ const dancingScript = Dancing_Script({
   variable: '--font-dancing',
 });
 
+export const metadata = {
+  title: "Jenny Styliste",
+  icons: {
+    icon: "/favicon.jpg",
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -22,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={dancingScript.variable}>
       <body className="bg-black text-white">
+        <link rel="icon" href="/favicon.jpg" />
         <ThemeProvider>
           <AuthProvider>
             <ModalProvider>
