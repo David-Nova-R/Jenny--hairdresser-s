@@ -4,7 +4,7 @@ namespace Hairdressers_backend.Interfaces
 {
     public interface IUserService
     {
-        Task<PagedResultDto<AdminUserDTO>> GetUsersAsync(int pageNumber, int pageSize, string? searchQuery, int? roleId);
+        Task<PagedResultDto<AdminUserDTO>> GetUsersAsync(int pageNumber, int pageSize, string? searchQuery, int? roleId, DateTime? filterDate, string? dateFilterMode, string? sortByAppointments);
         Task<AdminUserDTO?> GetUserByIdAsync(int userId);
     }
 }

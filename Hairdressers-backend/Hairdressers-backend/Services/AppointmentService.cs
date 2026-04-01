@@ -409,7 +409,7 @@ namespace Hairdressers_backend.Services
             return true;
         }
 
-        public async Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize, string? searchQuery, int? status, DateTime? dateFrom, DateTime? dateTo)
+        public async Task<PagedResultDto<AdminAppointmentResponseDTO>> GetAllAppointmentsAsync(int pageNumber, int pageSize, string? searchQuery, int? status, string? dateFilterMode, DateTime? filterDate, DateTime? dateFrom, DateTime? dateTo)
         {
             var query = _context.Appointments
                 .Include(a => a.User)
@@ -429,11 +429,34 @@ namespace Hairdressers_backend.Services
             if (status.HasValue)
                 query = query.Where(a => (int)a.Status == status.Value);
 
-            if (dateFrom.HasValue)
-                query = query.Where(a => a.AppointmentDate >= dateFrom.Value);
-
-            if (dateTo.HasValue)
-                query = query.Where(a => a.AppointmentDate < dateTo.Value.AddDays(1));
+            if (!string.IsNullOrWhiteSpace(dateFilterMode))
+            {
+                switch (dateFilterMode.ToLower())
+                {
+                    case "exact" when filterDate.HasValue:
+                        var exactDate = filterDate.Value.Date;
+                        query = query.Where(a => a.AppointmentDate.Date == exactDate);
+                        break;
+                    case "week" when filterDate.HasValue:
+                        var refDay = filterDate.Value.Date;
+                        int diff = (int)refDay.DayOfWeek == 0 ? -6 : 1 - (int)refDay.DayOfWeek;
+                        var weekStart = refDay.AddDays(diff);
+                        var weekEnd = weekStart.AddDays(7);
+                        query = query.Where(a => a.AppointmentDate.Date >= weekStart && a.AppointmentDate.Date < weekEnd);
+                        break;
+                    case "month" when filterDate.HasValue:
+                        var monthStart = new DateTime(filterDate.Value.Year, filterDate.Value.Month, 1);
+                        var monthEnd = monthStart.AddMonths(1);
+                        query = query.Where(a => a.AppointmentDate.Date >= monthStart && a.AppointmentDate.Date < monthEnd);
+                        break;
+                    case "range":
+                        if (dateFrom.HasValue)
+                            query = query.Where(a => a.AppointmentDate >= dateFrom.Value);
+                        if (dateTo.HasValue)
+                            query = query.Where(a => a.AppointmentDate < dateTo.Value.AddDays(1));
+                        break;
+                }
+            }
 
             query = query.OrderByDescending(a => a.AppointmentDate);
 

@@ -29,7 +29,10 @@ namespace Hairdressers_backend.Controllers
                 dto.PageNumber,
                 pageSize,
                 dto.SearchQuery,
-                dto.RoleId
+                dto.RoleId,
+                dto.FilterDate,
+                dto.DateFilterMode,
+                dto.SortByAppointments
             );
 
             return Ok(result);

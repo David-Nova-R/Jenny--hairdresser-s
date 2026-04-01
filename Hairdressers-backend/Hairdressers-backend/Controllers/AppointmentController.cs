@@ -218,6 +218,8 @@ namespace Hairdressers_backend.Controllers
                 pageSize,
                 dto.SearchQuery,
                 dto.Status,
+                dto.DateFilterMode,
+                dto.FilterDate,
                 dto.DateFrom,
                 dto.DateTo
             );

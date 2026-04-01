@@ -28,9 +28,61 @@ namespace Hairdressers_backend.Data
         {
             return new HairStylePhoto[]
             {
-                new HairStylePhoto { Id = 1, HairStyleId = 11, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
-                new HairStylePhoto { Id = 2, HairStyleId = 15, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" },
-                new HairStylePhoto { Id = 3, HairStyleId = 15, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg" },
+                //Keratina
+                new HairStylePhoto 
+                {
+                    Id = 1,
+                    HairStyleId = 15,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg"
+                },
+                //Peinados
+                new HairStylePhoto 
+                {
+                    Id = 2,
+                    HairStyleId = 14,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" 
+                },
+                new HairStylePhoto 
+                {
+                    Id = 3,
+                    HairStyleId = 14,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg"
+                },
+                //Baby Lights
+                new HairStylePhoto
+                {
+                    Id = 4,
+                    HairStyleId = 6,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Baby%20Lights/10f9cd65-5d3c-429b-af3a-3d05514e6b77.jpeg"
+                },
+                //Balayage
+                new HairStylePhoto
+                {
+                    Id = 5,
+                    HairStyleId = 5,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Balayage/08d4d444-33a0-4798-a05c-8867e24f69ab.jpeg"
+                },
+                //Ombré
+                new HairStylePhoto
+                {
+                    Id = 6,
+                    HairStyleId = 7,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Ombre/fb8bc548-c9ff-440b-abde-23936b379451.jpeg"
+                },
+                //Cortes dama
+                new HairStylePhoto
+                {
+                    Id = 7,
+                    HairStyleId = 9,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Cortes%20dama/b6a72487-72c1-424d-8790-aec3cc9ac5e5.jpeg"
+                },
+                //Tecnicas mechas y efectos de luz
+                new HairStylePhoto
+                {
+                    Id = 8,
+                    HairStyleId = 4,
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Tecnicas%20de%20mechas%20y%20efectos%20de%20luz/0cd2564c-0c05-4ff3-be4f-ee996989c7a5.jpeg"
+                },
             };
         }
 
