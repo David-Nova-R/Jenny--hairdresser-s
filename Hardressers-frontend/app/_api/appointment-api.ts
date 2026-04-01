@@ -2,7 +2,7 @@ import axios from 'axios';
 import { AvailableDay, AppointmentResponseDTO, AdminCalendarAppointmentDTO, HairStyleWithPhotos, AdminReviewDTO, ReviewDisplayDTO, PortfolioPhoto, DayOff, ReviewDTO } from '@/app/_models/models';
 import { supabase } from '@/utils/supabase/client';
 
-const API_BASE_URL = 'https://localhost:7226';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7226';
 
 // Helper to get Supabase token for authenticated requests
 async function getAuthHeaders() {
