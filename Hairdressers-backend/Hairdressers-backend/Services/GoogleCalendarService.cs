@@ -14,16 +14,16 @@ namespace Hairdressers_backend.Services
 
         public GoogleCalendarService(IConfiguration configuration)
         {
-            var credentialsPath = configuration["Google:ServiceAccountPath"]
-                ?? throw new InvalidOperationException("Google credentials path not found.");
-
             _calendarId = configuration["Google:CalendarId"]
                 ?? throw new InvalidOperationException("Google Calendar ID not found.");
 
             _salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
 
+            var credentialsJson = configuration["Google:ServiceAccountJson"]
+                ?? throw new InvalidOperationException("Google:ServiceAccountJson non configuré.");
+
             GoogleCredential credential = GoogleCredential
-                .FromFile(credentialsPath)
+                .FromJson(credentialsJson)
                 .CreateScoped(CalendarService.Scope.Calendar);
 
             _calendarService = new CalendarService(new BaseClientService.Initializer()

@@ -405,7 +405,10 @@ namespace Hairdressers_backend.Services
 
         public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, int status)
         {
-            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            var appointment = await _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.HairStyle)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
                 return false;
@@ -416,6 +419,9 @@ namespace Hairdressers_backend.Services
             appointment.Status = (AppointmentStatus)status;
 
             await _context.SaveChangesAsync();
+
+            if ((AppointmentStatus)status == AppointmentStatus.Cancelled && appointment.User != null && appointment.HairStyle != null)
+                await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
 
             return true;
         }
