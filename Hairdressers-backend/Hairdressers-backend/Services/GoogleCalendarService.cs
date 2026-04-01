@@ -19,12 +19,16 @@ namespace Hairdressers_backend.Services
 
             _salonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
 
-            var credentialsJson = configuration["Google:ServiceAccountJson"]
-                ?? throw new InvalidOperationException("Google:ServiceAccountJson non configuré.");
+            GoogleCredential credential;
+            var credentialsJson = configuration["Google:ServiceAccountJson"];
+            var credentialsPath = configuration["Google:ServiceAccountPath"];
 
-            GoogleCredential credential = GoogleCredential
-                .FromJson(credentialsJson)
-                .CreateScoped(CalendarService.Scope.Calendar);
+            if (credentialsJson != null)
+                credential = GoogleCredential.FromJson(credentialsJson).CreateScoped(CalendarService.Scope.Calendar);
+            else if (credentialsPath != null)
+                credential = GoogleCredential.FromFile(credentialsPath).CreateScoped(CalendarService.Scope.Calendar);
+            else
+                throw new InvalidOperationException("Google credentials non configurés (Google:ServiceAccountJson ou Google:ServiceAccountPath requis).");
 
             _calendarService = new CalendarService(new BaseClientService.Initializer()
             {

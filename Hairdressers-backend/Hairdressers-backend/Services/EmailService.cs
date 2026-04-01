@@ -110,6 +110,9 @@ namespace Hairdressers_backend.Services
                     <p style="margin: 8px 0 0; color: #333;"><strong>Date :</strong> {date:dddd d MMMM yyyy}</p>
                     <p style="margin: 8px 0 0; color: #333;"><strong>Heure :</strong> {date:HH:mm}</p>
                   </div>
+                  <p style="color: #555; font-size: 16px;">
+                    Il ne reste qu'une dernière étape : appelez-nous au <strong>514 233-4466</strong> pour obtenir notre adresse !
+                  </p>
                   <p style="color: #555; font-size: 14px;">
                     Si vous avez besoin d'annuler ou de modifier votre rendez-vous, contactez-nous le plus tôt possible.
                   </p>

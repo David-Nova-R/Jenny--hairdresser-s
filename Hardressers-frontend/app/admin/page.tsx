@@ -10,6 +10,7 @@ import { getHairStyleDisplay } from '@/app/_config/hairstyle-descriptions';
 import {
     FetchAllAppointmentsAdmin,
     FetchHairStyles,
+    AcceptAppointmentAdmin,
     UpdateAppointmentStatusAdmin,
     UpdateStyleNotes,
     AppointmentFilters,
@@ -132,7 +133,11 @@ export default function AdminPage() {
     const handleStatusChange = async (id: number, status: number) => {
         try {
             setSavingId(id);
-            await UpdateAppointmentStatusAdmin(id, status);
+            if (status === 1) {
+                await AcceptAppointmentAdmin(id);
+            } else {
+                await UpdateAppointmentStatusAdmin(id, status);
+            }
             setAppointments(prev => prev.map((a: any) => a.id === id ? { ...a, status } : a));
         } catch (e) { console.error(e); }
         finally { setSavingId(null); }
