@@ -272,7 +272,7 @@ export default function SiteHeader() {
                 scrollToSection('HairStyles', pathname, router);
                 closeMobileMenu();
               }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
+              className="text-center text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
             >
               {tr('nav_services', lang)}
             </button>
@@ -282,7 +282,7 @@ export default function SiteHeader() {
                 scrollToSection('gallery', pathname, router);
                 closeMobileMenu();
               }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
+              className="text-center text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
             >
               {tr('nav_gallery', lang)}
             </button>
@@ -292,7 +292,7 @@ export default function SiteHeader() {
                 scrollToSection('about', pathname, router);
                 closeMobileMenu();
               }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
+              className="text-center text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
             >
               {tr('nav_about', lang)}
             </button>
@@ -302,7 +302,7 @@ export default function SiteHeader() {
                 scrollToSection('contact', pathname, router);
                 closeMobileMenu();
               }}
-              className="text-left text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
+              className="text-center text-gray-300 transition-colors hover:text-[#D4AF37] hover:cursor-pointer"
             >
               {tr('nav_contact', lang)}
             </button>

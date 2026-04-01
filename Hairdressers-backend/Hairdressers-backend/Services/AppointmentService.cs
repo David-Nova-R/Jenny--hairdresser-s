@@ -458,7 +458,7 @@ namespace Hairdressers_backend.Services
                 }
             }
 
-            query = query.OrderByDescending(a => a.AppointmentDate);
+            query = query.OrderBy(a => a.Status).ThenByDescending(a => a.AppointmentDate);
 
             var totalCount = await query.CountAsync();
 

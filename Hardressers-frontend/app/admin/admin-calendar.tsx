@@ -190,7 +190,7 @@ export default function AdminCalendar() {
 
     const switchView = (v: CalendarView) => {
         if (v === 'week')  setCurrentDate(startOfWeek(currentDate, { weekStartsOn: 1 }));
-        if (v === 'month') setCurrentDate(startOfMonth(currentDate));
+        if (v === 'month') setCurrentDate(startOfMonth(addDays(currentDate, 3)));
         setView(v);
     };
 

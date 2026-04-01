@@ -280,20 +280,50 @@ namespace Models.Migrations
                         new
                         {
                             Id = 1,
-                            HairStyleId = 11,
+                            HairStyleId = 15,
                             PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg"
                         },
                         new
                         {
                             Id = 2,
-                            HairStyleId = 15,
-                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg"
+                            HairStyleId = 14,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg"
                         },
                         new
                         {
                             Id = 3,
-                            HairStyleId = 15,
-                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg"
+                            HairStyleId = 14,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            HairStyleId = 6,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Baby%20Lights/10f9cd65-5d3c-429b-af3a-3d05514e6b77.jpeg"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            HairStyleId = 5,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Balayage/08d4d444-33a0-4798-a05c-8867e24f69ab.jpeg"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            HairStyleId = 7,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Ombre/fb8bc548-c9ff-440b-abde-23936b379451.jpeg"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            HairStyleId = 9,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Cortes%20dama/b6a72487-72c1-424d-8790-aec3cc9ac5e5.jpeg"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            HairStyleId = 4,
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Tecnicas%20de%20mechas%20y%20efectos%20de%20luz/0cd2564c-0c05-4ff3-be4f-ee996989c7a5.jpeg"
                         });
                 });
 
@@ -342,7 +372,7 @@ namespace Models.Migrations
                             CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsVisible = true,
                             Order = 2,
-                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg",
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg",
                             Title = "Peinados"
                         },
                         new
@@ -351,7 +381,7 @@ namespace Models.Migrations
                             CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsVisible = true,
                             Order = 3,
-                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg",
+                            PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg",
                             Title = "Peinados"
                         });
                 });

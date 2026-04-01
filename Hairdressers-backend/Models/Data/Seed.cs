@@ -19,8 +19,8 @@ namespace Hairdressers_backend.Data
             return new PortfolioPhoto[]
             {
                 new PortfolioPhoto { Id = 1, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg", Title = "Keratina", Order = 1, IsVisible = true, CreatedAt = new DateTime(2025, 3, 12, 0, 0, 0, DateTimeKind.Utc) },
-                new PortfolioPhoto { Id = 2, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg", Title = "Peinados", Order = 2, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
-                new PortfolioPhoto { Id = 3, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg", Title = "Peinados", Order = 3, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
+                new PortfolioPhoto { Id = 2, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg", Title = "Peinados", Order = 2, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
+                new PortfolioPhoto { Id = 3, PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg", Title = "Peinados", Order = 3, IsVisible = true, CreatedAt = new DateTime(2025, 5, 31, 0, 0, 0, DateTimeKind.Utc) },
             };
         }
 
@@ -40,13 +40,13 @@ namespace Hairdressers_backend.Data
                 {
                     Id = 2,
                     HairStyleId = 14,
-                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" 
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg"
                 },
                 new HairStylePhoto 
                 {
                     Id = 3,
                     HairStyleId = 14,
-                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg"
+                    PhotoUrl = "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg"
                 },
                 //Baby Lights
                 new HairStylePhoto

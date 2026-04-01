@@ -204,8 +204,8 @@ namespace Models.Migrations
                 values: new object[,]
                 {
                     { 1, new DateTime(2025, 3, 12, 0, 0, 0, 0, DateTimeKind.Utc), true, 1, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg", "Keratina" },
-                    { 2, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 2, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg", "Peinados" },
-                    { 3, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 3, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg", "Peinados" }
+                    { 2, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 2, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg", "Peinados" },
+                    { 3, new DateTime(2025, 5, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 3, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg", "Peinados" }
                 });
 
             migrationBuilder.InsertData(
@@ -223,9 +223,14 @@ namespace Models.Migrations
                 columns: new[] { "Id", "HairStyleId", "PhotoUrl" },
                 values: new object[,]
                 {
-                    { 1, 11, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
-                    { 2, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161043.jpg" },
-                    { 3, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/20250531_161047.jpg" }
+                    { 1, 15, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Keratina/20250312_183411.jpg" },
+                    { 2, 14, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/133fa5eb-8fb1-412b-9abe-22df867b6b35.jpg" },
+                    { 3, 14, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Peinados/59e6263a-8aee-41b7-a7ce-2f48b19bd6e8.jpg" },
+                    { 4, 6, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Baby%20Lights/10f9cd65-5d3c-429b-af3a-3d05514e6b77.jpeg" },
+                    { 5, 5, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Balayage/08d4d444-33a0-4798-a05c-8867e24f69ab.jpeg" },
+                    { 6, 7, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Ombre/fb8bc548-c9ff-440b-abde-23936b379451.jpeg" },
+                    { 7, 9, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Cortes%20dama/b6a72487-72c1-424d-8790-aec3cc9ac5e5.jpeg" },
+                    { 8, 4, "https://rzkdwiobufxosrkksooc.supabase.co/storage/v1/object/public/hairstyle-photos/Tecnicas%20de%20mechas%20y%20efectos%20de%20luz/0cd2564c-0c05-4ff3-be4f-ee996989c7a5.jpeg" }
                 });
 
             migrationBuilder.CreateIndex(
