@@ -29,6 +29,7 @@ import { tr } from './_config/translations';
 import ReviewsSection from './_components/sections/review-section';
 import GallerySection from './_components/sections/gallery-section';
 import ServicesSection from './_components/sections/service-section';
+import ReviewModal from './_components/review-modal';
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
@@ -45,12 +46,13 @@ export default function HomePage() {
   const [pendingBooking, setPendingBooking] = useState(false);
   const [reviews, setReviews] = useState<ReviewDisplayDTO[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-
-  const reviewScrollRef = useRef<HTMLDivElement>(null);
   const [highlightBooking, setHighlightBooking] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [pageHairStyles, setPageHairStyles] = useState<HairStyle[]>([]);
   const [pageHairStylesLoading, setPageHairStylesLoading] = useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+
   useEffect(() => {
     const handleHighlight = () => {
       setHighlightBooking(false);
@@ -128,17 +130,6 @@ export default function HomePage() {
     } finally {
       setHairStylesLoading(false);
     }
-  };
-
-  const scrollReviews = (direction: 'left' | 'right') => {
-    if (!reviewScrollRef.current) return;
-
-    const { clientWidth } = reviewScrollRef.current;
-
-    reviewScrollRef.current.scrollBy({
-      left: direction === 'left' ? -clientWidth : clientWidth,
-      behavior: 'smooth',
-    });
   };
 
   const openCalendarModal = async (hairStyle: HairStyle) => {
@@ -372,6 +363,45 @@ export default function HomePage() {
       <ReviewsSection
         reviews={reviews}
         loading={reviewsLoading}
+      />
+
+      <section className="bg-black px-6 py-16">
+        <div className="mx-auto max-w-4xl text-center">
+          <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">
+            {tr('review_badge', lang)}
+          </span>
+
+          <h2 className="mt-4 mb-6 text-4xl font-light md:text-5xl">
+            {tr('review_title', lang)}
+          </h2>
+
+          <div className="mx-auto mb-8 h-[1px] w-24 bg-[#D4AF37]" />
+
+          <p className="mx-auto mb-8 max-w-2xl text-gray-300">
+            {tr('review_subtitle', lang)}
+          </p>
+
+          <button
+            onClick={() => {
+              if (!user) {
+                openModal('login');
+                return;
+              }
+              setReviewModalOpen(true);
+            }}
+            className="rounded-full bg-[#D4AF37] px-10 py-4 text-black transition hover:bg-[#F4D03F]"
+          >
+            {tr('review_btn', lang)}
+          </button>
+        </div>
+      </section>
+
+      <ReviewModal
+        show={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSuccess={() => {
+          void loadReviews();
+        }}
       />
 
       <HairStyleSelectModal

@@ -115,6 +115,11 @@ export interface ReviewDisplayDTO {
   createdAt?: string;
 }
 
+export interface ReviewDTO {
+  text: string;
+  stars: number;
+}
+
 // ── User management ────────────────────────────────────────────────────────────
 export interface AdminUserAppointmentDTO {
   id: number;
@@ -129,6 +134,7 @@ export interface AdminUserDTO {
   firstName: string;
   lastName?: string | null;
   email: string;
+  phoneNumber?: string | null;
   roleName: string;         // "Admin" | "Styliste" | "Client"
   roleId?: number | null;
   appointments: AdminUserAppointmentDTO[];
