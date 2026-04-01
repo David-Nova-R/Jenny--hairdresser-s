@@ -2,7 +2,7 @@ import axios from 'axios';
 import { supabase } from '@/utils/supabase/client';
 import { AdminUserDTO, PagedUsersResponse } from '@/app/_models/models';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7226';
+const API_BASE_URL = process.env.API_URL || 'https://localhost:7226';
 
 async function getAuthHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
