@@ -23,12 +23,29 @@ namespace Hairdressers_backend.Services
             var credentialsJson = configuration["Google:ServiceAccountJson"];
             var credentialsPath = configuration["Google:ServiceAccountPath"];
 
-            if (credentialsJson != null)
-                credential = GoogleCredential.FromJson(credentialsJson).CreateScoped(CalendarService.Scope.Calendar);
-            else if (credentialsPath != null)
-                credential = GoogleCredential.FromFile(credentialsPath).CreateScoped(CalendarService.Scope.Calendar);
+            if (!string.IsNullOrWhiteSpace(credentialsJson))
+            {
+                Console.WriteLine("Using ServiceAccountJson");
+                Console.WriteLine($"Length: {credentialsJson.Length}");
+
+                credential = GoogleCredential
+                    .FromJson(credentialsJson)
+                    .CreateScoped(CalendarService.Scope.Calendar);
+            }
+            else if (!string.IsNullOrWhiteSpace(credentialsPath) && File.Exists(credentialsPath))
+            {
+                Console.WriteLine("Using ServiceAccountPath");
+
+                credential = GoogleCredential
+                    .FromFile(credentialsPath)
+                    .CreateScoped(CalendarService.Scope.Calendar);
+            }
             else
-                throw new InvalidOperationException("Google credentials non configurés (Google:ServiceAccountJson ou Google:ServiceAccountPath requis).");
+            {
+                throw new InvalidOperationException(
+                    "Google credentials non configurés (JSON ou Path)."
+                );
+            }
 
             _calendarService = new CalendarService(new BaseClientService.Initializer()
             {
