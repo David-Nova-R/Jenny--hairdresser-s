@@ -140,7 +140,7 @@ classDiagram
 - **Reviews** — clients can leave reviews, admin can moderate visibility
 - **Authentication** — sign up / login via Supabase Auth
 - **Admin dashboard** — manage appointments, calendar, days off, photos, reviews and users
-- **Bilingual** — French / English
+- **Trilingual** — French / English / Spanish
 
 ---
 
@@ -333,7 +333,7 @@ classDiagram
 - **Avis clients** — les clients peuvent laisser des avis, l'admin gere la visibilite
 - **Authentification** — inscription / connexion via Supabase Auth
 - **Tableau de bord admin** — gestion des rendez-vous, calendrier, conges, photos, avis et utilisateurs
-- **Bilingue** — Francais / Anglais
+- **Trilingue** — Francais / Anglais / Espagnol
 
 ---
 

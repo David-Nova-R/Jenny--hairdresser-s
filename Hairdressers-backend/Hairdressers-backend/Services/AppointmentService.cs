@@ -151,7 +151,7 @@ namespace Hairdressers_backend.Services
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            //await _emailService.SendAppointmentPendingAsync(user.Email, user.FirstName, hairStyle.Name, localAppointmentDate);
+            await _emailService.SendAppointmentPendingAsync(user.Email, user.FirstName, hairStyle.Name, localAppointmentDate);
 
             return appointment;
         }
@@ -182,7 +182,7 @@ namespace Hairdressers_backend.Services
 
             await _context.SaveChangesAsync();
 
-            //await _emailService.SendAppointmentAcceptedAsync(appointment.User!.Email, appointment.User.FirstName, appointment.HairStyle!.Name, appointment.AppointmentDate);
+            await _emailService.SendAppointmentAcceptedAsync(appointment.User!.Email, appointment.User.FirstName, appointment.HairStyle!.Name, appointment.AppointmentDate);
         }
 
         public async Task CancelAppointmentAsync(int appointmentId)
@@ -201,8 +201,8 @@ namespace Hairdressers_backend.Services
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
 
-            //if (appointment.User != null && appointment.HairStyle != null)
-            //    await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
+            if (appointment.User != null && appointment.HairStyle != null)
+                await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
         }
 
         public async Task CompletePassedAppointmentsAsync()
@@ -420,8 +420,21 @@ namespace Hairdressers_backend.Services
 
             await _context.SaveChangesAsync();
 
-            //if ((AppointmentStatus)status == AppointmentStatus.Cancelled && appointment.User != null && appointment.HairStyle != null)
-            //    await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
+            if (appointment.User != null && appointment.HairStyle != null)
+            {
+                switch ((AppointmentStatus)status)
+                {
+                    case AppointmentStatus.Confirmed:
+                        await _emailService.SendAppointmentAcceptedAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
+                        break;
+                    case AppointmentStatus.Cancelled:
+                        await _emailService.SendAppointmentCancelledAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
+                        break;
+                    case AppointmentStatus.Pending:
+                        await _emailService.SendAppointmentPendingAsync(appointment.User.Email, appointment.User.FirstName, appointment.HairStyle.Name, appointment.AppointmentDate);
+                        break;
+                }
+            }
 
             return true;
         }
