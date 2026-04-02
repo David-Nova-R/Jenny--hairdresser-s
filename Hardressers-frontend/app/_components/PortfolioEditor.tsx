@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Eye, EyeOff, GripVertical, Plus, X, Check, Loader2, Trash2, ArchiveRestore, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Plus, X, Check, Loader2, Trash2, ArchiveRestore, AlertTriangle, ZoomIn } from 'lucide-react';
+import Lightbox from '@/app/_components/Lightbox';
 import { PortfolioPhoto } from '../_models/models';
 import {
   UploadPortfolioPhoto,
@@ -21,6 +22,8 @@ interface Props {
 
 export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<PortfolioPhoto | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxPool, setLightboxPool] = useState<{ src: string; alt: string }[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [savingIds, setSavingIds] = useState<number[]>([]);
@@ -173,6 +176,15 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
 
               {/* Actions top-right */}
               <div className="absolute right-2 top-2 flex flex-col gap-1.5">
+                <ActionBtn
+                  onClick={() => {
+                    setLightboxPool(visiblePhotos.map(p => ({ src: p.photoUrl, alt: p.title ?? '' })));
+                    setLightboxIndex(i);
+                  }}
+                  className="hover:bg-black/80"
+                >
+                  <ZoomIn className="h-4 w-4 text-white" />
+                </ActionBtn>
                 <ActionBtn onClick={() => toggleVisibility(photo)} disabled={savingIds.includes(photo.id)} className="hover:bg-black/80">
                   {savingIds.includes(photo.id)
                     ? <Loader2 className="h-4 w-4 animate-spin text-white" />
@@ -288,6 +300,17 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
                   }
                 </button>
 
+                {/* Zoom — hidden bench */}
+                <button
+                  onClick={() => {
+                    setLightboxPool(hiddenPhotos.map(p => ({ src: p.photoUrl, alt: p.title ?? '' })));
+                    setLightboxIndex(hiddenPhotos.indexOf(photo));
+                  }}
+                  className="absolute left-1.5 top-1.5 rounded-lg bg-black/60 p-1.5 text-white opacity-100 transition hover:bg-black/80 sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </button>
+
                 {/* Delete — always visible on mobile, hover-only on sm+ */}
                 <button
                   onClick={() => handleDelete(photo)}
@@ -311,6 +334,17 @@ export default function PortfolioEditor({ photos, onPhotosChange, lang }: Props)
         </div>
       )}
     </div>
+
+      {/* ══ LIGHTBOX ════════════════════════════════════════════════════════ */}
+      {lightboxIndex !== null && lightboxPool.length > 0 && (
+        <Lightbox
+          images={lightboxPool}
+          currentIndex={lightboxIndex}
+          onClose={() => { setLightboxIndex(null); setLightboxPool([]); }}
+          onPrev={() => setLightboxIndex(i => (i !== null && i > 0 ? i - 1 : i))}
+          onNext={() => setLightboxIndex(i => (i !== null && i < lightboxPool.length - 1 ? i + 1 : i))}
+        />
+      )}
 
       {/* ══ DELETE CONFIRMATION POPUP ════════════════════════════════════════ */}
 

@@ -1,7 +1,8 @@
 'use client';
 
 import { ChangeEvent, useState } from 'react';
-import { ImageIcon, Loader2, Trash2, Upload } from 'lucide-react';
+import { ImageIcon, Loader2, Trash2, Upload, ZoomIn } from 'lucide-react';
+import Lightbox from '@/app/_components/Lightbox';
 
 import { ImageWithFallback } from '../ImageWithFallBack';
 import { HairStyleWithPhotos } from '../_models/models';
@@ -25,6 +26,8 @@ export default function HairStyleGalleryManager({
   const [deletingPhotoId, setDeletingPhotoId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<{ src: string; alt: string }[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const handleUpload = async (
     hairStyleId: number,
@@ -129,7 +132,7 @@ export default function HairStyleGalleryManager({
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {hairStyle.photos?.map((photo) => (
+              {hairStyle.photos?.map((photo, idx) => (
                 <div
                   key={photo.id}
                   className="group relative aspect-square overflow-hidden rounded-2xl border border-[#D4AF37]/20"
@@ -141,6 +144,18 @@ export default function HairStyleGalleryManager({
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                  {/* Zoom button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLightboxImages((hairStyle.photos ?? []).map(p => ({ src: p.photoUrl, alt: hairStyle.name })));
+                      setLightboxIndex(idx);
+                    }}
+                    className="absolute left-3 top-3 rounded-full bg-black/60 p-2 text-white opacity-0 backdrop-blur-sm transition hover:bg-black/80 group-hover:opacity-100"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </button>
 
                   {isAdmin && (
                     <button
@@ -162,6 +177,15 @@ export default function HairStyleGalleryManager({
           )}
         </div>
       ))}
+      {lightboxIndex !== null && lightboxImages.length > 0 && (
+        <Lightbox
+          images={lightboxImages}
+          currentIndex={lightboxIndex}
+          onClose={() => { setLightboxIndex(null); setLightboxImages([]); }}
+          onPrev={() => setLightboxIndex(i => (i !== null && i > 0 ? i - 1 : i))}
+          onNext={() => setLightboxIndex(i => (i !== null && i < lightboxImages.length - 1 ? i + 1 : i))}
+        />
+      )}
     </div>
   );
 }

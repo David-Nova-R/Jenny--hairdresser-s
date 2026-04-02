@@ -335,7 +335,6 @@ export async function FetchAdminCalendarAppointments(
             },
         }
     );
-    console.log('Fetched admin calendar appointments:', response.data);
     return response.data;
 }
 
@@ -343,7 +342,6 @@ export async function UploadHairStylePhoto(
     hairStyleId: number,
     file: File
 ): Promise<{ message?: string; Message?: string; url?: string; Url?: string }> {
-    console.log("API_BASE_URL =", API_BASE_URL);
     try {
         const headers = await getAuthHeaders();
 

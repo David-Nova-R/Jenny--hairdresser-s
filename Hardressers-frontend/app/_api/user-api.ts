@@ -49,7 +49,6 @@ export async function FetchUsersAdmin(
         body,
         { headers }
     );
-    console.log('Fetched users:', response.data);
     return response.data;
 }
 

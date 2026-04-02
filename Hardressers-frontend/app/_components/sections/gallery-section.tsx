@@ -6,6 +6,7 @@ import { tr } from '@/app/_config/translations';
 import { PortfolioPhoto } from '@/app/_models/models';
 import { ImageWithFallback } from '@/app/ImageWithFallBack';
 import PortfolioEditor from '@/app/_components/PortfolioEditor';
+import Lightbox from '@/app/_components/Lightbox';
 import { Lang } from '@/app/_context/language-context';
 
 type GallerySectionProps = {
@@ -24,8 +25,10 @@ export default function GallerySection({
   isAdmin,
 }: GallerySectionProps) {
   const [editMode, setEditMode] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const visiblePhotos = photos.filter(p => p.isVisible);
+  const lightboxImages = visiblePhotos.map(p => ({ src: p.photoUrl, alt: p.title ?? '' }));
 
   return (
     <section id="gallery" className="bg-black px-4 py-16 sm:px-6 sm:py-24">
@@ -76,27 +79,40 @@ export default function GallerySection({
             {tr('gallery_empty', lang)}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4 lg:gap-6">
-            {visiblePhotos.map(photo => (
-              <div
-                key={photo.id}
-                className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
-              >
-                <ImageWithFallback
-                  src={photo.photoUrl}
-                  alt={photo.title ?? `Portfolio ${photo.order + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {photo.title && (
+          <>
+            <div className="grid grid-cols-3 gap-4 lg:gap-6">
+              {visiblePhotos.map((photo, idx) => (
+                <div
+                  key={photo.id}
+                  onClick={() => setLightboxIndex(idx)}
+                  className="group relative aspect-[3/4] cursor-zoom-in overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0a0a0a] transition-all duration-300 hover:border-[#D4AF37]/50"
+                >
+                  <ImageWithFallback
+                    src={photo.photoUrl}
+                    alt={photo.title ?? `Portfolio ${photo.order + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                   <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <p className="w-full p-4 text-sm font-medium text-white">
-                      {photo.title}
-                    </p>
+                    {photo.title && (
+                      <p className="w-full p-4 text-sm font-medium text-white">
+                        {photo.title}
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+
+            {lightboxIndex !== null && (
+              <Lightbox
+                images={lightboxImages}
+                currentIndex={lightboxIndex}
+                onClose={() => setLightboxIndex(null)}
+                onPrev={() => setLightboxIndex(i => (i !== null && i > 0 ? i - 1 : i))}
+                onNext={() => setLightboxIndex(i => (i !== null && i < lightboxImages.length - 1 ? i + 1 : i))}
+              />
+            )}
+          </>
         )}
       </div>
     </section>
