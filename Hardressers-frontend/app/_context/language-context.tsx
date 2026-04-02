@@ -9,10 +9,10 @@ const STORAGE_KEY = 'luxury-hair-lang';
 const LanguageContext = createContext<{
   lang: Lang;
   setLang: (l: Lang) => void;
-}>({ lang: 'es', setLang: () => {} });
+}>({ lang: 'en', setLang: () => {} });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>('es');
+  const [lang, setLangState] = useState<Lang>('en');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
