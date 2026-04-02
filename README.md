@@ -59,22 +59,30 @@ Jenny--hairdresser-s/
 | Hosted on [Supabase](https://supabase.com) | Managed DB + Auth + Storage |
 
 ```mermaid
-erDiagram
-    Users {
-        int8 id PK
+classDiagram
+    direction RL
+
+    Roles "1..1" -- "0..n" Users
+    Users "1..1" -- "0..n" Appointments
+    Users "1..1" -- "0..n" Reviews
+    HairStyles "1..1" -- "0..n" HairStylePhotos
+    HairStyles "1..1" -- "0..n" Appointments
+
+    class Roles {
+        int8 Id
+        varchar Name
+    }
+    class Users {
+        int8 Id
         text SupabaseUserId
         varchar FirstName
         varchar LastName
         text PhoneNumber
         text Email
-        int8 RoleId FK
+        &lt;FK&gt; int8 RoleId
     }
-    Roles {
-        int8 id PK
-        varchar Name
-    }
-    HairStyles {
-        int8 id PK
+    class HairStyles {
+        int8 Id
         text Name
         text Description
         numeric PriceMin
@@ -82,50 +90,44 @@ erDiagram
         int8 DurationMinutes
         int8 DurationMaxMinutes
     }
-    HairStylePhotos {
-        int8 id PK
+    class HairStylePhotos {
+        int8 Id
         text PhotoUrl
-        int8 HairStyleId FK
+        &lt;FK&gt; int8 HairStyleId
     }
-    Appointments {
-        int8 id PK
+    class Appointments {
+        int8 Id
         timestamp AppointmentDate
         text Status
         text GoogleEventId
         text Notes
         text StyleNotes
         int8 ExternalDurationMinutes
-        int8 UserId FK
-        int8 HairStyleId FK
+        &lt;FK&gt; int8 UserId
+        &lt;FK&gt; int8 HairStyleId
     }
-    Reviews {
-        int8 id PK
+    class Reviews {
+        int8 Id
         text Text
         int8 Stars
         bool IsVisible
         timestamp CreatedAt
-        int8 UserId FK
+        &lt;FK&gt; int8 UserId
     }
-    PortfolioPhotos {
-        int8 id PK
+    class PortfolioPhotos {
+        int8 Id
         text PhotoUrl
         varchar Title
         int8 Order
         bool IsVisible
         timestamp CreatedAt
     }
-    DaysOff {
-        int8 id PK
+    class DaysOff {
+        int8 Id
         timestamp Date
         varchar Reason
         timestamp CreatedAt
     }
-
-    Users }o--|| Roles : "has"
-    Users ||--o{ Appointments : "books"
-    Users ||--o{ Reviews : "writes"
-    HairStyles ||--o{ HairStylePhotos : "has"
-    HairStyles ||--o{ Appointments : "for"
 ```
 
 ---
@@ -250,22 +252,30 @@ Jenny--hairdresser-s/
 | Hebergee sur [Supabase](https://supabase.com) | DB + Auth + Stockage manages |
 
 ```mermaid
-erDiagram
-    Users {
-        int8 id PK
+classDiagram
+    direction RL
+
+    Roles "1..1" -- "0..n" Users
+    Users "1..1" -- "0..n" Appointments
+    Users "1..1" -- "0..n" Reviews
+    HairStyles "1..1" -- "0..n" HairStylePhotos
+    HairStyles "1..1" -- "0..n" Appointments
+
+    class Roles {
+        int8 Id
+        varchar Name
+    }
+    class Users {
+        int8 Id
         text SupabaseUserId
         varchar FirstName
         varchar LastName
         text PhoneNumber
         text Email
-        int8 RoleId FK
+        &lt;FK&gt; int8 RoleId
     }
-    Roles {
-        int8 id PK
-        varchar Name
-    }
-    HairStyles {
-        int8 id PK
+    class HairStyles {
+        int8 Id
         text Name
         text Description
         numeric PriceMin
@@ -273,50 +283,44 @@ erDiagram
         int8 DurationMinutes
         int8 DurationMaxMinutes
     }
-    HairStylePhotos {
-        int8 id PK
+    class HairStylePhotos {
+        int8 Id
         text PhotoUrl
-        int8 HairStyleId FK
+        &lt;FK&gt; int8 HairStyleId
     }
-    Appointments {
-        int8 id PK
+    class Appointments {
+        int8 Id
         timestamp AppointmentDate
         text Status
         text GoogleEventId
         text Notes
         text StyleNotes
         int8 ExternalDurationMinutes
-        int8 UserId FK
-        int8 HairStyleId FK
+        &lt;FK&gt; int8 UserId
+        &lt;FK&gt; int8 HairStyleId
     }
-    Reviews {
-        int8 id PK
+    class Reviews {
+        int8 Id
         text Text
         int8 Stars
         bool IsVisible
         timestamp CreatedAt
-        int8 UserId FK
+        &lt;FK&gt; int8 UserId
     }
-    PortfolioPhotos {
-        int8 id PK
+    class PortfolioPhotos {
+        int8 Id
         text PhotoUrl
         varchar Title
         int8 Order
         bool IsVisible
         timestamp CreatedAt
     }
-    DaysOff {
-        int8 id PK
+    class DaysOff {
+        int8 Id
         timestamp Date
         varchar Reason
         timestamp CreatedAt
     }
-
-    Users }o--|| Roles : "has"
-    Users ||--o{ Appointments : "books"
-    Users ||--o{ Reviews : "writes"
-    HairStyles ||--o{ HairStylePhotos : "has"
-    HairStyles ||--o{ Appointments : "for"
 ```
 
 ---
