@@ -27,7 +27,7 @@ builder.Services.AddHttpClient<ResendClient>();
 builder.Services.Configure<ResendClientOptions>(options =>
 {
     //options.ApiToken = builder.Configuration["Resend:ApiKey"]
-        //?? throw new InvalidOperationException("Resend:ApiKey non configuré.");
+    //    ?? throw new InvalidOperationException("Resend:ApiKey non configuré.");
 });
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddEndpointsApiExplorer();
@@ -105,11 +105,16 @@ builder.Services.AddAuthentication(options =>
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy
+            .WithOrigins(
+                "https://jennystyliste.com",
+                "https://www.jennystyliste.com",
+                "http://localhost:3000"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -135,7 +140,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseHttpsRedirection();
 }
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
