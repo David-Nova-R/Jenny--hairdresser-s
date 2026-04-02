@@ -48,6 +48,9 @@ export default function RegisterModal({
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const resetForm = () => {
     setEmail('');
     setPassword('');
@@ -60,6 +63,8 @@ export default function RegisterModal({
     setMessageType(null);
     setFieldError(null);
     setFieldErrorMessage(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   useEffect(() => {
@@ -135,10 +140,9 @@ export default function RegisterModal({
   };
 
   const getInputClass = (field: FieldName) =>
-    `w-full rounded-lg border bg-white px-4 py-2 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
-      fieldError === field
-        ? 'border-red-500 focus:ring-red-500'
-        : 'border-gray-300 focus:ring-[#D4AF37]'
+    `w-full rounded-lg border bg-white px-4 py-2 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 ${fieldError === field
+      ? 'border-red-500 focus:ring-red-500'
+      : 'border-gray-300 focus:ring-[#D4AF37]'
     }`;
 
   const renderFieldError = (field: FieldName) =>
@@ -233,11 +237,10 @@ export default function RegisterModal({
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {message && (
             <div
-              className={`mb-4 rounded-lg border p-3 text-sm ${
-                messageType === 'success'
-                  ? 'border-green-400 bg-green-100 text-green-700'
-                  : 'border-red-400 bg-red-100 text-red-700'
-              }`}
+              className={`mb-4 rounded-lg border p-3 text-sm ${messageType === 'success'
+                ? 'border-green-400 bg-green-100 text-green-700'
+                : 'border-red-400 bg-red-100 text-red-700'
+                }`}
             >
               {messageType === 'success' && (
                 <p className="mb-1 font-semibold">{tr('register_success_title', lang)}</p>
@@ -334,18 +337,30 @@ export default function RegisterModal({
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   {tr('register_password_label', lang)}
                 </label>
-                <input
-                  ref={passwordRef}
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    clearFieldError('password', e.target.value);
-                  }}
-                  required
-                  placeholder="••••••••"
-                  className={getInputClass('password')}
-                />
+
+                <div className="relative">
+                  <input
+                    ref={passwordRef}
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearFieldError('password', e.target.value);
+                    }}
+                    required
+                    placeholder="••••••••"
+                    className={`${getInputClass('password')} pr-20`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-black"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+
                 {renderFieldError('password')}
               </div>
 
@@ -353,18 +368,30 @@ export default function RegisterModal({
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   {tr('register_confirm_label', lang)}
                 </label>
-                <input
-                  ref={confirmPasswordRef}
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    clearFieldError('confirmPassword', e.target.value);
-                  }}
-                  required
-                  placeholder="••••••••"
-                  className={getInputClass('confirmPassword')}
-                />
+
+                <div className="relative">
+                  <input
+                    ref={confirmPasswordRef}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      clearFieldError('confirmPassword', e.target.value);
+                    }}
+                    required
+                    placeholder="••••••••"
+                    className={`${getInputClass('confirmPassword')} pr-20`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-black"
+                  >
+                    {showConfirmPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+
                 {renderFieldError('confirmPassword')}
               </div>
 
