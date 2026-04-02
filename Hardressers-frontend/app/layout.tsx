@@ -15,9 +15,20 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata = {
-  title: "Jenny Styliste",
-  icons: {
-    icon: "/favicon.jpg",
+  title: {
+    default: "Jenny Styliste",
+    template: "%s | Jenny Styliste",
+  },
+  description:
+    "Professional hairstylist in Montreal specializing in modern styles and beauty services.",
+  openGraph: {
+    title: "Jenny Styliste",
+    description:
+      "Professional hairstylist in Montreal specializing in modern styles and beauty services.",
+    images: ["/favicon.ico"],
+  },
+  Icons: {
+    icon: "/favicon.ico",
   },
 };
 
