@@ -31,7 +31,7 @@ export default function GallerySection({
   const lightboxImages = visiblePhotos.map(p => ({ src: p.photoUrl, alt: p.title ?? '' }));
 
   return (
-    <section id="gallery" className="bg-black px-4 py-16 sm:px-6 sm:py-24">
+    <section id="Gallery" className="bg-black px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
 
         {/* Header */}

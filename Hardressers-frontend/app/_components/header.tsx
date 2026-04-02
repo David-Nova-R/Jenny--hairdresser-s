@@ -39,9 +39,9 @@ const LANGS: { code: Lang; label: string }[] = [
 
 const NAV_ITEMS = [
   { id: 'HairStyles', key: 'nav_services' },
-  { id: 'gallery', key: 'nav_gallery' },
-  { id: 'about', key: 'nav_about' },
-  { id: 'contact', key: 'nav_contact' },
+  { id: 'Gallery', key: 'nav_gallery' },
+  { id: 'Contact', key: 'nav_contact' },
+  { id: 'Reviews', key: 'nav_reviews' },
 ] as const;
 
 export default function SiteHeader() {

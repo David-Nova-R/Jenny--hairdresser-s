@@ -21,7 +21,7 @@ export default function ReviewsSection({ reviews, loading }: ReviewsSectionProps
   const { lang } = useLang();
 
   return (
-    <section id="reviews" className="bg-black px-4 py-16 sm:px-6 sm:py-24">
+    <section id="Reviews" className="bg-black px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 text-center sm:mb-20">
           <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">

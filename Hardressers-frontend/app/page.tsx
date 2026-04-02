@@ -269,7 +269,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="contact" className="bg-gradient-to-b from-black to-[#0a0a0a] px-6 py-24">
+      <section id="Contact" className="bg-gradient-to-b from-black to-[#0a0a0a] px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-20 text-center">
             <span className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]">

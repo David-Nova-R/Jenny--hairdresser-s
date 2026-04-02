@@ -94,7 +94,7 @@ export default function ReviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4">
+    <div id="Review" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4">
       <div className="w-full max-w-lg rounded-3xl border border-[#D4AF37]/30 bg-[#111] p-6 text-white shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-light">

@@ -10,6 +10,7 @@ export const t: Record<string, Record<Lang, string>> = {
   nav_login: { es: 'Iniciar sesión', fr: 'Connexion', en: 'Login' },
   nav_logout: { es: 'Cerrar sesión', fr: 'Déconnexion', en: 'Logout' },
   nav_appointments: { es: 'Mis citas', fr: 'Mes rendez-vous', en: 'My Appointments' },
+  nav_reviews: { es: 'Reseñas', fr: 'Avis', en: 'Reviews' },
 
   // ── Hero ────────────────────────────────────────────────
   hero_badge:         { es: 'Estudio Privado',  fr: 'Studio Privé',     en: 'Private Studio' },
