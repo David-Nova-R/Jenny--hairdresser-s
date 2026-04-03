@@ -58,8 +58,12 @@ html.light [class*="to-[#0a0a0a]"]           { --tw-gradient-to:   #f0ede6 !impo
 
 /* --- Navbar --- */
 html.light header                             { background-color: #faf8f4 !important; }
+html.light [class*="bg-black/80"]            { background-color: rgba(250,248,244,.95) !important; }
 html.light [class*="bg-black/85"]            { background-color: rgba(250,248,244,.93) !important; }
 html.light [class*="bg-black/90"]            { background-color: rgba(250,248,244,.96) !important; }
+html.light [class*="bg-black/95"]            { background-color: rgba(250,248,244,.98) !important; }
+html.light [class*="bg-[#0B0B0B]"]          { background-color: #f0ede6 !important; }
+html.light [class*="bg-[#0F0F0F]"]          { background-color: #e8e3d9 !important; }
 
 /* --- Modal / overlay backdrops --- */
 html.light [class*="bg-black/50"]            { background-color: rgba(0,0,0,.25) !important; }
@@ -68,6 +72,10 @@ html.light [class*="bg-black/70"]            { background-color: rgba(0,0,0,.35)
 /* --- Photo overlays --- */
 html.light [class*="bg-black/45"]            { background-color: rgba(0,0,0,.20) !important; }
 html.light [class*="bg-black/60"]            { background-color: rgba(0,0,0,.25) !important; }
+
+/* --- Hero exception: keep white text on dark photo background --- */
+html.light #hero h1                           { color: #ffffff !important; }
+html.light #hero p                            { color: rgba(255,255,255,0.80) !important; }
 
 /* --- Text --- */
 html.light .text-white                        { color: #1a1a1a !important; }

@@ -340,7 +340,7 @@ export default function SiteHeader() {
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className="rounded-2xl px-3 py-3 text-left text-base font-medium text-gray-300 transition-all duration-300 hover:bg-[#D4AF37]/8 hover:text-[#D4AF37] hover:cursor-pointer"
+                    className="rounded-2xl px-3 py-3 text-center text-base font-medium text-gray-300 transition-all duration-300 hover:bg-[#D4AF37]/8 hover:text-[#D4AF37] hover:cursor-pointer"
                   >
                     {tr(item.key, lang)}
                   </button>
@@ -349,10 +349,10 @@ export default function SiteHeader() {
 
               {/* langs */}
               <div className="border-t border-[#D4AF37]/10 px-4 py-4">
-                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <div className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
                   Language
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   {LANGS.map(({ code, label }) => (
                     <button
                       key={code}

@@ -14,8 +14,8 @@ export const t: Record<string, Record<Lang, string>> = {
 
   // ── Hero ────────────────────────────────────────────────
   hero_badge:         { es: 'Estudio Privado',  fr: 'Studio Privé',     en: 'Private Studio' },
-  hero_title_1:       { es: 'Experiencia',      fr: 'Expérience',       en: 'Luxury Hair' },
-  hero_title_2:       { es: 'de Lujo',          fr: 'de Luxe',          en: 'of Luxury' },
+  hero_title_1:       { es: 'Experiencia',      fr: 'Expérience',       en: 'Luxury' },
+  hero_title_2:       { es: 'de Lujo',          fr: 'de Luxe',          en: 'Experience' },
   hero_subtitle:      {
     es: 'Atención personalizada en un íntimo estudio privado',
     fr: 'Attention personnalisée dans un cadre intime et privé',

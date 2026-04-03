@@ -185,7 +185,7 @@ Configure `appsettings.json` with your Supabase connection string and credential
 
 ## Deployment
 
-Both the frontend and backend are deployed on **Railway**, with the database hosted on **Supabase**.
+The Front is deployed in **Vercel** and the backend is deployed on **Railway**, with the database hosted on **Supabase**.
 
 ---
 
@@ -378,4 +378,4 @@ Configure `appsettings.json` avec ta chaine de connexion Supabase et tes credent
 
 ## Deploiement
 
-Le frontend et le backend sont deployes sur **Railway**, avec la base de donnees hebergee sur **Supabase**.
+Le frontend est deployé sur **Versel** et le backend deployé sur **Railway**, avec la base de donnees hebergée sur **Supabase**.

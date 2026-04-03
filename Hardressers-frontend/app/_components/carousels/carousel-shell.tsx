@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 
+const SWIPE_THRESHOLD = 50; // px minimum pour déclencher un swipe
+
 type CarouselShellProps = {
   itemsLength: number;
   children: ReactNode;
@@ -16,6 +18,7 @@ export default function CarouselShell({
   const [index, setIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const [mounted, setMounted] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const updateVisibleCards = () => {
@@ -70,6 +73,19 @@ export default function CarouselShell({
     setIndex(nextIndex);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+      scrollCarousel(delta > 0 ? 'right' : 'left');
+    }
+    touchStartX.current = null;
+  };
+
   const syncIndex = () => {
     if (!scrollRef.current) return;
     const amount = getScrollAmount();
@@ -108,6 +124,8 @@ export default function CarouselShell({
         <div
           ref={scrollRef}
           onScroll={syncIndex}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           className="flex flex-1 gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory px-[7.5%] py-4 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden sm:px-0 lg:gap-6"
         >
           {children}
