@@ -16,8 +16,7 @@ export default function AuthCallbackPage() {
         console.error('Auth callback error:', error.message);
       }
 
-      // tu peux rediriger où tu veux
-      router.replace('/');
+      router.replace('/?email_confirmed=true');
     };
 
     handleAuth();

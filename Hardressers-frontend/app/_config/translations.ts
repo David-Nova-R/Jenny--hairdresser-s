@@ -138,6 +138,8 @@ export const t: Record<string, Record<Lang, string>> = {
   register_btn_loading: { es: 'Registrando...', fr: 'Inscription...', en: 'Signing up...' },
   register_error_passwords: { es: 'Las contraseñas no coinciden.', fr: 'Les mots de passe ne correspondent pas.', en: 'Passwords do not match.' },
   register_error_generic: { es: 'Ocurrió un error al registrarse.', fr: "Une erreur est survenue lors de l'inscription.", en: 'An error occurred while signing up.' },
+  email_confirmed_banner:  { es: '¡Tu correo fue confirmado! Ya puedes reservar tu cita.', fr: 'Votre adresse e-mail est confirmée ! Vous pouvez maintenant prendre rendez-vous.', en: 'Your email has been confirmed! You can now book an appointment.' },
+  booking_unverified:      { es: 'Debes confirmar tu correo electrónico antes de reservar.', fr: 'Veuillez confirmer votre adresse e-mail avant de réserver.', en: 'Please confirm your email address before booking.' },
   register_success_title: { es: '¡Registro exitoso!', fr: 'Inscription réussie', en: 'Registration Successful' },
   register_success_body: { es: 'Tu cuenta fue creada. Confirma tu correo electrónico haciendo clic en el enlace enviado antes de iniciar sesión.', fr: 'Votre compte a été créé. Veuillez confirmer votre adresse e-mail en cliquant sur le lien envoyé avant de vous connecter.', en: 'Your account has been created. Please confirm your email address by clicking the link sent to your inbox before signing in.' },
   register_go_login: { es: 'Ir a iniciar sesión', fr: 'Aller à la connexion', en: 'Go to Sign In' },

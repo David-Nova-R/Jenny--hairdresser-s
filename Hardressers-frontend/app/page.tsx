@@ -51,7 +51,18 @@ export default function HomePage() {
   const [pageHairStyles, setPageHairStyles] = useState<HairStyle[]>([]);
   const [pageHairStylesLoading, setPageHairStylesLoading] = useState(true);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [emailConfirmedBanner, setEmailConfirmedBanner] = useState(false);
+  const [bookingUnverified, setBookingUnverified] = useState(false);
 
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('email_confirmed') === 'true') {
+      setEmailConfirmedBanner(true);
+      window.history.replaceState({}, '', '/');
+      setTimeout(() => setEmailConfirmedBanner(false), 6000);
+    }
+  }, []);
 
   useEffect(() => {
     const handleHighlight = () => {
@@ -173,6 +184,12 @@ export default function HomePage() {
       return;
     }
 
+    if (!user.email_confirmed_at) {
+      setBookingUnverified(true);
+      setTimeout(() => setBookingUnverified(false), 6000);
+      return;
+    }
+
     await openCalendarModal(hairStyle);
   };
 
@@ -193,6 +210,21 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+
+      {/* Banner — email confirmé */}
+      {emailConfirmedBanner && (
+        <div className="fixed top-24 left-1/2 z-50 -translate-x-1/2 w-[90%] max-w-lg rounded-2xl border border-emerald-400/40 bg-emerald-900/90 px-5 py-4 text-center text-sm text-emerald-200 shadow-2xl backdrop-blur-md">
+          ✅ {tr('email_confirmed_banner', lang)}
+        </div>
+      )}
+
+      {/* Banner — booking sans vérification */}
+      {bookingUnverified && (
+        <div className="fixed top-24 left-1/2 z-50 -translate-x-1/2 w-[90%] max-w-lg rounded-2xl border border-amber-400/40 bg-amber-900/90 px-5 py-4 text-center text-sm text-amber-200 shadow-2xl backdrop-blur-md">
+          ⚠️ {tr('booking_unverified', lang)}
+        </div>
+      )}
+
       <section id="hero" className="relative flex h-screen items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <ImageWithFallback
